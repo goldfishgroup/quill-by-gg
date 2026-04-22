@@ -608,7 +608,7 @@
               <div class="tip-section-title">Assessing a pattern</div>
               <ul>
                 <li><strong>Trust the numbers, not the narrative.</strong> Read the evidence field. If the numbers do not support the rule, dismiss it.</li>
-                <li><strong>Mind the confidence badge.</strong> High means 30 or more campaigns with strong effect. Exploratory means small sample, treat as a hypothesis.</li>
+                <li><strong>Mind the confidence badge.</strong> Calibrated on sample size and effect magnitude. High means 50+ campaigns with a strong effect. Exploratory means small sample or weak effect, treat as a hypothesis.</li>
                 <li><strong>Gut-check against brand.</strong> You know SFH better than the data. A pattern like "use urgency" might conflict with Ines voice. Dismiss when strategy and stats disagree.</li>
                 <li><strong>Check the example winners.</strong> If the 3 sample subject lines do not obviously demonstrate the rule, the pattern is likely overreaching.</li>
                 <li><strong>Watch for seasonal or segment bias.</strong> BFCM and highly engaged segments skew results. A pattern that leans on these is narrower than it looks.</li>
@@ -669,7 +669,7 @@
               <div class="tip-section-title">Assessing a diagnosis</div>
               <ul>
                 <li><strong>Compare the recommendation to SFH voice.</strong> Dismiss if the fix suggests tactics that conflict with brand.</li>
-                <li><strong>Low delivered counts mean low confidence.</strong> A message with 50 deliveries is not a statistically sound signal.</li>
+                <li><strong>Low delivered counts mean low confidence.</strong> Confidence is now calibrated on total deliveries. Message-level high needs 5k+ deliveries. Flow-level high needs 10k+. Below that it is medium or exploratory.</li>
                 <li><strong>Worth-revisiting flows may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
                 <li><strong>Star what you will act on.</strong> Session 3 idea and copy generators will use starred diagnoses as priorities.</li>
               </ul>
@@ -2181,6 +2181,63 @@ var patternsRange = '12mo';
 var patternsCache = null;
 var patternsLoadedAt = 0;
 
+// Deterministic confidence calibration. Overrides Claude's self-assigned
+// confidence with sample-size and effect-size math. Claude self-ratings tend
+// toward high even on thin data; this keeps the badges honest.
+function calibratePatternConfidence(p) {
+  var n = Number(p.supporting_campaigns || 0);
+  var effect = p.effect_size || {};
+  var metric = String(effect.metric || '').toLowerCase();
+  var delta = Math.abs(Number(effect.delta || 0));
+
+  // Meaningful effect thresholds by metric
+  var strongEffect = false;
+  var mediumEffect = false;
+  if (metric === 'open_rate') {
+    strongEffect = delta >= 3;
+    mediumEffect = delta >= 1.5;
+  } else if (metric === 'click_rate' || metric === 'ctor') {
+    strongEffect = delta >= 0.5;
+    mediumEffect = delta >= 0.25;
+  } else if (metric === 'rpr') {
+    strongEffect = delta >= 0.05;
+    mediumEffect = delta >= 0.02;
+  } else if (metric === 'revenue') {
+    strongEffect = delta >= 1000;
+    mediumEffect = delta >= 250;
+  } else {
+    // Unknown metric: fall back to sample size only
+    strongEffect = false;
+    mediumEffect = false;
+  }
+
+  if (n >= 50 && strongEffect) return { confidence: 'high' };
+  if (n >= 50 || (n >= 20 && (strongEffect || mediumEffect))) return { confidence: 'medium' };
+  return { confidence: 'exploratory' };
+}
+
+// Calibrate flow diagnostic confidence based on total_deliveries supporting
+// the diagnosis. Message-level diagnoses need larger absolute samples to
+// trust than cross-flow ones since they are based on one data point.
+function calibrateFlowConfidence(d) {
+  var n = Number(d.total_deliveries || 0);
+  var scope = String(d.scope || 'flow').toLowerCase();
+  if (scope === 'message') {
+    if (n >= 5000) return { confidence: 'high' };
+    if (n >= 1000) return { confidence: 'medium' };
+    return { confidence: 'exploratory' };
+  }
+  if (scope === 'flow') {
+    if (n >= 10000) return { confidence: 'high' };
+    if (n >= 2000) return { confidence: 'medium' };
+    return { confidence: 'exploratory' };
+  }
+  // cross, structure
+  if (n >= 15000) return { confidence: 'high' };
+  if (n >= 3000) return { confidence: 'medium' };
+  return { confidence: 'exploratory' };
+}
+
 window.onPatternsRangeChange = function() {
   var sel = document.getElementById('patterns-range');
   if (sel) patternsRange = sel.value;
@@ -2637,6 +2694,11 @@ window.extractPatterns = async function() {
     + '{\n'
     + '  "rule": "The finding stated plainly in one sentence. No hedging.",\n'
     + '  "category": "subject_line | send_timing | segment | hook | length | ingredient | overall",\n'
+    + '  "supporting_campaigns": integer - number of campaigns in the data that support this finding,\n'
+    + '  "effect_size": {\n'
+    + '    "metric": "open_rate | click_rate | ctor | rpr | revenue",\n'
+    + '    "delta": number - the magnitude of the effect (percentage points for rates, dollars for RPR)\n'
+    + '  },\n'
     + '  "confidence": "high | medium | exploratory",\n'
     + '  "evidence": "specific numbers and sample sizes from the data",\n'
     + '  "actionable": "one concrete thing to do with this next campaign",\n'
@@ -2712,10 +2774,11 @@ window.extractPatterns = async function() {
 
     status.textContent = 'Parsed ' + patterns.length + ' patterns. Saving to Supabase...';
     var rows = patterns.map(function(p){
+      var cal = calibratePatternConfidence(p);
       return {
         rule: String(p.rule || '').slice(0, 500),
         category: String(p.category || 'overall').slice(0, 50),
-        confidence: String(p.confidence || 'exploratory').slice(0, 20),
+        confidence: cal.confidence,
         evidence: String(p.evidence || '').slice(0, 1000),
         actionable: String(p.actionable || '').slice(0, 500),
         sample_winners: Array.isArray(p.sample_winners) ? p.sample_winners.slice(0, 5) : [],
@@ -3162,6 +3225,7 @@ window.extractFlowDiagnostics = async function() {
     + '  "scope": "flow | message | cross | structure",\n'
     + '  "diagnosis": "one-sentence finding stated plainly",\n'
     + '  "category": "revenue_leak | engagement | sequencing | hook | body | deliverability | structure | testing",\n'
+    + '  "total_deliveries": integer - total deliveries supporting this diagnosis. For message scope, deliveries on that one message. For flow scope, sum across the flow. For cross, sum across the flows referenced.,\n'
     + '  "confidence": "high | medium | exploratory",\n'
     + '  "severity": "fix_now | opportunity | monitor | test",\n'
     + '  "evidence": "specific numbers and message names from the data",\n'
@@ -3249,6 +3313,7 @@ window.extractFlowDiagnostics = async function() {
 
     status.textContent = 'Parsed ' + diagnoses.length + ' diagnoses. Saving to Supabase...';
     var rows = diagnoses.map(function(d){
+      var cal = calibrateFlowConfidence(d);
       return {
         flow_name: d.flow_name ? String(d.flow_name).slice(0, 200) : null,
         flow_status: d.flow_status ? String(d.flow_status).slice(0, 20) : null,
@@ -3256,7 +3321,7 @@ window.extractFlowDiagnostics = async function() {
         scope: String(d.scope || 'flow').slice(0, 20),
         diagnosis: String(d.diagnosis || '').slice(0, 500),
         category: String(d.category || 'overall').slice(0, 50),
-        confidence: String(d.confidence || 'exploratory').slice(0, 20),
+        confidence: cal.confidence,
         severity: String(d.severity || 'monitor').slice(0, 20),
         evidence: String(d.evidence || '').slice(0, 1000),
         recommendation: String(d.recommendation || '').slice(0, 500),
