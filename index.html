@@ -213,6 +213,76 @@
     .placeholder-card p { font-size: 13px; color: var(--q-muted); line-height: 1.7; }
     .placeholder-card .session-note { margin-top: 14px; font-size: 11px; color: var(--gg-olive); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
 
+    /* AI STUDIO SHELL */
+    .studio-wrap { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: start; }
+    .studio-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 76px; }
+    .studio-nav-btn { text-align: left; padding: 9px 14px; border: none; background: transparent; cursor: pointer; font-size: 13px; color: var(--q-muted); font-family: var(--font-body); border-radius: 7px; transition: all 0.12s; }
+    .studio-nav-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .studio-nav-btn.active { background: var(--gg-olive); color: #fff; font-weight: 500; }
+    .studio-section { display: none; }
+    .studio-section.active { display: block; }
+
+    /* INSIGHTS */
+    .insights-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+    .insights-title { font-family: var(--font-head); font-size: 20px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; }
+    .insights-sub { font-size: 12px; color: var(--q-muted); margin-top: 4px; }
+    .audience-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; }
+    .audience-btn { padding: 6px 14px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
+    .audience-btn.active { background: var(--gg-olive); color: #fff; }
+
+    /* INSIGHTS CARDS */
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 16px 18px; }
+    .stat-label { font-size: 10px; font-weight: 600; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .stat-value { font-family: var(--font-head); font-size: 24px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; line-height: 1.1; }
+    .stat-context { font-size: 11px; color: var(--q-muted); margin-top: 4px; line-height: 1.4; }
+    .stat-context.good { color: #2e5e2e; }
+    .stat-context.warn { color: #8a5a10; }
+    .stat-context.over { color: var(--gg-olive); }
+
+    /* PANELS */
+    .panel { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
+    .panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .panel-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.005em; }
+    .panel-hint { font-size: 11px; color: var(--q-muted); }
+    .panel-narrative { font-size: 13px; line-height: 1.7; color: var(--gg-charcoal); background: var(--gg-offwhite); padding: 14px 16px; border-radius: 8px; border-left: 3px solid var(--gg-olive); margin-bottom: 16px; white-space: pre-wrap; }
+    .panel-narrative.loading { color: var(--q-muted); font-style: italic; background: var(--q-bg); border-left-color: var(--q-line); }
+    .panel-narrative.error { color: #a32d2d; background: #fdf0f0; border-left-color: #a32d2d; }
+    .narrative-refresh { margin-left: auto; padding: 4px 10px; border: 0.5px solid var(--q-line); background: #fff; border-radius: 6px; font-size: 11px; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); }
+    .narrative-refresh:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .narrative-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* CHART (bar) */
+    .bar-chart { display: flex; flex-direction: column; gap: 6px; }
+    .bar-row { display: grid; grid-template-columns: 80px 1fr 60px; gap: 10px; align-items: center; font-size: 12px; }
+    .bar-row-label { color: var(--gg-charcoal); font-weight: 500; }
+    .bar-row-track { height: 20px; background: var(--gg-offwhite); border-radius: 4px; overflow: hidden; position: relative; }
+    .bar-row-fill { height: 100%; background: var(--gg-olive); border-radius: 4px; transition: width 0.3s; }
+    .bar-row-value { font-size: 11px; color: var(--q-muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* TOP LISTS */
+    .top-list { display: flex; flex-direction: column; gap: 2px; }
+    .top-item { display: grid; grid-template-columns: 24px 1fr auto; gap: 12px; padding: 10px 12px; border-radius: 7px; align-items: center; font-size: 12px; transition: background 0.1s; }
+    .top-item:hover { background: var(--gg-offwhite); }
+    .top-rank { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--q-muted); }
+    .top-label { color: var(--gg-charcoal); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-meta { font-size: 10px; color: var(--q-muted); margin-top: 2px; display: block; }
+    .top-value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--gg-olive); font-size: 13px; text-align: right; white-space: nowrap; }
+
+    /* TREND CHART */
+    .trend-wrap { margin-top: 8px; }
+    .trend-chart { position: relative; height: 180px; display: flex; align-items: flex-end; gap: 4px; padding: 10px 0; border-bottom: 0.5px solid var(--q-line); }
+    .trend-bar { flex: 1; background: var(--gg-olive); border-radius: 3px 3px 0 0; min-height: 2px; opacity: 0.85; transition: opacity 0.15s; position: relative; cursor: pointer; }
+    .trend-bar:hover { opacity: 1; }
+    .trend-bar-tooltip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--gg-charcoal); color: #fff; padding: 5px 9px; border-radius: 5px; font-size: 11px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 5; }
+    .trend-bar:hover .trend-bar-tooltip { opacity: 1; }
+    .trend-labels { display: flex; gap: 4px; margin-top: 6px; }
+    .trend-label { flex: 1; font-size: 9px; color: var(--q-muted); text-align: center; letter-spacing: 0.04em; }
+
+    /* EMPTY STATE */
+    .empty-hint { padding: 40px 20px; text-align: center; color: var(--q-muted); font-size: 12px; line-height: 1.6; }
+    .empty-hint strong { color: var(--gg-charcoal); font-weight: 600; }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .cal-layout { grid-template-columns: 1fr !important; }
@@ -220,6 +290,9 @@
       .main { padding: 20px 16px; }
       .topbar { padding: 0 16px; }
       .logo-sub { display: none; }
+      .studio-wrap { grid-template-columns: 1fr; }
+      .studio-nav { flex-direction: row; overflow-x: auto; position: static; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -312,10 +385,148 @@
 
   <!-- AI STUDIO TAB -->
   <div id="tab-studio" class="tab-content">
-    <div class="placeholder-card">
-      <h2>AI Studio</h2>
-      <p>Five sections: Ideas, Draft, Insights, Gaps, and References. Ideas and Draft generate new concepts and copy. Insights and Gaps analyze your Klaviyo data. References stores approved emails and brand docs.</p>
-      <div class="session-note">Wiring up across Sessions 2 and 3</div>
+    <div class="studio-wrap">
+      <div class="studio-nav">
+        <button class="studio-nav-btn active" onclick="setStudioSection('insights')" id="snav-insights">Insights</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('refs')" id="snav-refs">References</button>
+      </div>
+      <div>
+        <!-- INSIGHTS -->
+        <div class="studio-section active" id="studio-insights">
+          <div class="insights-head">
+            <div>
+              <div class="insights-title">Insights</div>
+              <div class="insights-sub" id="insights-sub">Reading from your uploaded Klaviyo data</div>
+            </div>
+            <div class="audience-toggle">
+              <button class="audience-btn active" onclick="setTimeRange('all')" id="tr-all">All time</button>
+              <button class="audience-btn" onclick="setTimeRange('ytd')" id="tr-ytd">YTD</button>
+              <button class="audience-btn" onclick="setTimeRange('12mo')" id="tr-12mo">12 months</button>
+              <button class="audience-btn" onclick="setTimeRange('90d')" id="tr-90d">90 days</button>
+              <button class="audience-btn" onclick="setTimeRange('30d')" id="tr-30d">30 days</button>
+            </div>
+          </div>
+
+          <div id="insights-stats" class="stat-grid"></div>
+
+          <div class="panel" id="panel-patterns">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">What is working</div>
+                <div class="panel-hint">Patterns across send days, times, segments, and subject lines</div>
+              </div>
+              <button class="narrative-refresh" id="refresh-patterns" onclick="generatePatternsNarrative()">Regenerate narrative</button>
+            </div>
+            <div class="panel-narrative loading" id="patterns-narrative">Narrative will appear here after the stats load.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px;">
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Open rate by send day</div>
+                <div class="bar-chart" id="chart-weekday"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Top segments by revenue per recipient</div>
+                <div class="bar-chart" id="chart-segments"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-top">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Top performers</div>
+                <div class="panel-hint">Subject lines that won, filtered to campaigns with 5000+ recipients</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">By open rate</div>
+                <div class="top-list" id="top-open"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">By revenue</div>
+                <div class="top-list" id="top-revenue"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-trends">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Trends</div>
+                <div class="panel-hint">Month over month, last 12 months</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Avg open rate</div>
+                <div class="trend-wrap">
+                  <div class="trend-chart" id="trend-open"></div>
+                  <div class="trend-labels" id="trend-open-labels"></div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Revenue per recipient</div>
+                <div class="trend-wrap">
+                  <div class="trend-chart" id="trend-rpr"></div>
+                  <div class="trend-labels" id="trend-rpr-labels"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-flows">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Flow health</div>
+                <div class="panel-hint">Active flow messages, all time. Drafts and zero-activity messages hidden.</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Highest revenue</div>
+                <div class="top-list" id="flow-top"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Lowest open rate (fix candidates)</div>
+                <div class="top-list" id="flow-bottom"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IDEAS / DRAFT / GAPS / REFS placeholders -->
+        <div class="studio-section" id="studio-ideas">
+          <div class="placeholder-card">
+            <h2>Ideas</h2>
+            <p>Generate 5-10 email ideas per content bucket, grounded in SFH voice and past winners.</p>
+            <div class="session-note">Session 3</div>
+          </div>
+        </div>
+        <div class="studio-section" id="studio-draft">
+          <div class="placeholder-card">
+            <h2>Draft</h2>
+            <p>Generate full email drafts with Version A and Version B for subject lines, preview text, and body copy.</p>
+            <div class="session-note">Session 3</div>
+          </div>
+        </div>
+        <div class="studio-section" id="studio-gaps">
+          <div class="placeholder-card">
+            <h2>Gaps</h2>
+            <p>Analyze your calendar for coverage gaps, missing content buckets, and send frequency issues.</p>
+            <div class="session-note">Session 3</div>
+          </div>
+        </div>
+        <div class="studio-section" id="studio-refs">
+          <div class="placeholder-card">
+            <h2>References</h2>
+            <p>Manage approved emails, brand docs, and reference links that inform idea and draft generation.</p>
+            <div class="session-note">Session 4</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -526,6 +737,7 @@ window.switchTab = function(t) {
     if (el) el.classList.toggle('active', n === t);
   });
   if (t === 'upload') refreshUploadCounts();
+  if (t === 'studio') loadInsightsIfNeeded();
 };
 
 // Calendar nav
@@ -1246,6 +1458,538 @@ document.getElementById('modalOverlay').addEventListener('click', function(e){
 document.addEventListener('keydown', function(e){
   if (e.key === 'Escape' && document.getElementById('modalOverlay').classList.contains('open')) closeModal();
 });
+
+// ── AI STUDIO / INSIGHTS ────────────────────────────────────────────────────
+
+var currentStudioSection = 'insights';
+var audienceFilter = 'consumer';  // Hard-coded to consumer for v1; wholesale toggle removed from UI
+var timeRange = 'all';  // all | ytd | 12mo | 90d | 30d
+var insightsData = { campaigns: null, flows: null, loadedAt: null };
+var insightsInFlight = false;
+
+window.setStudioSection = function(section) {
+  currentStudioSection = section;
+  ['insights','ideas','draft','gaps','refs'].forEach(function(s){
+    var el = document.getElementById('studio-' + s);
+    var nav = document.getElementById('snav-' + s);
+    if (el) el.classList.toggle('active', s === section);
+    if (nav) nav.classList.toggle('active', s === section);
+  });
+  if (section === 'insights') loadInsightsIfNeeded();
+};
+
+window.setTimeRange = function(val) {
+  timeRange = val;
+  ['all','ytd','12mo','90d','30d'].forEach(function(v){
+    var el = document.getElementById('tr-' + v);
+    if (el) el.classList.toggle('active', v === val);
+  });
+  renderInsights();
+  // Invalidate narrative so it regenerates against the new time range
+  var nar = document.getElementById('patterns-narrative');
+  if (nar) {
+    nar.className = 'panel-narrative loading';
+    nar.textContent = 'Time range changed. Click Regenerate narrative to refresh.';
+  }
+};
+
+function getTimeRangeCutoff() {
+  if (timeRange === 'all') return null;
+  var now = new Date();
+  if (timeRange === 'ytd') {
+    return new Date(now.getFullYear(), 0, 1);
+  }
+  var days = { '30d': 30, '90d': 90, '12mo': 365 }[timeRange];
+  if (!days) return null;
+  var d = new Date(now);
+  d.setDate(d.getDate() - days);
+  return d;
+}
+
+function getTimeRangeLabel() {
+  return {
+    'all': 'all time',
+    'ytd': 'year to date',
+    '12mo': 'last 12 months',
+    '90d': 'last 90 days',
+    '30d': 'last 30 days'
+  }[timeRange] || 'all time';
+}
+
+async function loadInsightsIfNeeded() {
+  if (insightsInFlight) return;
+  if (insightsData.loadedAt && (Date.now() - insightsData.loadedAt) < 60000) {
+    renderInsights();
+    return;
+  }
+  insightsInFlight = true;
+  var sub = document.getElementById('insights-sub');
+  if (sub) sub.textContent = 'Loading campaigns and flow messages...';
+  try {
+    // Pull campaigns and flows in parallel. Use select limit to be safe.
+    var campRes = await db.from('quill_campaigns').select('*').limit(2000);
+    var flowRes = await db.from('quill_flow_messages').select('*').limit(2000);
+    if (campRes.error) throw new Error('Campaigns: ' + campRes.error.message);
+    if (flowRes.error) throw new Error('Flows: ' + flowRes.error.message);
+    insightsData.campaigns = campRes.data || [];
+    insightsData.flows = flowRes.data || [];
+    insightsData.loadedAt = Date.now();
+    renderInsights();
+  } catch (err) {
+    console.error('Insights load error', err);
+    if (sub) sub.textContent = 'Could not load data. ' + (err.message || err);
+  } finally {
+    insightsInFlight = false;
+  }
+}
+
+function filteredCampaigns() {
+  var rows = insightsData.campaigns || [];
+  // Always filter to consumer for v1
+  rows = rows.filter(function(c){ return (c.audience_type || 'consumer') === audienceFilter; });
+  // Apply time range
+  var cutoff = getTimeRangeCutoff();
+  if (cutoff) {
+    rows = rows.filter(function(c){
+      if (!c.send_time) return false;
+      var d = new Date(c.send_time);
+      if (isNaN(d.getTime())) return false;
+      return d >= cutoff;
+    });
+  }
+  return rows;
+}
+
+function filteredFlows() {
+  // Flow metrics are all-time per Klaviyo export; time range does not apply.
+  var rows = insightsData.flows || [];
+  rows = rows.filter(function(f){ return (f.audience_type || 'consumer') === audienceFilter; });
+  // Exclude drafts and zero-activity messages
+  rows = rows.filter(function(f){
+    var status = (f.status || '').toLowerCase();
+    if (status === 'draft') return false;
+    var delivered = Number(f.delivered || 0);
+    return delivered > 0;
+  });
+  return rows;
+}
+
+function mean(arr) {
+  var valid = arr.filter(function(v){ return v !== null && v !== undefined && !isNaN(v); });
+  if (!valid.length) return null;
+  var sum = 0;
+  for (var i = 0; i < valid.length; i++) sum += Number(valid[i]);
+  return sum / valid.length;
+}
+
+function sumField(rows, field) {
+  var total = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var v = Number(rows[i][field] || 0);
+    if (!isNaN(v)) total += v;
+  }
+  return total;
+}
+
+function fmtPct(v, d) {
+  if (v === null || v === undefined || isNaN(v)) return 'n/a';
+  return Number(v).toFixed(d === undefined ? 1 : d) + '%';
+}
+
+function fmtMoney(v) {
+  if (v === null || v === undefined || isNaN(v)) return 'n/a';
+  return '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtMoneyShort(v) {
+  if (v === null || v === undefined || isNaN(v)) return 'n/a';
+  v = Number(v);
+  if (v >= 1000) return '$' + (v/1000).toFixed(1) + 'k';
+  return '$' + v.toFixed(0);
+}
+
+function renderInsights() {
+  var camps = filteredCampaigns();
+  var flows = filteredFlows();
+
+  var sub = document.getElementById('insights-sub');
+  if (sub) {
+    sub.textContent = camps.length + ' campaigns (' + getTimeRangeLabel() + ')  |  ' + flows.length + ' active flow messages (all time)';
+  }
+
+  renderStatCards(camps);
+  renderWeekdayChart(camps);
+  renderSegmentsChart(camps);
+  renderTopLists(camps);
+  renderTrends(camps);
+  renderFlowHealth(flows);
+}
+
+function renderStatCards(camps) {
+  var grid = document.getElementById('insights-stats');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  if (!camps.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No campaign data yet.</strong><br>Upload a Klaviyo campaigns CSV from the Klaviyo Data tab.</div>';
+    return;
+  }
+
+  var avgOpen = mean(camps.map(function(c){ return c.open_rate; }));
+  var avgClick = mean(camps.map(function(c){ return c.click_rate; }));
+  var avgCtor = mean(camps.map(function(c){ return c.click_to_open_rate; }));
+  var avgUnsub = mean(camps.map(function(c){ return c.unsubscribe_rate; }));
+  var avgRpr = mean(camps.map(function(c){ return c.revenue_per_recipient; }));
+  var totalRev = sumField(camps, 'revenue');
+
+  // Ines benchmark: open 35-50%, CTR 1.5-3%
+  function openContext(v) {
+    if (v === null) return { text: '', cls: '' };
+    if (v >= 50) return { text: 'Above 50% target', cls: 'over' };
+    if (v >= 35) return { text: 'In benchmark range 35 to 50%', cls: 'good' };
+    return { text: 'Below 35% benchmark', cls: 'warn' };
+  }
+  function ctrContext(v) {
+    if (v === null) return { text: '', cls: '' };
+    if (v >= 3) return { text: 'Above 3% target', cls: 'over' };
+    if (v >= 1.5) return { text: 'In benchmark range 1.5 to 3%', cls: 'good' };
+    return { text: 'Below 1.5% benchmark', cls: 'warn' };
+  }
+
+  var cards = [
+    { label: 'Avg open rate',        value: fmtPct(avgOpen), ctx: openContext(avgOpen) },
+    { label: 'Avg click rate',       value: fmtPct(avgClick), ctx: ctrContext(avgClick) },
+    { label: 'Avg CTOR',             value: fmtPct(avgCtor), ctx: { text: 'Click-to-open ratio', cls: '' } },
+    { label: 'Avg unsub rate',       value: fmtPct(avgUnsub, 2), ctx: { text: 'Per campaign', cls: '' } },
+    { label: 'Avg revenue / recipient', value: (avgRpr !== null ? '$' + avgRpr.toFixed(3) : 'n/a'), ctx: { text: 'Per campaign', cls: '' } },
+    { label: 'Total revenue',        value: fmtMoneyShort(totalRev), ctx: { text: 'All campaigns in filter', cls: '' } }
+  ];
+  cards.forEach(function(c){
+    var card = document.createElement('div');
+    card.className = 'stat-card';
+    var labelEl = document.createElement('div');
+    labelEl.className = 'stat-label';
+    labelEl.textContent = c.label;
+    var valEl = document.createElement('div');
+    valEl.className = 'stat-value';
+    valEl.textContent = c.value;
+    var ctxEl = document.createElement('div');
+    ctxEl.className = 'stat-context ' + (c.ctx.cls || '');
+    ctxEl.textContent = c.ctx.text;
+    card.appendChild(labelEl);
+    card.appendChild(valEl);
+    card.appendChild(ctxEl);
+    grid.appendChild(card);
+  });
+}
+
+function renderWeekdayChart(camps) {
+  var chart = document.getElementById('chart-weekday');
+  if (!chart) return;
+  chart.innerHTML = '';
+  var order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  var byDay = {};
+  order.forEach(function(d){ byDay[d] = { open: [], rev: [], count: 0 }; });
+  camps.forEach(function(c){
+    var d = c.send_weekday;
+    if (!d || !byDay[d]) return;
+    if (c.open_rate !== null && c.open_rate !== undefined) byDay[d].open.push(Number(c.open_rate));
+    byDay[d].count++;
+  });
+  var rows = order.map(function(d){
+    return { day: d, avg: mean(byDay[d].open), count: byDay[d].count };
+  }).filter(function(r){ return r.count > 0; });
+  if (!rows.length) {
+    chart.innerHTML = '<div class="empty-hint">No weekday data available.</div>';
+    return;
+  }
+  var maxVal = Math.max.apply(null, rows.map(function(r){ return r.avg || 0; }));
+  rows.forEach(function(r){
+    var pct = maxVal > 0 ? (r.avg / maxVal * 100) : 0;
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = '<div class="bar-row-label">' + r.day.slice(0,3) + '</div>'
+      + '<div class="bar-row-track"><div class="bar-row-fill" style="width:' + pct + '%"></div></div>'
+      + '<div class="bar-row-value">' + fmtPct(r.avg) + '</div>';
+    chart.appendChild(row);
+  });
+}
+
+function renderSegmentsChart(camps) {
+  var chart = document.getElementById('chart-segments');
+  if (!chart) return;
+  chart.innerHTML = '';
+  var bySeg = {};
+  camps.forEach(function(c){
+    var s = c.segment || 'Unknown';
+    if (!bySeg[s]) bySeg[s] = { rprs: [], count: 0 };
+    if (c.revenue_per_recipient !== null && c.revenue_per_recipient !== undefined) bySeg[s].rprs.push(Number(c.revenue_per_recipient));
+    bySeg[s].count++;
+  });
+  var rows = Object.keys(bySeg).map(function(s){
+    return { segment: s, avg: mean(bySeg[s].rprs), count: bySeg[s].count };
+  }).filter(function(r){ return r.count >= 5 && r.avg !== null; });
+  rows.sort(function(a,b){ return b.avg - a.avg; });
+  rows = rows.slice(0, 8);
+  if (!rows.length) {
+    chart.innerHTML = '<div class="empty-hint">Not enough segment data with 3+ campaigns each.</div>';
+    return;
+  }
+  var maxVal = Math.max.apply(null, rows.map(function(r){ return r.avg; }));
+  rows.forEach(function(r){
+    var pct = maxVal > 0 ? (r.avg / maxVal * 100) : 0;
+    var label = r.segment.length > 22 ? r.segment.slice(0,20) + '..' : r.segment;
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = '<div class="bar-row-label" title="' + r.segment + '">' + label + '</div>'
+      + '<div class="bar-row-track"><div class="bar-row-fill" style="width:' + pct + '%"></div></div>'
+      + '<div class="bar-row-value">$' + r.avg.toFixed(3) + '</div>';
+    chart.appendChild(row);
+  });
+}
+
+function renderTopLists(camps) {
+  var topOpen = document.getElementById('top-open');
+  var topRev = document.getElementById('top-revenue');
+  if (!topOpen || !topRev) return;
+  topOpen.innerHTML = '';
+  topRev.innerHTML = '';
+
+  var qualifying = camps.filter(function(c){ return Number(c.recipients || 0) >= 5000; });
+  if (!qualifying.length) {
+    topOpen.innerHTML = '<div class="empty-hint">No campaigns meet the 5000+ recipient threshold.</div>';
+    topRev.innerHTML = '<div class="empty-hint">No campaigns meet the 5000+ recipient threshold.</div>';
+    return;
+  }
+
+  var byOpen = qualifying.slice().sort(function(a,b){ return (b.open_rate||0) - (a.open_rate||0); }).slice(0, 8);
+  var byRev = qualifying.slice().sort(function(a,b){ return (b.revenue||0) - (a.revenue||0); }).slice(0, 8);
+
+  function addItem(listEl, rank, label, meta, value) {
+    var item = document.createElement('div');
+    item.className = 'top-item';
+    item.innerHTML = '<div class="top-rank">' + rank + '</div>'
+      + '<div><div class="top-label" title="' + label + '">' + label + '</div><span class="top-meta">' + meta + '</span></div>'
+      + '<div class="top-value">' + value + '</div>';
+    listEl.appendChild(item);
+  }
+
+  byOpen.forEach(function(c, i){
+    var subject = c.subject || c.campaign_name || 'Untitled';
+    var meta = fmtPct(c.open_rate) + ' open  |  ' + Math.round(c.recipients || 0).toLocaleString() + ' recipients';
+    addItem(topOpen, (i+1), subject, meta, fmtPct(c.open_rate));
+  });
+  byRev.forEach(function(c, i){
+    var subject = c.subject || c.campaign_name || 'Untitled';
+    var meta = fmtMoney(c.revenue) + '  |  ' + Math.round(c.recipients || 0).toLocaleString() + ' recipients';
+    addItem(topRev, (i+1), subject, meta, fmtMoneyShort(c.revenue));
+  });
+}
+
+function renderTrends(camps) {
+  var now = new Date();
+  var months = [];
+  for (var m = 11; m >= 0; m--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleString('en', { month: 'short' }), open: [], rprs: [] });
+  }
+  camps.forEach(function(c){
+    if (!c.send_time) return;
+    var d = new Date(c.send_time);
+    if (isNaN(d.getTime())) return;
+    for (var i = 0; i < months.length; i++) {
+      if (months[i].year === d.getFullYear() && months[i].month === d.getMonth()) {
+        if (c.open_rate !== null && c.open_rate !== undefined) months[i].open.push(Number(c.open_rate));
+        if (c.revenue_per_recipient !== null && c.revenue_per_recipient !== undefined) months[i].rprs.push(Number(c.revenue_per_recipient));
+        break;
+      }
+    }
+  });
+
+  function drawTrend(chartId, labelsId, values, fmt) {
+    var chart = document.getElementById(chartId);
+    var labels = document.getElementById(labelsId);
+    if (!chart || !labels) return;
+    chart.innerHTML = '';
+    labels.innerHTML = '';
+    var maxVal = Math.max.apply(null, values.map(function(v){ return v.value || 0; }));
+    if (maxVal <= 0) {
+      chart.innerHTML = '<div class="empty-hint" style="width:100%;">No monthly data.</div>';
+      return;
+    }
+    values.forEach(function(v, idx){
+      var bar = document.createElement('div');
+      bar.className = 'trend-bar';
+      var pct = v.value !== null ? (v.value / maxVal * 100) : 0;
+      bar.style.height = Math.max(pct, 2) + '%';
+      if (v.value === null) bar.style.opacity = '0.15';
+      var tip = document.createElement('span');
+      tip.className = 'trend-bar-tooltip';
+      tip.textContent = months[idx].label + ': ' + (v.value !== null ? fmt(v.value) : 'no data');
+      bar.appendChild(tip);
+      chart.appendChild(bar);
+      var lbl = document.createElement('div');
+      lbl.className = 'trend-label';
+      lbl.textContent = months[idx].label;
+      labels.appendChild(lbl);
+    });
+  }
+  var openVals = months.map(function(m){ return { value: m.open.length ? mean(m.open) : null }; });
+  var rprVals = months.map(function(m){ return { value: m.rprs.length ? mean(m.rprs) : null }; });
+  drawTrend('trend-open', 'trend-open-labels', openVals, function(v){ return v.toFixed(1) + '%'; });
+  drawTrend('trend-rpr', 'trend-rpr-labels', rprVals, function(v){ return '$' + v.toFixed(3); });
+}
+
+function renderFlowHealth(flows) {
+  var topEl = document.getElementById('flow-top');
+  var botEl = document.getElementById('flow-bottom');
+  if (!topEl || !botEl) return;
+  topEl.innerHTML = '';
+  botEl.innerHTML = '';
+  if (!flows.length) {
+    topEl.innerHTML = '<div class="empty-hint">No active flow messages found for this filter.</div>';
+    botEl.innerHTML = '<div class="empty-hint">No active flow messages found for this filter.</div>';
+    return;
+  }
+  var byRev = flows.slice().sort(function(a,b){ return (b.revenue||0) - (a.revenue||0); }).slice(0, 6);
+  // Lowest open rate: require at least 200 deliveries to filter noise
+  var fixable = flows.filter(function(f){ return Number(f.delivered || 0) >= 200 && f.open_rate !== null && f.open_rate !== undefined; });
+  fixable.sort(function(a,b){ return (a.open_rate||0) - (b.open_rate||0); });
+  fixable = fixable.slice(0, 6);
+
+  function addFlowItem(listEl, rank, f, valueLabel) {
+    var label = (f.message_name || f.subject || 'Untitled');
+    var meta = (f.flow_name || '') + '  |  ' + Math.round(f.delivered || 0).toLocaleString() + ' delivered';
+    var item = document.createElement('div');
+    item.className = 'top-item';
+    item.innerHTML = '<div class="top-rank">' + rank + '</div>'
+      + '<div><div class="top-label" title="' + label + '">' + label + '</div><span class="top-meta">' + meta + '</span></div>'
+      + '<div class="top-value">' + valueLabel + '</div>';
+    listEl.appendChild(item);
+  }
+  byRev.forEach(function(f, i){ addFlowItem(topEl, (i+1), f, fmtMoneyShort(f.revenue)); });
+  fixable.forEach(function(f, i){ addFlowItem(botEl, (i+1), f, fmtPct(f.open_rate)); });
+  if (!byRev.length) topEl.innerHTML = '<div class="empty-hint">No active flows with revenue.</div>';
+  if (!fixable.length) botEl.innerHTML = '<div class="empty-hint">No active flows meet the 200+ delivery threshold.</div>';
+}
+
+// AI narrative for the Patterns panel
+window.generatePatternsNarrative = async function() {
+  var nar = document.getElementById('patterns-narrative');
+  var btn = document.getElementById('refresh-patterns');
+  if (!nar || !btn) return;
+  var camps = filteredCampaigns();
+  if (!camps.length) {
+    nar.className = 'panel-narrative';
+    nar.textContent = 'Upload a Klaviyo campaigns CSV to generate pattern analysis.';
+    return;
+  }
+  btn.disabled = true;
+  var prevText = btn.textContent;
+  btn.textContent = 'Generating...';
+  nar.className = 'panel-narrative loading';
+  nar.textContent = 'Analyzing patterns across ' + camps.length + ' campaigns...';
+
+  // Build a compact, deterministic stats summary for Claude to narrate
+  var summary = buildStatsSummary(camps);
+  var rangeLabel = getTimeRangeLabel();
+
+  var prompt = 'You are Quill, Goldfish Groups senior email consultant voice. Write a short analytical narrative (4 to 6 sentences, no bullet points, no headers) for SFH based on the pre-computed stats below.\n\n'
+    + 'Time range: ' + rangeLabel + '\n'
+    + 'Campaign count: ' + camps.length + '\n\n'
+    + 'Stats:\n' + summary + '\n\n'
+    + 'Rules:\n'
+    + '- Lead with the most interesting finding, not a summary of everything\n'
+    + '- Reference specific numbers from the stats\n'
+    + '- SFH benchmarks: open rate 35 to 50 percent, CTR 1.5 to 3 percent\n'
+    + '- Tone: warm, sharp, senior consultant\n'
+    + '- No em dashes anywhere\n'
+    + '- No hyperbolic words like critical, massive, exceptional\n'
+    + '- American English\n'
+    + '- Prose only, no lists or headers\n';
+
+  try {
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(b){ if (b.type === 'text') text += b.text; });
+    }
+    if (!text) throw new Error('Empty response from model');
+    nar.className = 'panel-narrative';
+    nar.textContent = text.trim();
+  } catch (err) {
+    console.error('narrative error', err);
+    nar.className = 'panel-narrative error';
+    nar.textContent = 'Could not generate narrative. ' + (err.message || err) + '. Check that /api/diagnose is deployed and ANTHROPIC_API_KEY is set.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevText;
+  }
+};
+
+function buildStatsSummary(camps) {
+  var lines = [];
+  var avgOpen = mean(camps.map(function(c){ return c.open_rate; }));
+  var avgClick = mean(camps.map(function(c){ return c.click_rate; }));
+  var avgCtor = mean(camps.map(function(c){ return c.click_to_open_rate; }));
+  var avgUnsub = mean(camps.map(function(c){ return c.unsubscribe_rate; }));
+  var avgRpr = mean(camps.map(function(c){ return c.revenue_per_recipient; }));
+  var totalRev = sumField(camps, 'revenue');
+  lines.push('Averages: open ' + fmtPct(avgOpen) + ', click ' + fmtPct(avgClick) + ', CTOR ' + fmtPct(avgCtor) + ', unsub ' + fmtPct(avgUnsub, 2) + ', rev/recipient $' + (avgRpr || 0).toFixed(3));
+  lines.push('Total revenue: ' + fmtMoney(totalRev));
+
+  // By weekday
+  var order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  var byDay = {};
+  order.forEach(function(d){ byDay[d] = []; });
+  camps.forEach(function(c){
+    if (c.send_weekday && byDay[c.send_weekday] && c.open_rate !== null) byDay[c.send_weekday].push(Number(c.open_rate));
+  });
+  var dayLines = order.filter(function(d){ return byDay[d].length; }).map(function(d){
+    return d + ': ' + fmtPct(mean(byDay[d])) + ' (' + byDay[d].length + ' sends)';
+  });
+  lines.push('Open rate by send day -- ' + dayLines.join('; '));
+
+  // Top 3 subjects by open rate (5000+ recipients)
+  var qualifying = camps.filter(function(c){ return Number(c.recipients || 0) >= 5000 && c.open_rate !== null; });
+  var topOpen = qualifying.slice().sort(function(a,b){ return (b.open_rate||0) - (a.open_rate||0); }).slice(0, 3);
+  if (topOpen.length) {
+    lines.push('Top 3 subjects by open rate (5k+ recipients): ' + topOpen.map(function(c){
+      return '"' + (c.subject || c.campaign_name || '').slice(0,80) + '" (' + fmtPct(c.open_rate) + ')';
+    }).join('; '));
+  }
+  var topRev = camps.filter(function(c){ return Number(c.recipients || 0) >= 5000; }).slice().sort(function(a,b){ return (b.revenue||0) - (a.revenue||0); }).slice(0, 3);
+  if (topRev.length) {
+    lines.push('Top 3 subjects by revenue (5k+ recipients): ' + topRev.map(function(c){
+      return '"' + (c.subject || c.campaign_name || '').slice(0,80) + '" (' + fmtMoney(c.revenue) + ')';
+    }).join('; '));
+  }
+
+  // Top segments by RPR
+  var bySeg = {};
+  camps.forEach(function(c){
+    var s = c.segment || 'Unknown';
+    if (!bySeg[s]) bySeg[s] = [];
+    if (c.revenue_per_recipient !== null) bySeg[s].push(Number(c.revenue_per_recipient));
+  });
+  var segs = Object.keys(bySeg).map(function(s){ return { s: s, avg: mean(bySeg[s]), n: bySeg[s].length }; }).filter(function(x){ return x.n >= 3 && x.avg !== null; });
+  segs.sort(function(a,b){ return b.avg - a.avg; });
+  if (segs.length) {
+    var topSegs = segs.slice(0, 3).map(function(x){ return x.s + ' ($' + x.avg.toFixed(3) + ', ' + x.n + ' sends)'; });
+    lines.push('Top segments by revenue per recipient: ' + topSegs.join('; '));
+  }
+  return lines.join('\n');
+}
 
 // Init
 loadEmails();
