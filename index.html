@@ -2656,7 +2656,7 @@ window.extractPatterns = async function() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 4000,
+        max_tokens: 6000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
@@ -2673,14 +2673,40 @@ window.extractPatterns = async function() {
     // Find first [ and last ] to be safe
     var first = text.indexOf('[');
     var last = text.lastIndexOf(']');
-    if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
-    var jsonStr = text.substring(first, last + 1);
+    if (first === -1) throw new Error('Response did not start with a JSON array');
+    var jsonStr;
     var patterns;
-    try {
-      patterns = JSON.parse(jsonStr);
-    } catch (pe) {
-      console.error('JSON parse error. Raw:', jsonStr);
-      throw new Error('Could not parse model response as JSON. See console.');
+    if (last !== -1) {
+      jsonStr = text.substring(first, last + 1);
+      try { patterns = JSON.parse(jsonStr); } catch (pe1) { patterns = null; }
+    }
+    // Fallback: response was truncated. Salvage complete objects by counting braces.
+    if (!patterns) {
+      var body = text.substring(first + 1);
+      var depth = 0, inString = false, escape = false, lastComplete = -1;
+      for (var ci = 0; ci < body.length; ci++) {
+        var ch = body[ci];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') { depth--; if (depth === 0) lastComplete = ci; }
+      }
+      if (lastComplete > 0) {
+        var repaired = '[' + body.substring(0, lastComplete + 1) + ']';
+        try {
+          patterns = JSON.parse(repaired);
+          status.textContent = 'Response was truncated. Salvaged ' + patterns.length + ' complete patterns.';
+        } catch (pe2) {
+          console.error('Repair parse error. Repaired:', repaired);
+          console.error('Original text:', text);
+          throw new Error('Could not parse or repair model response. See console.');
+        }
+      } else {
+        console.error('Raw response:', text);
+        throw new Error('Could not parse model response as JSON. See console.');
+      }
     }
     if (!Array.isArray(patterns) || !patterns.length) throw new Error('Response had no patterns');
 
@@ -3157,7 +3183,7 @@ window.extractFlowDiagnostics = async function() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 5000,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
@@ -3172,14 +3198,52 @@ window.extractFlowDiagnostics = async function() {
     text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     var first = text.indexOf('[');
     var last = text.lastIndexOf(']');
-    if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
-    var jsonStr = text.substring(first, last + 1);
+    if (first === -1) throw new Error('Response did not start with a JSON array');
+    var jsonStr;
     var diagnoses;
-    try {
-      diagnoses = JSON.parse(jsonStr);
-    } catch (pe) {
-      console.error('JSON parse error. Raw:', jsonStr);
-      throw new Error('Could not parse model response as JSON. See console.');
+    // First try the standard parse
+    if (last !== -1) {
+      jsonStr = text.substring(first, last + 1);
+      try {
+        diagnoses = JSON.parse(jsonStr);
+      } catch (pe1) {
+        diagnoses = null;
+      }
+    }
+    // Fallback: response was truncated (no closing ]). Salvage complete objects.
+    if (!diagnoses) {
+      var body = text.substring(first + 1);
+      // Find the last complete object boundary by counting braces
+      var depth = 0;
+      var inString = false;
+      var escape = false;
+      var lastComplete = -1;
+      for (var ci = 0; ci < body.length; ci++) {
+        var ch = body[ci];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) lastComplete = ci;
+        }
+      }
+      if (lastComplete > 0) {
+        var repaired = '[' + body.substring(0, lastComplete + 1) + ']';
+        try {
+          diagnoses = JSON.parse(repaired);
+          status.textContent = 'Response was truncated. Salvaged ' + diagnoses.length + ' complete diagnoses.';
+        } catch (pe2) {
+          console.error('Repair parse error. Repaired:', repaired);
+          console.error('Original text:', text);
+          throw new Error('Could not parse or repair model response. See console.');
+        }
+      } else {
+        console.error('Raw response:', text);
+        throw new Error('Could not parse model response as JSON. See console.');
+      }
     }
     if (!Array.isArray(diagnoses) || !diagnoses.length) throw new Error('Response had no diagnoses');
 
