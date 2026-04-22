@@ -353,6 +353,13 @@
     .diag-card .ab-hint { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; background: #fdecd8; padding: 10px 12px; border-radius: 6px; border-left: 2px solid var(--gg-orange); margin-top: 8px; }
     .diag-card .ab-hint strong { color: #8c3d0d; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
     .scope-chip { font-size: 9px; color: var(--q-muted); background: transparent; border: 0.5px solid var(--q-line); padding: 2px 8px; border-radius: 10px; text-transform: lowercase; }
+    .flow-status-pill { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .flow-status-live { background: #e4eedc; color: #2e5e2e; }
+    .flow-status-manual { background: #fdecd8; color: #8c3d0d; }
+    .flow-status-mixed { background: #f0eee6; color: var(--q-muted); }
+    .flow-status-draft { background: #f0eee6; color: var(--q-muted); }
+    .flow-status-cross { background: var(--gg-offwhite); color: var(--gg-olive); }
+    .flow-revisit-pill { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: lowercase; background: #fff1e6; color: var(--gg-orange); border: 0.5px dashed var(--gg-orange); cursor: help; }
 
     /* RESPONSIVE */
     @media (max-width: 900px) {
@@ -653,11 +660,17 @@
                 <li><strong>Monitor.</strong> Worth watching. Not urgent but keep an eye on the trend.</li>
                 <li><strong>A/B test.</strong> A specific hypothesis worth testing. See the test hint inside the card.</li>
               </ul>
+              <div class="tip-section-title">Status and freshness pills</div>
+              <ul>
+                <li><strong>Live.</strong> Flow is auto-triggered and actively running.</li>
+                <li><strong>Manual.</strong> Flow requires someone to trigger it. Useful for seasonal or campaign-tied flows.</li>
+                <li><strong>Worth revisiting (orange).</strong> Flow name or messages suggest a newer version exists. Data may mix old and new. Check with SFH before acting.</li>
+              </ul>
               <div class="tip-section-title">Assessing a diagnosis</div>
               <ul>
                 <li><strong>Compare the recommendation to SFH voice.</strong> Dismiss if the fix suggests tactics that conflict with brand.</li>
                 <li><strong>Low delivered counts mean low confidence.</strong> A message with 50 deliveries is not a statistically sound signal.</li>
-                <li><strong>Flows with "Copy of" duplicates may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
+                <li><strong>Worth-revisiting flows may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
                 <li><strong>Star what you will act on.</strong> Session 3 idea and copy generators will use starred diagnoses as priorities.</li>
               </ul>
             </div>
@@ -2820,6 +2833,23 @@ function buildDiagnosticCard(d) {
     nameEl.className = 'flow-name';
     nameEl.textContent = d.flow_name;
     card.appendChild(nameEl);
+    // Status + worth_revisiting row
+    var statusRow = document.createElement('div');
+    statusRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:-2px;margin-bottom:4px;';
+    if (d.flow_status) {
+      var fs = document.createElement('span');
+      fs.className = 'flow-status-pill flow-status-' + d.flow_status;
+      fs.textContent = d.flow_status;
+      statusRow.appendChild(fs);
+    }
+    if (d.worth_revisiting) {
+      var wr = document.createElement('span');
+      wr.className = 'flow-revisit-pill';
+      wr.textContent = 'worth revisiting';
+      wr.title = 'Name or messages suggest a newer version exists. Check with the SFH team before acting.';
+      statusRow.appendChild(wr);
+    }
+    if (statusRow.children.length) card.appendChild(statusRow);
   }
 
   // Diagnosis
@@ -2964,10 +2994,36 @@ function buildFlowPayload(flows) {
     });
     // Only include flows with meaningful activity
     if (totalDelivered < 100) return;
+    // Determine flow-level status and freshness
+    var statuses = {};
+    msgs.forEach(function(m){
+      var s = (m.status || '').toLowerCase();
+      if (s) statuses[s] = (statuses[s] || 0) + 1;
+    });
+    var primaryStatus = 'live';
+    if (statuses.manual && !statuses.live) primaryStatus = 'manual';
+    else if (statuses.draft === msgs.length) primaryStatus = 'draft';
+    else if (statuses.manual) primaryStatus = 'mixed';
+
+    // Freshness signals
+    var legacyFlags = [];
+    var nameLower = name.toLowerCase();
+    if (/archived/i.test(name)) legacyFlags.push('name contains ARCHIVED');
+    if (/\(UPDATED?\)|update|2024 update|2025 update/i.test(name)) legacyFlags.push('name suggests a newer version exists');
+    if (/copy of/i.test(name)) legacyFlags.push('name starts with "Copy of" (likely a migration duplicate)');
+    var hasCopyOfMessage = msgs.some(function(m){ return /copy of/i.test(m.message_name || ''); });
+    if (hasCopyOfMessage) legacyFlags.push('contains "Copy of" messages alongside originals');
+    // Detect specific timestamps in name
+    if (/\d{4}-\d{2}-\d{2}|Mar \d+, 20\d{2}|Apr \d+, 20\d{2}|Jan \d+, 20\d{2}|Jul \d+, 20\d{2}|Aug \d+, 20\d{2}|Sept \d+, 20\d{2}|Oct \d+, 20\d{2}|Nov \d+, 20\d{2}|Dec \d+, 20\d{2}|Feb \d+, 20\d{2}|May \d+, 20\d{2}|Jun \d+, 20\d{2}/i.test(name)) {
+      legacyFlags.push('name includes a date stamp, may be a snapshot version');
+    }
+
     // Order messages by delivered desc so position is stable
     msgs.sort(function(a, b){ return (b.delivered || 0) - (a.delivered || 0); });
     flowSummaries.push({
       flow_name: name,
+      primary_status: primaryStatus,
+      legacy_flags: legacyFlags,
       message_count: msgs.length,
       total_delivered: totalDelivered,
       total_revenue: totalRevenue,
@@ -2976,6 +3032,7 @@ function buildFlowPayload(flows) {
       messages: msgs.map(function(m){
         return {
           name: m.message_name || m.subject || '(unnamed)',
+          status: m.status,
           delivered: Number(m.delivered || 0),
           open_rate: m.open_rate,
           click_rate: m.click_rate,
@@ -3002,10 +3059,16 @@ function formatFlowPayloadForPrompt(flows) {
   lines.push('');
   flows.forEach(function(f, i){
     lines.push('FLOW ' + (i + 1) + ': ' + f.flow_name);
+    var statusLine = '  STATUS: ' + f.primary_status;
+    if (f.legacy_flags && f.legacy_flags.length) {
+      statusLine += ' | LEGACY FLAGS: ' + f.legacy_flags.join('; ');
+    }
+    lines.push(statusLine);
     lines.push('  ' + f.message_count + ' messages | ' + Math.round(f.total_delivered).toLocaleString() + ' total delivered | $' + f.total_revenue.toFixed(2) + ' total revenue | avg open ' + (f.avg_open_rate || 0).toFixed(1) + '% | avg CTR ' + (f.avg_click_rate || 0).toFixed(2) + '%');
     f.messages.forEach(function(m, mi){
       var abFlag = m.has_ab_test ? ' [A/B tested]' : '';
-      lines.push('    msg ' + (mi + 1) + ' "' + (m.name || '').slice(0, 60) + '"' + abFlag + ' - delivered ' + Math.round(m.delivered).toLocaleString() + ', open ' + (m.open_rate || 0).toFixed(1) + '%, CTR ' + (m.click_rate || 0).toFixed(2) + '%, CTOR ' + (m.ctor || 0).toFixed(1) + '%, unsub ' + (m.unsub_rate || 0).toFixed(2) + '%, revenue $' + (m.revenue || 0).toFixed(2) + ', RPR $' + (m.rpr || 0).toFixed(3) + (m.channel && m.channel !== 'Email' ? ', channel ' + m.channel : ''));
+      var msgStatus = m.status && m.status !== f.primary_status ? ' [' + m.status + ']' : '';
+      lines.push('    msg ' + (mi + 1) + ' "' + (m.name || '').slice(0, 60) + '"' + msgStatus + abFlag + ' - delivered ' + Math.round(m.delivered).toLocaleString() + ', open ' + (m.open_rate || 0).toFixed(1) + '%, CTR ' + (m.click_rate || 0).toFixed(2) + '%, CTOR ' + (m.ctor || 0).toFixed(1) + '%, unsub ' + (m.unsub_rate || 0).toFixed(2) + '%, revenue $' + (m.revenue || 0).toFixed(2) + ', RPR $' + (m.rpr || 0).toFixed(3) + (m.channel && m.channel !== 'Email' ? ', channel ' + m.channel : ''));
     });
     lines.push('');
   });
@@ -3060,11 +3123,16 @@ window.extractFlowDiagnostics = async function() {
     + '- Mix severity levels. Aim for 20 to 30 percent fix_now, 30 percent opportunity, 20 percent test, 20 percent monitor.\n'
     + '- Each diagnosis must be specific. Reference the actual flow name and message when relevant.\n'
     + '- Look for: revenue leaks (high traffic low revenue), declining opens across sequence, flows that could be trimmed, flows that could be extended, messages with much higher CTR but low opens (hook problem), messages with high opens but low CTR (body problem), duplicates or "Copy of" messages suggesting migration issues, missing A/B tests on high-traffic messages.\n'
+    + '- Pay attention to STATUS and LEGACY FLAGS on each flow:\n'
+    + '  * If a flow has a status of manual, note that it requires team action to trigger, not automatic.\n'
+    + '  * If a flow has legacy flags like "newer version exists" or "Copy of" messages, flag the diagnosis as worth_revisiting=true and note in the evidence that the data may mix old and new versions.\n'
     + '- Include cross-flow observations too, not just per-flow.\n'
     + '- Avoid vague advice. "Test subject line variants" is useless. "Test a problem-first subject against current benefit-first, hypothesis open rate rises from 28% to 38%" is useful.\n\n'
     + 'EACH OBJECT MUST HAVE:\n'
     + '{\n'
     + '  "flow_name": "exact flow name from the data, or null if cross-flow",\n'
+    + '  "flow_status": "live | manual | mixed | draft | cross",\n'
+    + '  "worth_revisiting": true or false - true when legacy flags suggest data mixes old and new versions or the flow may already be archived,\n'
     + '  "scope": "flow | message | cross | structure",\n'
     + '  "diagnosis": "one-sentence finding stated plainly",\n'
     + '  "category": "revenue_leak | engagement | sequencing | hook | body | deliverability | structure | testing",\n'
@@ -3119,6 +3187,8 @@ window.extractFlowDiagnostics = async function() {
     var rows = diagnoses.map(function(d){
       return {
         flow_name: d.flow_name ? String(d.flow_name).slice(0, 200) : null,
+        flow_status: d.flow_status ? String(d.flow_status).slice(0, 20) : null,
+        worth_revisiting: !!d.worth_revisiting,
         scope: String(d.scope || 'flow').slice(0, 20),
         diagnosis: String(d.diagnosis || '').slice(0, 500),
         category: String(d.category || 'overall').slice(0, 50),
