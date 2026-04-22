@@ -935,6 +935,24 @@ function pickString(v) {
   return s === '' ? null : s;
 }
 
+// Audience classification.
+// Tags each uploaded row as "wholesale" or "consumer" based on name and list
+// patterns. Runs at upload time so monthly re-exports auto-tag consistently.
+function classifyAudience(name, list, flowName) {
+  var haystack = ((name || '') + ' ' + (flowName || '')).trim();
+  var listStr = list || '';
+  // Strong wholesale signals in name: WS/GG, WW/GG, GG/WS, GG/WW markers
+  if (/WS\/GG|WW\/GG|GG\/WS|GG\/WW/i.test(haystack)) return 'wholesale';
+  // Standalone word "WHOLESALE" anywhere in name
+  if (/\bWHOLESALE\b/i.test(haystack)) return 'wholesale';
+  // Flow name markers: explicit wholesale flows confirmed by Pia
+  if (/CrossFit Leads Reach Out|CrossFit Secondary Follow Up|NHL[\/\s]?PHATS|Orlando Gyms|West Coast \+ Midwest Account|\bbctest\b|MLB reach out|ASPDA/i.test(haystack)) return 'wholesale';
+  // List column: "GG - WS ..." or contains "wholesale" word
+  if (/^\s*GG\s*-\s*WS\b/i.test(listStr)) return 'wholesale';
+  if (/\bwholesale\b/i.test(listStr)) return 'wholesale';
+  return 'consumer';
+}
+
 function mapCampaignRow(headerMap, row) {
   function get(keys) {
     for (var i = 0; i < keys.length; i++) {
@@ -964,15 +982,17 @@ function mapCampaignRow(headerMap, row) {
   if (rpr === null && revenue !== null && recipients !== null && recipients > 0) {
     rpr = revenue / recipients;
   }
+  var campaignName = pickString(get(['campaign_name','name','campaign']));
+  var segment = pickString(get(['segment','list','audience','segments']));
   return {
-    campaign_name: pickString(get(['campaign_name','name','campaign'])),
+    campaign_name: campaignName,
     variant_name: pickString(get(['variant_name','variant'])),
     tags: pickString(get(['tags','tag'])),
     subject: pickString(get(['subject_line','subject','subject_a'])),
     preview: pickString(get(['preview_text','preview'])),
     send_time: pickString(get(['send_time','send_date','sent_at','scheduled_at'])),
     send_weekday: pickString(get(['send_weekday','weekday'])),
-    segment: pickString(get(['segment','list','audience','segments'])),
+    segment: segment,
     recipients: recipients,
     unique_placed_order: pickNumber(get(['unique_placed_order'])),
     placed_order_rate: pickNumber(get(['placed_order_rate'])),
@@ -994,7 +1014,8 @@ function mapCampaignRow(headerMap, row) {
     winning_variant: pickString(get(['winning_variant'])),
     click_to_open_rate: ctor,
     unsubscribe_rate: unsubRate,
-    revenue_per_recipient: rpr
+    revenue_per_recipient: rpr,
+    audience_type: classifyAudience(campaignName, segment, null)
   };
 }
 
@@ -1006,19 +1027,69 @@ function mapFlowRow(headerMap, row) {
     }
     return null;
   }
+  // Klaviyo flow export stores rates as decimals (0.5 = 50 percent),
+  // whereas the campaign export uses percentage strings (50%).
+  // Normalize everything to percentage-scale to match campaigns.
+  function asPct(v) {
+    var n = pickNumber(v);
+    if (n === null) return null;
+    // If value is clearly a decimal rate (0 to 1), convert to percentage.
+    // If it is already >= 1, assume it was exported as a percentage.
+    if (n > 0 && n <= 1) return n * 100;
+    return n;
+  }
+  var delivered = pickNumber(get(['delivered','successful_deliveries']));
+  var uniqueOpens = pickNumber(get(['unique_opens']));
+  var uniqueClicks = pickNumber(get(['unique_clicks']));
+  var revenue = pickNumber(get(['revenue','attributed_revenue']));
+  var openRate = asPct(get(['open_rate','unique_open_rate']));
+  var clickRate = asPct(get(['click_rate','ctr','unique_click_rate']));
+  var ctor = asPct(get(['click_to_open_rate','ctor']));
+  var unsubRate = asPct(get(['unsub_rate','unsubscribe_rate']));
+  var complaintRate = asPct(get(['complaint_rate','spam_complaints_rate']));
+  var bounceRate = asPct(get(['bounce_rate']));
+  var placedOrderRate = asPct(get(['placed_order_rate']));
+  var rpr = pickNumber(get(['revenue_per_recipient','rpr']));
+  // Compute CTOR if Klaviyo did not supply it (unique clicks / unique opens * 100)
+  if (ctor === null && uniqueClicks !== null && uniqueOpens !== null && uniqueOpens > 0) {
+    ctor = (uniqueClicks / uniqueOpens) * 100;
+  }
+  if (rpr === null && revenue !== null && delivered !== null && delivered > 0) {
+    rpr = revenue / delivered;
+  }
+  var flowName = pickString(get(['flow_name','flow']));
+  var messageName = pickString(get(['flow_message_name','message_name','message']));
   return {
-    flow_name: pickString(get(['flow_name','flow'])),
-    message_name: pickString(get(['message_name','message','flow_message_name'])),
+    flow_id: pickString(get(['flow_id'])),
+    flow_name: flowName,
+    flow_message_id: pickString(get(['flow_message_id','message_id'])),
+    message_name: messageName,
+    flow_message_channel: pickString(get(['flow_message_channel','channel','message_channel'])),
+    ab_test_name: pickString(get(['a_b_test_name','ab_test_name'])),
+    variant_name: pickString(get(['variant_name'])),
+    ab_test_dates: pickString(get(['a_b_test_dates','ab_test_dates'])),
+    winning_variant: pickString(get(['winning_variant'])),
+    status: pickString(get(['status'])),
     subject: pickString(get(['subject_line','subject'])),
     preview: pickString(get(['preview_text','preview'])),
     trigger: pickString(get(['trigger','flow_trigger'])),
-    recipients: pickNumber(get(['recipients','total_recipients','sent'])),
-    open_rate: pickNumber(get(['open_rate','unique_open_rate'])),
-    click_rate: pickNumber(get(['click_rate','ctr','unique_click_rate'])),
-    click_to_open_rate: pickNumber(get(['click_to_open_rate','ctor'])),
-    unsubscribe_rate: pickNumber(get(['unsubscribe_rate','unsub_rate'])),
-    revenue: pickNumber(get(['revenue','attributed_revenue'])),
-    revenue_per_recipient: pickNumber(get(['revenue_per_recipient','rpr']))
+    tags: pickString(get(['tags','tag'])),
+    delivered: delivered,
+    unique_opens: uniqueOpens,
+    unique_clicks: uniqueClicks,
+    placed_order: pickNumber(get(['placed_order','unique_placed_order'])),
+    placed_order_rate: placedOrderRate,
+    revenue: revenue,
+    open_rate: openRate,
+    click_rate: clickRate,
+    click_to_open_rate: ctor,
+    unsubscribe_rate: unsubRate,
+    complaint_rate: complaintRate,
+    bounce_rate: bounceRate,
+    revenue_per_recipient: rpr,
+    // Keep legacy field name for backward-compat with existing schema
+    recipients: delivered,
+    audience_type: classifyAudience(messageName, null, flowName)
   };
 }
 
@@ -1035,10 +1106,31 @@ async function processCSVFile(slot, file) {
       statusEl.textContent = 'File looks empty or has no data rows.';
       return;
     }
-    var headers = rows[0].map(normalizeHeader);
+    // Auto-detect header row: scan first 10 rows for one that contains a
+    // known marker column. Handles Klaviyo reports that prepend a title and
+    // period line, as well as plain CSVs that have the header on row 0.
+    var headerMarkers = slot === 'campaigns'
+      ? ['subject','campaign_name','open_rate','send_time']
+      : ['flow_name','flow_message_name','message_name','open_rate'];
+    var headerIdx = -1;
+    var scanLimit = Math.min(10, rows.length);
+    for (var rr = 0; rr < scanLimit; rr++) {
+      var candidate = rows[rr].map(normalizeHeader);
+      var hits = 0;
+      for (var m = 0; m < headerMarkers.length; m++) {
+        if (candidate.indexOf(headerMarkers[m]) !== -1) hits++;
+      }
+      if (hits >= 2) { headerIdx = rr; break; }
+    }
+    if (headerIdx === -1) {
+      statusEl.className = 'upload-status error';
+      statusEl.textContent = 'Could not find a header row. Expected columns like: ' + headerMarkers.join(', ');
+      return;
+    }
+    var headers = rows[headerIdx].map(normalizeHeader);
     var headerMap = {};
     headers.forEach(function(h, i){ headerMap[h] = i; });
-    var dataRows = rows.slice(1);
+    var dataRows = rows.slice(headerIdx + 1);
     var mapped = dataRows.map(function(r){
       return slot === 'campaigns' ? mapCampaignRow(headerMap, r) : mapFlowRow(headerMap, r);
     }).filter(function(obj){
@@ -1068,8 +1160,14 @@ async function processCSVFile(slot, file) {
       inserted += batch.length;
     }
 
+    var wsCount = 0;
+    var consumerCount = 0;
+    for (var m = 0; m < mapped.length; m++) {
+      if (mapped[m].audience_type === 'wholesale') wsCount++;
+      else consumerCount++;
+    }
     statusEl.className = 'upload-status success';
-    statusEl.textContent = 'Uploaded ' + inserted + ' rows from ' + file.name + '.';
+    statusEl.textContent = 'Uploaded ' + inserted + ' rows from ' + file.name + '. Tagged ' + consumerCount + ' consumer / ' + wsCount + ' wholesale.';
     countEl.textContent = inserted + ' rows';
     countEl.classList.remove('empty');
     showToast('Upload complete');
