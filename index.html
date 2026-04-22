@@ -605,19 +605,26 @@
               <button class="tip-widget-toggle" id="tip-patterns-toggle">Hide</button>
             </div>
             <div class="tip-widget-body">
+              <div class="tip-section-title">Confidence badges explained</div>
+              <ul>
+                <li><strong>High.</strong> 50+ supporting campaigns AND a strong effect (open rate delta 3+ pts, CTR 0.5+ pts, or RPR $0.05+). Act on these.</li>
+                <li><strong>Medium.</strong> 20 to 49 campaigns OR 50+ with a smaller effect. Worth acting on but validate first.</li>
+                <li><strong>Exploratory.</strong> Under 20 campaigns or weak effect. Treat as a hypothesis, not a conclusion.</li>
+                <li><strong>Calibration note.</strong> Badges are computed from sample size and effect size, not self-assessed. This prevents the AI from over-claiming on thin data.</li>
+              </ul>
               <div class="tip-section-title">Assessing a pattern</div>
               <ul>
-                <li><strong>Trust the numbers, not the narrative.</strong> Read the evidence field. If the numbers do not support the rule, dismiss it.</li>
-                <li><strong>Mind the confidence badge.</strong> Calibrated on sample size and effect magnitude. High means 50+ campaigns with a strong effect. Exploratory means small sample or weak effect, treat as a hypothesis.</li>
+                <li><strong>Trust the numbers, not the narrative.</strong> Read the evidence field. If numbers do not support the rule, dismiss it.</li>
                 <li><strong>Gut-check against brand.</strong> You know SFH better than the data. A pattern like "use urgency" might conflict with Ines voice. Dismiss when strategy and stats disagree.</li>
                 <li><strong>Check the example winners.</strong> If the 3 sample subject lines do not obviously demonstrate the rule, the pattern is likely overreaching.</li>
                 <li><strong>Watch for seasonal or segment bias.</strong> BFCM and highly engaged segments skew results. A pattern that leans on these is narrower than it looks.</li>
+                <li><strong>Specific predicted numbers are often decorative.</strong> Claude sometimes writes precise-looking forecasts like "lifts opens from 28% to 38%" that sound authoritative but are educated guesses. The direction is usually right; the magnitude is often fabricated.</li>
                 <li><strong>The pragmatic test.</strong> Would you confidently act on this in your next send? Yes, star it. No, dismiss it.</li>
               </ul>
               <div class="tip-section-title">When to re-run extraction</div>
               <ul>
                 <li><strong>Monthly, after new Klaviyo uploads.</strong> Fresh data can surface new patterns or strengthen existing ones. Make it part of your SFH reporting rhythm.</li>
-                <li><strong>When switching time ranges.</strong> All time shows foundational winners. Last 12 months shows current relevance. Last 90 days catches recent shifts. Each is a different analysis.</li>
+                <li><strong>When switching time ranges.</strong> All time shows foundational winners. Last 12 months shows current relevance. Last 90 days catches recent shifts.</li>
                 <li><strong>After a big launch or promo.</strong> Major campaigns can shift what is working. Re-extract to see what changed.</li>
                 <li><strong>Once is enough for a given range.</strong> Patterns save permanently in Supabase. You only re-run to analyze new data or a new time window.</li>
                 <li><strong>Compare All time vs Last 12 months.</strong> Patterns that show up in both are durable. Patterns only in one view are worth watching.</li>
@@ -660,6 +667,13 @@
                 <li><strong>Monitor.</strong> Worth watching. Not urgent but keep an eye on the trend.</li>
                 <li><strong>A/B test.</strong> A specific hypothesis worth testing. See the test hint inside the card.</li>
               </ul>
+              <div class="tip-section-title">Confidence badges explained</div>
+              <ul>
+                <li><strong>Message-scope.</strong> High needs 5,000+ deliveries. Medium needs 1,000 to 5,000. Below 1,000 is exploratory.</li>
+                <li><strong>Flow-scope.</strong> High needs 10,000+ total deliveries. Medium needs 2,000 to 10,000. Below is exploratory.</li>
+                <li><strong>Cross-flow or structural.</strong> High needs 15,000+ combined deliveries. Medium needs 3,000 to 15,000.</li>
+                <li><strong>Calibration note.</strong> Badges are computed deterministically from sample size, not self-assessed. A thin-sample diagnosis labeled exploratory may still have a correct observation, but the magnitude is not trustworthy.</li>
+              </ul>
               <div class="tip-section-title">Status and freshness pills</div>
               <ul>
                 <li><strong>Live.</strong> Flow is auto-triggered and actively running.</li>
@@ -669,9 +683,17 @@
               <div class="tip-section-title">Assessing a diagnosis</div>
               <ul>
                 <li><strong>Compare the recommendation to SFH voice.</strong> Dismiss if the fix suggests tactics that conflict with brand.</li>
-                <li><strong>Low delivered counts mean low confidence.</strong> Confidence is now calibrated on total deliveries. Message-level high needs 5k+ deliveries. Flow-level high needs 10k+. Below that it is medium or exploratory.</li>
+                <li><strong>A/B test predicted effects are often decorative.</strong> "Lifts conversion from 0 to 0.3%" sounds precise but is an educated guess. Trust the direction, treat the magnitude as approximate.</li>
                 <li><strong>Worth-revisiting flows may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
+                <li><strong>Structural recommendations need team review.</strong> Audits like "archive variants under 500 deliveries" may remove intentional segment-specific variants. Validate before auto-applying.</li>
                 <li><strong>Star what you will act on.</strong> Session 3 idea and copy generators will use starred diagnoses as priorities.</li>
+              </ul>
+              <div class="tip-section-title">When to re-run diagnosis</div>
+              <ul>
+                <li><strong>After monthly Klaviyo flow uploads.</strong> New data can surface new issues or strengthen existing ones.</li>
+                <li><strong>After you act on a recommendation.</strong> Wait for new data to accumulate, re-upload, then re-diagnose to see if the fix worked.</li>
+                <li><strong>After launching a new flow or restructuring.</strong> Once the new version has 2 to 3 weeks of data.</li>
+                <li><strong>Once is enough otherwise.</strong> Diagnoses save permanently. Re-running on unchanged data produces similar findings.</li>
               </ul>
             </div>
           </div>
