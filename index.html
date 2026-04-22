@@ -313,6 +313,8 @@
     .tip-widget-body li { position: relative; padding-left: 14px; }
     .tip-widget-body li::before { content: ''; position: absolute; left: 0; top: 10px; width: 5px; height: 5px; border-radius: 50%; background: var(--gg-olive); }
     .tip-widget-body strong { color: var(--gg-charcoal); font-weight: 600; }
+    .tip-section-title { font-size: 10px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.08em; margin: 2px 0 8px 0; }
+    .tip-section-title:not(:first-child) { margin-top: 16px; padding-top: 12px; border-top: 0.5px solid var(--q-line); }
     .tip-widget.collapsed .tip-widget-body { display: none; }
 
     .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
@@ -582,6 +584,7 @@
               <button class="tip-widget-toggle" id="tip-patterns-toggle">Hide</button>
             </div>
             <div class="tip-widget-body">
+              <div class="tip-section-title">Assessing a pattern</div>
               <ul>
                 <li><strong>Trust the numbers, not the narrative.</strong> Read the evidence field. If the numbers do not support the rule, dismiss it.</li>
                 <li><strong>Mind the confidence badge.</strong> High means 30 or more campaigns with strong effect. Exploratory means small sample, treat as a hypothesis.</li>
@@ -589,6 +592,15 @@
                 <li><strong>Check the example winners.</strong> If the 3 sample subject lines do not obviously demonstrate the rule, the pattern is likely overreaching.</li>
                 <li><strong>Watch for seasonal or segment bias.</strong> BFCM and highly engaged segments skew results. A pattern that leans on these is narrower than it looks.</li>
                 <li><strong>The pragmatic test.</strong> Would you confidently act on this in your next send? Yes, star it. No, dismiss it.</li>
+              </ul>
+              <div class="tip-section-title">When to re-run extraction</div>
+              <ul>
+                <li><strong>Monthly, after new Klaviyo uploads.</strong> Fresh data can surface new patterns or strengthen existing ones. Make it part of your SFH reporting rhythm.</li>
+                <li><strong>When switching time ranges.</strong> All time shows foundational winners. Last 12 months shows current relevance. Last 90 days catches recent shifts. Each is a different analysis.</li>
+                <li><strong>After a big launch or promo.</strong> Major campaigns can shift what is working. Re-extract to see what changed.</li>
+                <li><strong>Once is enough for a given range.</strong> Patterns save permanently in Supabase. You only re-run to analyze new data or a new time window.</li>
+                <li><strong>Compare All time vs Last 12 months.</strong> Patterns that show up in both are durable. Patterns only in one view are worth watching.</li>
+                <li><strong>Duplicates happen.</strong> Running extraction twice on the same range can produce similar patterns. Dismiss the dupes manually for now.</li>
               </ul>
             </div>
           </div>
