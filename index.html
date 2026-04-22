@@ -283,6 +283,48 @@
     .empty-hint { padding: 40px 20px; text-align: center; color: var(--q-muted); font-size: 12px; line-height: 1.6; }
     .empty-hint strong { color: var(--gg-charcoal); font-weight: 600; }
 
+    /* PATTERNS */
+    .patterns-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 14px; }
+    .patterns-head-left { flex: 1; min-width: 300px; }
+    .patterns-title { font-family: var(--font-head); font-size: 20px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; }
+    .patterns-sub { font-size: 12px; color: var(--q-muted); margin-top: 4px; line-height: 1.5; }
+    .patterns-head-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .patterns-range-select { padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 12px; background: #fff; font-family: var(--font-body); color: var(--gg-charcoal); }
+    .patterns-filter-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; }
+    .patterns-filter-btn { padding: 6px 12px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
+    .patterns-filter-btn.active { background: var(--gg-olive); color: #fff; }
+    .extract-btn { padding: 8px 16px; background: var(--gg-orange); color: #fff; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .extract-btn:hover { opacity: 0.9; }
+    .extract-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .extract-status { font-size: 12px; color: var(--q-muted); margin-bottom: 14px; line-height: 1.5; }
+    .extract-status.progress { color: var(--gg-orange); }
+    .extract-status.error { color: #a32d2d; }
+    .extract-status.success { color: #2e5e2e; }
+
+    .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+    .pattern-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px; position: relative; transition: border-color 0.15s; display: flex; flex-direction: column; gap: 10px; }
+    .pattern-card.starred { border-color: var(--gg-orange); border-width: 1px; }
+    .pattern-card.dismissed { opacity: 0.5; }
+    .pattern-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .pattern-category { font-size: 9px; font-weight: 700; color: var(--gg-olive); background: var(--gg-offwhite); padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .pattern-confidence { font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .confidence-high { background: #e4eedc; color: #2e5e2e; }
+    .confidence-medium { background: #fdf2de; color: #8a5a10; }
+    .confidence-exploratory { background: #f0eee6; color: var(--q-muted); }
+    .pattern-rule { font-size: 14px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.4; }
+    .pattern-evidence { font-size: 12px; color: var(--q-muted); line-height: 1.55; font-style: italic; }
+    .pattern-actionable { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; background: var(--gg-offwhite); padding: 10px 12px; border-radius: 6px; border-left: 2px solid var(--gg-olive); }
+    .pattern-actionable strong { font-weight: 600; color: var(--gg-olive); }
+    .pattern-winners { font-size: 11px; color: var(--q-muted); padding-top: 10px; border-top: 0.5px solid var(--q-line); }
+    .pattern-winners-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--q-muted); font-size: 10px; margin-bottom: 6px; }
+    .pattern-winners-list { display: flex; flex-direction: column; gap: 4px; }
+    .pattern-winner-item { font-style: italic; padding: 2px 0; color: var(--gg-charcoal); }
+    .pattern-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
+    .pattern-action-btn { flex: 1; padding: 6px 10px; border: 0.5px solid var(--q-line); background: #fff; border-radius: 6px; font-size: 11px; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); transition: all 0.12s; }
+    .pattern-action-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .pattern-action-btn.starred { background: var(--gg-orange); color: #fff; border-color: var(--gg-orange); }
+    .pattern-meta-footer { font-size: 10px; color: var(--q-muted); display: flex; gap: 10px; justify-content: space-between; }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .cal-layout { grid-template-columns: 1fr !important; }
@@ -388,6 +430,7 @@
     <div class="studio-wrap">
       <div class="studio-nav">
         <button class="studio-nav-btn active" onclick="setStudioSection('insights')" id="snav-insights">Insights</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('patterns')" id="snav-patterns">Patterns</button>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
         <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
         <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
@@ -498,6 +541,31 @@
         </div>
 
         <!-- IDEAS / DRAFT / GAPS / REFS placeholders -->
+        <div class="studio-section" id="studio-patterns">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Patterns</div>
+              <div class="patterns-sub">Learned rules extracted from your historical Klaviyo data. Star patterns you want the calendar and copy generators to prioritize.</div>
+            </div>
+            <div class="patterns-head-right">
+              <select class="patterns-range-select" id="patterns-range" onchange="onPatternsRangeChange()">
+                <option value="all">All time</option>
+                <option value="12mo" selected>Last 12 months</option>
+                <option value="ytd">Year to date</option>
+                <option value="90d">Last 90 days</option>
+              </select>
+              <div class="patterns-filter-toggle">
+                <button class="patterns-filter-btn active" onclick="setPatternsView('active')" id="pv-active">Active</button>
+                <button class="patterns-filter-btn" onclick="setPatternsView('starred')" id="pv-starred">Starred</button>
+                <button class="patterns-filter-btn" onclick="setPatternsView('dismissed')" id="pv-dismissed">Dismissed</button>
+              </div>
+              <button class="extract-btn" id="extract-btn" onclick="extractPatterns()">Extract patterns</button>
+            </div>
+          </div>
+          <div class="extract-status" id="extract-status">Click Extract patterns to analyze your campaigns and generate learned rules.</div>
+          <div class="pattern-grid" id="pattern-grid"></div>
+        </div>
+
         <div class="studio-section" id="studio-ideas">
           <div class="placeholder-card">
             <h2>Ideas</h2>
@@ -1469,13 +1537,14 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','ideas','draft','gaps','refs'].forEach(function(s){
+  ['insights','patterns','ideas','draft','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
     if (nav) nav.classList.toggle('active', s === section);
   });
   if (section === 'insights') loadInsightsIfNeeded();
+  if (section === 'patterns') showPatternsOnOpen();
 };
 
 window.setTimeRange = function(val) {
@@ -1990,6 +2059,548 @@ function buildStatsSummary(camps) {
   }
   return lines.join('\n');
 }
+
+// ── PATTERNS INTELLIGENCE ──────────────────────────────────────────────────
+
+var patternsView = 'active';  // active | starred | dismissed
+var patternsRange = '12mo';
+var patternsCache = null;
+var patternsLoadedAt = 0;
+
+window.onPatternsRangeChange = function() {
+  var sel = document.getElementById('patterns-range');
+  if (sel) patternsRange = sel.value;
+};
+
+window.setPatternsView = function(view) {
+  patternsView = view;
+  ['active','starred','dismissed'].forEach(function(v){
+    var el = document.getElementById('pv-' + v);
+    if (el) el.classList.toggle('active', v === view);
+  });
+  renderPatterns();
+};
+
+async function loadPatterns(force) {
+  if (!force && patternsCache && (Date.now() - patternsLoadedAt) < 30000) return;
+  var res = await db.from('quill_patterns').select('*').order('extracted_at', { ascending: false });
+  if (res.error) {
+    console.error('loadPatterns error', res.error);
+    return;
+  }
+  patternsCache = res.data || [];
+  patternsLoadedAt = Date.now();
+}
+
+async function showPatternsOnOpen() {
+  await loadPatterns(false);
+  renderPatterns();
+}
+
+function renderPatterns() {
+  var grid = document.getElementById('pattern-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!patternsCache || !patternsCache.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No patterns yet.</strong><br>Click Extract patterns to analyze your campaign history and generate learned rules.</div>';
+    return;
+  }
+  var filtered = patternsCache.filter(function(p){
+    if (patternsView === 'active') return p.active && !p.starred;
+    if (patternsView === 'starred') return p.active && p.starred;
+    if (patternsView === 'dismissed') return !p.active;
+    return true;
+  });
+  // Starred view: also include starred from active
+  if (patternsView === 'starred') {
+    filtered = patternsCache.filter(function(p){ return p.active && p.starred; });
+  } else if (patternsView === 'active') {
+    filtered = patternsCache.filter(function(p){ return p.active; });
+    // Starred first within active
+    filtered.sort(function(a, b){
+      if (a.starred && !b.starred) return -1;
+      if (b.starred && !a.starred) return 1;
+      return 0;
+    });
+  }
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">No patterns in this view.</div>';
+    return;
+  }
+  filtered.forEach(function(p){ grid.appendChild(buildPatternCard(p)); });
+}
+
+function buildPatternCard(p) {
+  var card = document.createElement('div');
+  card.className = 'pattern-card' + (p.starred ? ' starred' : '') + (p.active ? '' : ' dismissed');
+
+  var head = document.createElement('div');
+  head.className = 'pattern-card-head';
+  var cat = document.createElement('span');
+  cat.className = 'pattern-category';
+  cat.textContent = (p.category || 'pattern').replace(/_/g, ' ');
+  var conf = document.createElement('span');
+  var confClass = 'exploratory';
+  if (p.confidence === 'high') confClass = 'high';
+  else if (p.confidence === 'medium') confClass = 'medium';
+  conf.className = 'pattern-confidence confidence-' + confClass;
+  conf.textContent = p.confidence || 'exploratory';
+  head.appendChild(cat);
+  head.appendChild(conf);
+  card.appendChild(head);
+
+  var rule = document.createElement('div');
+  rule.className = 'pattern-rule';
+  rule.textContent = p.rule || '';
+  card.appendChild(rule);
+
+  if (p.evidence) {
+    var ev = document.createElement('div');
+    ev.className = 'pattern-evidence';
+    ev.textContent = p.evidence;
+    card.appendChild(ev);
+  }
+
+  if (p.actionable) {
+    var act = document.createElement('div');
+    act.className = 'pattern-actionable';
+    act.innerHTML = '<strong>Next step:</strong> ' + escapeHtml(p.actionable);
+    card.appendChild(act);
+  }
+
+  var winners = p.sample_winners;
+  if (typeof winners === 'string') {
+    try { winners = JSON.parse(winners); } catch(e) { winners = null; }
+  }
+  if (winners && Array.isArray(winners) && winners.length) {
+    var winBox = document.createElement('div');
+    winBox.className = 'pattern-winners';
+    var wlabel = document.createElement('div');
+    wlabel.className = 'pattern-winners-label';
+    wlabel.textContent = 'Example winners';
+    winBox.appendChild(wlabel);
+    var wlist = document.createElement('div');
+    wlist.className = 'pattern-winners-list';
+    winners.slice(0, 3).forEach(function(w){
+      var item = document.createElement('div');
+      item.className = 'pattern-winner-item';
+      item.textContent = '"' + w + '"';
+      wlist.appendChild(item);
+    });
+    winBox.appendChild(wlist);
+    card.appendChild(winBox);
+  }
+
+  var actions = document.createElement('div');
+  actions.className = 'pattern-actions';
+  if (p.active) {
+    var starBtn = document.createElement('button');
+    starBtn.className = 'pattern-action-btn' + (p.starred ? ' starred' : '');
+    starBtn.textContent = p.starred ? 'Starred' : 'Star';
+    starBtn.onclick = function(){ togglePatternStar(p.id); };
+    var dismissBtn = document.createElement('button');
+    dismissBtn.className = 'pattern-action-btn';
+    dismissBtn.textContent = 'Dismiss';
+    dismissBtn.onclick = function(){ dismissPattern(p.id); };
+    actions.appendChild(starBtn);
+    actions.appendChild(dismissBtn);
+  } else {
+    var restoreBtn = document.createElement('button');
+    restoreBtn.className = 'pattern-action-btn';
+    restoreBtn.textContent = 'Restore';
+    restoreBtn.onclick = function(){ restorePattern(p.id); };
+    actions.appendChild(restoreBtn);
+  }
+  card.appendChild(actions);
+
+  if (p.source_range || p.extracted_at) {
+    var footer = document.createElement('div');
+    footer.className = 'pattern-meta-footer';
+    var left = document.createElement('span');
+    left.textContent = 'From ' + (p.source_range || 'unknown range');
+    var right = document.createElement('span');
+    if (p.extracted_at) {
+      var d = new Date(p.extracted_at);
+      right.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    footer.appendChild(left);
+    footer.appendChild(right);
+    card.appendChild(footer);
+  }
+
+  return card;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+window.togglePatternStar = async function(id) {
+  var p = patternsCache.find(function(x){ return x.id === id; });
+  if (!p) return;
+  var newVal = !p.starred;
+  var res = await db.from('quill_patterns').update({ starred: newVal }).eq('id', id);
+  if (res.error) { showToast('Could not update pattern', true); return; }
+  p.starred = newVal;
+  renderPatterns();
+  showToast(newVal ? 'Pattern starred' : 'Pattern unstarred');
+};
+
+window.dismissPattern = async function(id) {
+  var res = await db.from('quill_patterns').update({ active: false, dismissed_at: new Date().toISOString() }).eq('id', id);
+  if (res.error) { showToast('Could not dismiss pattern', true); return; }
+  var p = patternsCache.find(function(x){ return x.id === id; });
+  if (p) { p.active = false; p.dismissed_at = new Date().toISOString(); }
+  renderPatterns();
+  showToast('Pattern dismissed');
+};
+
+window.restorePattern = async function(id) {
+  var res = await db.from('quill_patterns').update({ active: true, dismissed_at: null }).eq('id', id);
+  if (res.error) { showToast('Could not restore pattern', true); return; }
+  var p = patternsCache.find(function(x){ return x.id === id; });
+  if (p) { p.active = true; p.dismissed_at = null; }
+  renderPatterns();
+  showToast('Pattern restored');
+};
+
+// Meta-feature classifiers for subject lines.
+// These run client-side so Claude receives pre-tagged data instead of raw text.
+function classifySubjectMeta(subject) {
+  var s = String(subject || '');
+  var lower = s.toLowerCase();
+  return {
+    has_question: /\?/.test(s),
+    has_emoji: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(s),
+    has_number: /\d/.test(s),
+    has_urgency: /last chance|hurry|today only|ends|final|tonight|ending|limited time|don.t miss|only \d+/i.test(lower),
+    has_curiosity: /^why |^how |you.ll never|the one thing|secret|truth|nobody|most people/i.test(lower),
+    has_contrarian: /wrong|myth|stop |isn.t|aren.t|not what|think again|actually|really/i.test(lower),
+    has_percent_off: /\d+%\s*off|\d+%$/i.test(lower),
+    has_dollar: /\$\d/.test(s),
+    has_personal: /^your |for you|you.re/i.test(lower),
+    mentions_creatine: /creatine/i.test(lower),
+    mentions_omega: /omega|fish oil/i.test(lower),
+    mentions_magnesium: /magnesium|mg/i.test(lower) && /\bmg\b/i.test(lower),
+    mentions_nad: /nad\+?|nad\W/i.test(lower),
+    mentions_fuel: /\bfuel\b/i.test(lower),
+    mentions_recover: /recover|recovery/i.test(lower),
+    mentions_push: /\bpush\b/i.test(lower),
+    mentions_protein: /protein|whey/i.test(lower),
+    length_chars: s.length,
+    length_bucket: s.length < 30 ? 'short' : (s.length < 55 ? 'medium' : 'long'),
+    word_count: s.trim().split(/\s+/).filter(Boolean).length,
+    starts_with_verb: /^(get|shop|try|build|stop|start|meet|discover|learn|see|find|watch)/i.test(lower),
+    all_caps_words: (s.match(/\b[A-Z]{2,}\b/g) || []).length
+  };
+}
+
+function getPatternsRangeCutoff() {
+  if (patternsRange === 'all') return null;
+  var now = new Date();
+  if (patternsRange === 'ytd') return new Date(now.getFullYear(), 0, 1);
+  var days = { '90d': 90, '12mo': 365 }[patternsRange];
+  if (!days) return null;
+  var d = new Date(now); d.setDate(d.getDate() - days);
+  return d;
+}
+
+function buildPatternsPayload(campaigns) {
+  var cutoff = getPatternsRangeCutoff();
+  var rows = campaigns.filter(function(c){
+    if ((c.audience_type || 'consumer') !== 'consumer') return false;
+    if (!cutoff) return true;
+    if (!c.send_time) return false;
+    var d = new Date(c.send_time);
+    return !isNaN(d.getTime()) && d >= cutoff;
+  });
+
+  // Enrich each with meta
+  var enriched = rows.map(function(c){
+    var meta = classifySubjectMeta(c.subject);
+    var d = c.send_time ? new Date(c.send_time) : null;
+    var hour = d && !isNaN(d.getTime()) ? d.getHours() : null;
+    return {
+      subject: c.subject,
+      segment: c.segment,
+      weekday: c.send_weekday,
+      hour: hour,
+      recipients: Number(c.recipients || 0),
+      open_rate: c.open_rate,
+      click_rate: c.click_rate,
+      ctor: c.click_to_open_rate,
+      unsub: c.unsubscribe_rate,
+      revenue: Number(c.revenue || 0),
+      rpr: c.revenue_per_recipient,
+      meta: meta
+    };
+  });
+
+  // Compute meta-feature performance deltas
+  var allOpens = enriched.map(function(e){ return e.open_rate; }).filter(function(v){ return v !== null && !isNaN(v); });
+  var allCtr = enriched.map(function(e){ return e.click_rate; }).filter(function(v){ return v !== null && !isNaN(v); });
+  var allRpr = enriched.map(function(e){ return e.rpr; }).filter(function(v){ return v !== null && !isNaN(v); });
+  var baseOpen = mean(allOpens) || 0;
+  var baseCtr = mean(allCtr) || 0;
+  var baseRpr = mean(allRpr) || 0;
+
+  function metaSplit(key) {
+    var withF = enriched.filter(function(e){ return e.meta[key]; });
+    var withoutF = enriched.filter(function(e){ return !e.meta[key]; });
+    if (withF.length < 10 || withoutF.length < 10) return null;
+    var wOpen = mean(withF.map(function(e){ return e.open_rate; }).filter(function(v){ return v !== null; }));
+    var woOpen = mean(withoutF.map(function(e){ return e.open_rate; }).filter(function(v){ return v !== null; }));
+    var wCtr = mean(withF.map(function(e){ return e.click_rate; }).filter(function(v){ return v !== null; }));
+    var woCtr = mean(withoutF.map(function(e){ return e.click_rate; }).filter(function(v){ return v !== null; }));
+    var wRpr = mean(withF.map(function(e){ return e.rpr; }).filter(function(v){ return v !== null; }));
+    var woRpr = mean(withoutF.map(function(e){ return e.rpr; }).filter(function(v){ return v !== null; }));
+    return {
+      feature: key,
+      n_with: withF.length,
+      n_without: withoutF.length,
+      open_delta: (wOpen || 0) - (woOpen || 0),
+      ctr_delta: (wCtr || 0) - (woCtr || 0),
+      rpr_delta: (wRpr || 0) - (woRpr || 0),
+      open_with: wOpen, open_without: woOpen,
+      ctr_with: wCtr, ctr_without: woCtr,
+      rpr_with: wRpr, rpr_without: woRpr
+    };
+  }
+
+  var features = ['has_question','has_emoji','has_number','has_urgency','has_curiosity','has_contrarian','has_percent_off','has_dollar','has_personal','starts_with_verb',
+    'mentions_creatine','mentions_omega','mentions_magnesium','mentions_nad','mentions_fuel','mentions_recover','mentions_push','mentions_protein'];
+  var metaDeltas = features.map(metaSplit).filter(function(x){ return x !== null; });
+  // Only keep meaningful deltas (|open_delta| > 1.5% or |ctr_delta| > 0.3 or |rpr_delta| > 0.02)
+  metaDeltas = metaDeltas.filter(function(d){
+    return Math.abs(d.open_delta) > 1.5 || Math.abs(d.ctr_delta) > 0.3 || Math.abs(d.rpr_delta) > 0.02;
+  });
+
+  // Segment performance (top 8 with 10+ sends)
+  var bySeg = {};
+  enriched.forEach(function(e){
+    var s = e.segment || 'Unknown';
+    if (!bySeg[s]) bySeg[s] = [];
+    bySeg[s].push(e);
+  });
+  var segStats = Object.keys(bySeg).map(function(s){
+    var rows = bySeg[s];
+    return {
+      segment: s,
+      n: rows.length,
+      open: mean(rows.map(function(e){ return e.open_rate; }).filter(function(v){ return v !== null; })),
+      ctr: mean(rows.map(function(e){ return e.click_rate; }).filter(function(v){ return v !== null; })),
+      rpr: mean(rows.map(function(e){ return e.rpr; }).filter(function(v){ return v !== null; }))
+    };
+  }).filter(function(x){ return x.n >= 10; });
+  segStats.sort(function(a,b){ return (b.rpr || 0) - (a.rpr || 0); });
+
+  // Weekday performance
+  var byDay = {};
+  enriched.forEach(function(e){
+    if (!e.weekday) return;
+    if (!byDay[e.weekday]) byDay[e.weekday] = [];
+    byDay[e.weekday].push(e);
+  });
+  var dayStats = Object.keys(byDay).map(function(d){
+    return {
+      day: d,
+      n: byDay[d].length,
+      open: mean(byDay[d].map(function(e){ return e.open_rate; }).filter(function(v){ return v !== null; })),
+      ctr: mean(byDay[d].map(function(e){ return e.click_rate; }).filter(function(v){ return v !== null; })),
+      rpr: mean(byDay[d].map(function(e){ return e.rpr; }).filter(function(v){ return v !== null; }))
+    };
+  });
+
+  // Top 20 by open and top 20 by revenue (for Claude to extract subject patterns)
+  var qualifying = enriched.filter(function(e){ return e.recipients >= 5000; });
+  var topByOpen = qualifying.slice().sort(function(a,b){ return (b.open_rate||0) - (a.open_rate||0); }).slice(0, 20);
+  var topByRev = qualifying.slice().sort(function(a,b){ return (b.revenue||0) - (a.revenue||0); }).slice(0, 20);
+  var bottomByOpen = qualifying.slice().sort(function(a,b){ return (a.open_rate||0) - (b.open_rate||0); }).slice(0, 15);
+
+  return {
+    total_campaigns: enriched.length,
+    time_range: patternsRange,
+    baseline: { open: baseOpen, ctr: baseCtr, rpr: baseRpr },
+    meta_deltas: metaDeltas,
+    top_segments: segStats.slice(0, 8),
+    weekday: dayStats,
+    top_by_open: topByOpen.map(function(e){ return { subject: e.subject, open: e.open_rate, recipients: e.recipients, segment: e.segment }; }),
+    top_by_revenue: topByRev.map(function(e){ return { subject: e.subject, revenue: e.revenue, open: e.open_rate, ctr: e.click_rate, recipients: e.recipients }; }),
+    bottom_by_open: bottomByOpen.map(function(e){ return { subject: e.subject, open: e.open_rate, recipients: e.recipients }; })
+  };
+}
+
+function formatPayloadForPrompt(payload) {
+  var lines = [];
+  lines.push('Total consumer campaigns analyzed: ' + payload.total_campaigns);
+  lines.push('Time range: ' + payload.time_range);
+  lines.push('Baseline averages: open ' + payload.baseline.open.toFixed(2) + '%, CTR ' + payload.baseline.ctr.toFixed(2) + '%, RPR $' + payload.baseline.rpr.toFixed(4));
+  lines.push('');
+  lines.push('=== SUBJECT-LINE META-FEATURE DELTAS ===');
+  lines.push('(Each row: feature, with vs without, deltas in percentage points or dollars)');
+  payload.meta_deltas.forEach(function(d){
+    lines.push(d.feature + ': n=' + d.n_with + ' with / ' + d.n_without + ' without. '
+      + 'open ' + (d.open_with || 0).toFixed(1) + '% vs ' + (d.open_without || 0).toFixed(1) + '% (delta ' + (d.open_delta >= 0 ? '+' : '') + d.open_delta.toFixed(1) + '). '
+      + 'CTR ' + (d.ctr_with || 0).toFixed(2) + '% vs ' + (d.ctr_without || 0).toFixed(2) + '% (delta ' + (d.ctr_delta >= 0 ? '+' : '') + d.ctr_delta.toFixed(2) + '). '
+      + 'RPR $' + (d.rpr_with || 0).toFixed(3) + ' vs $' + (d.rpr_without || 0).toFixed(3) + ' (delta ' + (d.rpr_delta >= 0 ? '+$' : '-$') + Math.abs(d.rpr_delta).toFixed(3) + ').');
+  });
+  lines.push('');
+  lines.push('=== TOP SEGMENTS BY RPR (min 10 sends) ===');
+  payload.top_segments.forEach(function(s){
+    lines.push(s.segment + ': n=' + s.n + ', open ' + (s.open || 0).toFixed(1) + '%, CTR ' + (s.ctr || 0).toFixed(2) + '%, RPR $' + (s.rpr || 0).toFixed(3));
+  });
+  lines.push('');
+  lines.push('=== SEND DAY PERFORMANCE ===');
+  payload.weekday.forEach(function(d){
+    lines.push(d.day + ': n=' + d.n + ', open ' + (d.open || 0).toFixed(1) + '%, CTR ' + (d.ctr || 0).toFixed(2) + '%, RPR $' + (d.rpr || 0).toFixed(3));
+  });
+  lines.push('');
+  lines.push('=== TOP 20 SUBJECT LINES BY OPEN RATE (5k+ recipients) ===');
+  payload.top_by_open.forEach(function(e, i){
+    lines.push((i+1) + '. "' + e.subject + '" -- ' + (e.open || 0).toFixed(1) + '% open, ' + e.recipients + ' recipients, segment: ' + (e.segment || 'Unknown'));
+  });
+  lines.push('');
+  lines.push('=== TOP 20 SUBJECT LINES BY REVENUE (5k+ recipients) ===');
+  payload.top_by_revenue.forEach(function(e, i){
+    lines.push((i+1) + '. "' + e.subject + '" -- $' + (e.revenue || 0).toFixed(0) + ', open ' + (e.open || 0).toFixed(1) + '%, CTR ' + (e.ctr || 0).toFixed(2) + '%');
+  });
+  lines.push('');
+  lines.push('=== BOTTOM 15 SUBJECT LINES BY OPEN RATE (5k+ recipients) ===');
+  payload.bottom_by_open.forEach(function(e, i){
+    lines.push((i+1) + '. "' + e.subject + '" -- ' + (e.open || 0).toFixed(1) + '%');
+  });
+  return lines.join('\n');
+}
+
+window.extractPatterns = async function() {
+  var btn = document.getElementById('extract-btn');
+  var status = document.getElementById('extract-status');
+  if (!btn || !status) return;
+  btn.disabled = true;
+  var prevLabel = btn.textContent;
+  btn.textContent = 'Extracting...';
+
+  // Ensure we have campaign data
+  if (!insightsData.campaigns) {
+    status.className = 'extract-status progress';
+    status.textContent = 'Loading campaign data...';
+    await loadInsightsIfNeeded();
+  }
+  var camps = insightsData.campaigns || [];
+  if (!camps.length) {
+    status.className = 'extract-status error';
+    status.textContent = 'No campaign data found. Upload a Klaviyo CSV first.';
+    btn.disabled = false; btn.textContent = prevLabel;
+    return;
+  }
+
+  status.className = 'extract-status progress';
+  status.textContent = 'Pre-computing statistics and meta-features...';
+  var payload = buildPatternsPayload(camps);
+  if (payload.total_campaigns < 10) {
+    status.className = 'extract-status error';
+    status.textContent = 'Only ' + payload.total_campaigns + ' campaigns in this time range. Need at least 10 for meaningful patterns.';
+    btn.disabled = false; btn.textContent = prevLabel;
+    return;
+  }
+
+  status.textContent = 'Sending ' + payload.total_campaigns + ' campaigns to Claude for pattern extraction...';
+  var formatted = formatPayloadForPrompt(payload);
+
+  var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You extract learned rules from historical Klaviyo campaign performance data for SFH, a supplement brand. Your job is to find patterns that will make future emails perform better.';
+
+  var userPrompt = 'Analyze the data below and extract 10 to 15 learned patterns.\n\n'
+    + 'DATA:\n' + formatted + '\n\n'
+    + 'REQUIREMENTS:\n'
+    + '- Return a JSON array of 10 to 15 pattern objects. No preamble, no markdown, no code fences. Just the JSON array.\n'
+    + '- Mix of narrow and broad: about 60 percent narrow specific rules (question-based subjects on Tuesdays, mentions of specific ingredients), about 40 percent broad strategic rules (overall brand voice patterns, segment dynamics).\n'
+    + '- Minimum 10 supporting campaigns per pattern. Otherwise label confidence as exploratory.\n'
+    + '- Each pattern must reference specific numbers from the data. No vague claims.\n'
+    + '- Prioritize patterns with effect sizes that are actually meaningful (open rate deltas over 2 percent, CTR deltas over 0.3 percent, RPR deltas over $0.02).\n'
+    + '- Include bottom performers as lessons too (what to avoid).\n'
+    + '- Avoid obvious patterns like Tuesday wins. Focus on non-obvious findings.\n\n'
+    + 'EACH OBJECT MUST HAVE:\n'
+    + '{\n'
+    + '  "rule": "The finding stated plainly in one sentence. No hedging.",\n'
+    + '  "category": "subject_line | send_timing | segment | hook | length | ingredient | overall",\n'
+    + '  "confidence": "high | medium | exploratory",\n'
+    + '  "evidence": "specific numbers and sample sizes from the data",\n'
+    + '  "actionable": "one concrete thing to do with this next campaign",\n'
+    + '  "sample_winners": ["subject line 1", "subject line 2", "subject line 3"]\n'
+    + '}\n\n'
+    + 'VOICE RULES:\n'
+    + '- No em dashes\n'
+    + '- No hyperbolic words (critical, massive, exceptional, remarkable)\n'
+    + '- American English\n'
+    + '- Warm, sharp, senior consultant tone\n'
+    + '- Direct\n\n'
+    + 'Return ONLY the JSON array. Start with [ and end with ].';
+
+  try {
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(b){ if (b.type === 'text') text += b.text; });
+    }
+    if (!text) throw new Error('Empty response from model');
+    // Strip any accidental fences
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    // Find first [ and last ] to be safe
+    var first = text.indexOf('[');
+    var last = text.lastIndexOf(']');
+    if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
+    var jsonStr = text.substring(first, last + 1);
+    var patterns;
+    try {
+      patterns = JSON.parse(jsonStr);
+    } catch (pe) {
+      console.error('JSON parse error. Raw:', jsonStr);
+      throw new Error('Could not parse model response as JSON. See console.');
+    }
+    if (!Array.isArray(patterns) || !patterns.length) throw new Error('Response had no patterns');
+
+    status.textContent = 'Parsed ' + patterns.length + ' patterns. Saving to Supabase...';
+    var rows = patterns.map(function(p){
+      return {
+        rule: String(p.rule || '').slice(0, 500),
+        category: String(p.category || 'overall').slice(0, 50),
+        confidence: String(p.confidence || 'exploratory').slice(0, 20),
+        evidence: String(p.evidence || '').slice(0, 1000),
+        actionable: String(p.actionable || '').slice(0, 500),
+        sample_winners: Array.isArray(p.sample_winners) ? p.sample_winners.slice(0, 5) : [],
+        source_range: patternsRange,
+        active: true,
+        starred: false
+      };
+    });
+    var ins = await db.from('quill_patterns').insert(rows).select();
+    if (ins.error) throw new Error('Supabase insert failed: ' + ins.error.message);
+
+    status.className = 'extract-status success';
+    status.textContent = 'Extracted ' + rows.length + ' new patterns. Total in library: ' + ((patternsCache || []).length + rows.length) + '.';
+    await loadPatterns(true);
+    renderPatterns();
+    showToast('Patterns extracted');
+  } catch (err) {
+    console.error('Pattern extraction error', err);
+    status.className = 'extract-status error';
+    status.textContent = 'Something went wrong. ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+};
 
 // Init
 loadEmails();
