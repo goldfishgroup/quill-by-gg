@@ -301,6 +301,20 @@
     .extract-status.error { color: #a32d2d; }
     .extract-status.success { color: #2e5e2e; }
 
+    /* TIP WIDGET */
+    .tip-widget { background: #fff; border: 0.5px solid var(--q-line); border-left: 3px solid var(--gg-olive); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.7; }
+    .tip-widget-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 12px; }
+    .tip-widget-title { font-family: var(--font-head); font-weight: 600; font-size: 13px; color: var(--gg-olive); letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; }
+    .tip-widget-title::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gg-orange); }
+    .tip-widget-toggle { font-size: 11px; color: var(--q-muted); border: none; background: none; cursor: pointer; font-family: var(--font-body); padding: 0; }
+    .tip-widget-toggle:hover { color: var(--gg-charcoal); }
+    .tip-widget-body { margin-top: 10px; }
+    .tip-widget-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .tip-widget-body li { position: relative; padding-left: 14px; }
+    .tip-widget-body li::before { content: ''; position: absolute; left: 0; top: 10px; width: 5px; height: 5px; border-radius: 50%; background: var(--gg-olive); }
+    .tip-widget-body strong { color: var(--gg-charcoal); font-weight: 600; }
+    .tip-widget.collapsed .tip-widget-body { display: none; }
+
     .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
     .pattern-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px; position: relative; transition: border-color 0.15s; display: flex; flex-direction: column; gap: 10px; }
     .pattern-card.starred { border-color: var(--gg-orange); border-width: 1px; }
@@ -560,6 +574,22 @@
                 <button class="patterns-filter-btn" onclick="setPatternsView('dismissed')" id="pv-dismissed">Dismissed</button>
               </div>
               <button class="extract-btn" id="extract-btn" onclick="extractPatterns()">Extract patterns</button>
+            </div>
+          </div>
+          <div class="tip-widget" id="tip-patterns">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-patterns')">
+              <div class="tip-widget-title">How to read these patterns</div>
+              <button class="tip-widget-toggle" id="tip-patterns-toggle">Hide</button>
+            </div>
+            <div class="tip-widget-body">
+              <ul>
+                <li><strong>Trust the numbers, not the narrative.</strong> Read the evidence field. If the numbers do not support the rule, dismiss it.</li>
+                <li><strong>Mind the confidence badge.</strong> High means 30 or more campaigns with strong effect. Exploratory means small sample, treat as a hypothesis.</li>
+                <li><strong>Gut-check against brand.</strong> You know SFH better than the data. A pattern like "use urgency" might conflict with Ines voice. Dismiss when strategy and stats disagree.</li>
+                <li><strong>Check the example winners.</strong> If the 3 sample subject lines do not obviously demonstrate the rule, the pattern is likely overreaching.</li>
+                <li><strong>Watch for seasonal or segment bias.</strong> BFCM and highly engaged segments skew results. A pattern that leans on these is narrower than it looks.</li>
+                <li><strong>The pragmatic test.</strong> Would you confidently act on this in your next send? Yes, star it. No, dismiss it.</li>
+              </ul>
             </div>
           </div>
           <div class="extract-status" id="extract-status">Click Extract patterns to analyze your campaigns and generate learned rules.</div>
@@ -2602,9 +2632,35 @@ window.extractPatterns = async function() {
   }
 };
 
+window.toggleTipWidget = function(id) {
+  var widget = document.getElementById(id);
+  var toggle = document.getElementById(id + '-toggle');
+  if (!widget) return;
+  var collapsed = widget.classList.toggle('collapsed');
+  if (toggle) toggle.textContent = collapsed ? 'Show' : 'Hide';
+  try { localStorage.setItem('quill.tip.' + id, collapsed ? 'collapsed' : 'open'); } catch (e) {}
+};
+
+function initTipWidgets() {
+  var widgets = ['tip-patterns'];
+  widgets.forEach(function(id){
+    var widget = document.getElementById(id);
+    if (!widget) return;
+    try {
+      var state = localStorage.getItem('quill.tip.' + id);
+      if (state === 'collapsed') {
+        widget.classList.add('collapsed');
+        var toggle = document.getElementById(id + '-toggle');
+        if (toggle) toggle.textContent = 'Show';
+      }
+    } catch (e) {}
+  });
+}
+
 // Init
 loadEmails();
 refreshUploadCounts();
+initTipWidgets();
 
 });
 </script>
