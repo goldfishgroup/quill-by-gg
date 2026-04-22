@@ -943,19 +943,58 @@ function mapCampaignRow(headerMap, row) {
     }
     return null;
   }
+  var recipients = pickNumber(get(['recipients','total_recipients','sent']));
+  var uniqueOpens = pickNumber(get(['unique_opens']));
+  var uniqueClicks = pickNumber(get(['unique_clicks']));
+  var unsubscribes = pickNumber(get(['unsubscribes']));
+  var delivered = pickNumber(get(['successful_deliveries','delivered']));
+  var revenue = pickNumber(get(['revenue','total_revenue','attributed_revenue']));
+  var openRate = pickNumber(get(['open_rate','unique_open_rate','opens_unique_rate']));
+  var clickRate = pickNumber(get(['click_rate','ctr','unique_click_rate']));
+  var ctor = pickNumber(get(['click_to_open_rate','ctor']));
+  var unsubRate = pickNumber(get(['unsubscribe_rate','unsub_rate']));
+  var rpr = pickNumber(get(['revenue_per_recipient','rpr']));
+  // Compute derived metrics if Klaviyo did not include them directly
+  if (ctor === null && uniqueClicks !== null && uniqueOpens !== null && uniqueOpens > 0) {
+    ctor = (uniqueClicks / uniqueOpens) * 100;
+  }
+  if (unsubRate === null && unsubscribes !== null && delivered !== null && delivered > 0) {
+    unsubRate = (unsubscribes / delivered) * 100;
+  }
+  if (rpr === null && revenue !== null && recipients !== null && recipients > 0) {
+    rpr = revenue / recipients;
+  }
   return {
     campaign_name: pickString(get(['campaign_name','name','campaign'])),
+    variant_name: pickString(get(['variant_name','variant'])),
+    tags: pickString(get(['tags','tag'])),
     subject: pickString(get(['subject_line','subject','subject_a'])),
     preview: pickString(get(['preview_text','preview'])),
     send_time: pickString(get(['send_time','send_date','sent_at','scheduled_at'])),
+    send_weekday: pickString(get(['send_weekday','weekday'])),
     segment: pickString(get(['segment','list','audience','segments'])),
-    recipients: pickNumber(get(['recipients','total_recipients','sent'])),
-    open_rate: pickNumber(get(['open_rate','unique_open_rate','opens_unique_rate'])),
-    click_rate: pickNumber(get(['click_rate','ctr','unique_click_rate'])),
-    click_to_open_rate: pickNumber(get(['click_to_open_rate','ctor'])),
-    unsubscribe_rate: pickNumber(get(['unsubscribe_rate','unsub_rate'])),
-    revenue: pickNumber(get(['revenue','total_revenue','attributed_revenue'])),
-    revenue_per_recipient: pickNumber(get(['revenue_per_recipient','rpr']))
+    recipients: recipients,
+    unique_placed_order: pickNumber(get(['unique_placed_order'])),
+    placed_order_rate: pickNumber(get(['placed_order_rate'])),
+    revenue: revenue,
+    unique_opens: uniqueOpens,
+    open_rate: openRate,
+    total_opens: pickNumber(get(['total_opens'])),
+    unique_clicks: uniqueClicks,
+    click_rate: clickRate,
+    total_clicks: pickNumber(get(['total_clicks'])),
+    unsubscribes: unsubscribes,
+    spam_complaints: pickNumber(get(['spam_complaints'])),
+    spam_complaints_rate: pickNumber(get(['spam_complaints_rate'])),
+    successful_deliveries: delivered,
+    bounces: pickNumber(get(['bounces'])),
+    bounce_rate: pickNumber(get(['bounce_rate'])),
+    campaign_id: pickString(get(['campaign_id'])),
+    campaign_channel: pickString(get(['campaign_channel','channel'])),
+    winning_variant: pickString(get(['winning_variant'])),
+    click_to_open_rate: ctor,
+    unsubscribe_rate: unsubRate,
+    revenue_per_recipient: rpr
   };
 }
 
