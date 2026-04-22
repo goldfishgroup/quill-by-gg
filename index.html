@@ -341,6 +341,19 @@
     .pattern-action-btn.starred { background: var(--gg-orange); color: #fff; border-color: var(--gg-orange); }
     .pattern-meta-footer { font-size: 10px; color: var(--q-muted); display: flex; gap: 10px; justify-content: space-between; }
 
+    /* FLOW DIAGNOSTICS */
+    .severity-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .severity-fix_now { background: #fce4e4; color: #a32d2d; }
+    .severity-opportunity { background: var(--gg-lime); color: #3d4e0e; }
+    .severity-monitor { background: #f0eee6; color: var(--q-muted); }
+    .severity-test { background: #fdecd8; color: #8c3d0d; }
+    .diag-card .flow-label { font-size: 10px; font-weight: 600; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .diag-card .flow-name { font-size: 12px; font-weight: 600; color: var(--gg-olive); line-height: 1.3; margin-bottom: 6px; }
+    .diag-card .diag-recommendation { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; background: var(--gg-offwhite); padding: 10px 12px; border-radius: 6px; border-left: 2px solid var(--gg-olive); }
+    .diag-card .ab-hint { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; background: #fdecd8; padding: 10px 12px; border-radius: 6px; border-left: 2px solid var(--gg-orange); margin-top: 8px; }
+    .diag-card .ab-hint strong { color: #8c3d0d; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+    .scope-chip { font-size: 9px; color: var(--q-muted); background: transparent; border: 0.5px solid var(--q-line); padding: 2px 8px; border-radius: 10px; text-transform: lowercase; }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .cal-layout { grid-template-columns: 1fr !important; }
@@ -447,6 +460,7 @@
       <div class="studio-nav">
         <button class="studio-nav-btn active" onclick="setStudioSection('insights')" id="snav-insights">Insights</button>
         <button class="studio-nav-btn" onclick="setStudioSection('patterns')" id="snav-patterns">Patterns</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('flows')" id="snav-flows">Flow Diagnostics</button>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
         <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
         <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
@@ -606,6 +620,50 @@
           </div>
           <div class="extract-status" id="extract-status">Click Extract patterns to analyze your campaigns and generate learned rules.</div>
           <div class="pattern-grid" id="pattern-grid"></div>
+        </div>
+
+        <div class="studio-section" id="studio-flows">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Flow Diagnostics</div>
+              <div class="patterns-sub">Learned diagnoses for each active flow. Severity tags show what to fix now, grow, monitor, or test.</div>
+            </div>
+            <div class="patterns-head-right">
+              <div class="patterns-filter-toggle" style="flex-wrap:wrap">
+                <button class="patterns-filter-btn active" onclick="setFlowView('all')" id="fv-all">All</button>
+                <button class="patterns-filter-btn" onclick="setFlowView('fix_now')" id="fv-fix_now">Fix now</button>
+                <button class="patterns-filter-btn" onclick="setFlowView('opportunity')" id="fv-opportunity">Opportunity</button>
+                <button class="patterns-filter-btn" onclick="setFlowView('test')" id="fv-test">A/B test</button>
+                <button class="patterns-filter-btn" onclick="setFlowView('starred')" id="fv-starred">Starred</button>
+                <button class="patterns-filter-btn" onclick="setFlowView('dismissed')" id="fv-dismissed">Dismissed</button>
+              </div>
+              <button class="extract-btn" id="diag-extract-btn" onclick="extractFlowDiagnostics()">Diagnose flows</button>
+            </div>
+          </div>
+          <div class="tip-widget" id="tip-flows">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-flows')">
+              <div class="tip-widget-title">How to read flow diagnostics</div>
+              <button class="tip-widget-toggle" id="tip-flows-toggle">Hide</button>
+            </div>
+            <div class="tip-widget-body">
+              <div class="tip-section-title">Severity categories</div>
+              <ul>
+                <li><strong>Fix now.</strong> The flow or message is leaking revenue or reputation. Action this week.</li>
+                <li><strong>Opportunity.</strong> Room to grow this flow meaningfully. Schedule in the next sprint.</li>
+                <li><strong>Monitor.</strong> Worth watching. Not urgent but keep an eye on the trend.</li>
+                <li><strong>A/B test.</strong> A specific hypothesis worth testing. See the test hint inside the card.</li>
+              </ul>
+              <div class="tip-section-title">Assessing a diagnosis</div>
+              <ul>
+                <li><strong>Compare the recommendation to SFH voice.</strong> Dismiss if the fix suggests tactics that conflict with brand.</li>
+                <li><strong>Low delivered counts mean low confidence.</strong> A message with 50 deliveries is not a statistically sound signal.</li>
+                <li><strong>Flows with "Copy of" duplicates may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
+                <li><strong>Star what you will act on.</strong> Session 3 idea and copy generators will use starred diagnoses as priorities.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
+          <div class="pattern-grid" id="diag-grid"></div>
         </div>
 
         <div class="studio-section" id="studio-ideas">
@@ -1579,7 +1637,7 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','patterns','ideas','draft','gaps','refs'].forEach(function(s){
+  ['insights','patterns','flows','ideas','draft','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
@@ -1587,6 +1645,7 @@ window.setStudioSection = function(section) {
   });
   if (section === 'insights') loadInsightsIfNeeded();
   if (section === 'patterns') showPatternsOnOpen();
+  if (section === 'flows') showFlowDiagnosticsOnOpen();
 };
 
 window.setTimeRange = function(val) {
@@ -2653,8 +2712,446 @@ window.toggleTipWidget = function(id) {
   try { localStorage.setItem('quill.tip.' + id, collapsed ? 'collapsed' : 'open'); } catch (e) {}
 };
 
+// ── FLOW DIAGNOSTICS ───────────────────────────────────────────────────────
+
+var flowView = 'all';
+var diagnosticsCache = null;
+var diagnosticsLoadedAt = 0;
+
+window.setFlowView = function(view) {
+  flowView = view;
+  ['all','fix_now','opportunity','test','starred','dismissed'].forEach(function(v){
+    var el = document.getElementById('fv-' + v);
+    if (el) el.classList.toggle('active', v === view);
+  });
+  renderFlowDiagnostics();
+};
+
+async function loadFlowDiagnostics(force) {
+  if (!force && diagnosticsCache && (Date.now() - diagnosticsLoadedAt) < 30000) return;
+  var res = await db.from('quill_flow_diagnostics').select('*').order('extracted_at', { ascending: false });
+  if (res.error) {
+    console.error('loadFlowDiagnostics error', res.error);
+    return;
+  }
+  diagnosticsCache = res.data || [];
+  diagnosticsLoadedAt = Date.now();
+}
+
+async function showFlowDiagnosticsOnOpen() {
+  await loadFlowDiagnostics(false);
+  renderFlowDiagnostics();
+}
+
+function renderFlowDiagnostics() {
+  var grid = document.getElementById('diag-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!diagnosticsCache || !diagnosticsCache.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No diagnostics yet.</strong><br>Click Diagnose flows to analyze your active flow messages and generate recommendations.</div>';
+    return;
+  }
+  var filtered = diagnosticsCache.slice();
+  if (flowView === 'dismissed') {
+    filtered = filtered.filter(function(d){ return !d.active; });
+  } else if (flowView === 'starred') {
+    filtered = filtered.filter(function(d){ return d.active && d.starred; });
+  } else if (flowView === 'all') {
+    filtered = filtered.filter(function(d){ return d.active; });
+    // Sort: starred first, then by severity (fix_now > opportunity > test > monitor)
+    var sevOrder = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
+    filtered.sort(function(a, b){
+      if (a.starred !== b.starred) return a.starred ? -1 : 1;
+      return (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99);
+    });
+  } else {
+    // specific severity filter
+    filtered = filtered.filter(function(d){ return d.active && d.severity === flowView; });
+  }
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">No diagnostics in this view.</div>';
+    return;
+  }
+  filtered.forEach(function(d){ grid.appendChild(buildDiagnosticCard(d)); });
+}
+
+function buildDiagnosticCard(d) {
+  var card = document.createElement('div');
+  card.className = 'pattern-card diag-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed');
+
+  // Head: severity badge + scope + confidence
+  var head = document.createElement('div');
+  head.className = 'pattern-card-head';
+  var leftGroup = document.createElement('div');
+  leftGroup.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+  var sev = document.createElement('span');
+  var sevClass = 'monitor';
+  if (d.severity === 'fix_now') sevClass = 'fix_now';
+  else if (d.severity === 'opportunity') sevClass = 'opportunity';
+  else if (d.severity === 'test') sevClass = 'test';
+  sev.className = 'severity-badge severity-' + sevClass;
+  sev.textContent = (d.severity || 'monitor').replace(/_/g, ' ');
+  leftGroup.appendChild(sev);
+  if (d.scope) {
+    var scope = document.createElement('span');
+    scope.className = 'scope-chip';
+    scope.textContent = d.scope;
+    leftGroup.appendChild(scope);
+  }
+  head.appendChild(leftGroup);
+  if (d.confidence) {
+    var conf = document.createElement('span');
+    var confClass = 'exploratory';
+    if (d.confidence === 'high') confClass = 'high';
+    else if (d.confidence === 'medium') confClass = 'medium';
+    conf.className = 'pattern-confidence confidence-' + confClass;
+    conf.textContent = d.confidence;
+    head.appendChild(conf);
+  }
+  card.appendChild(head);
+
+  // Flow name
+  if (d.flow_name) {
+    var labelEl = document.createElement('div');
+    labelEl.className = 'flow-label';
+    labelEl.textContent = 'Flow';
+    card.appendChild(labelEl);
+    var nameEl = document.createElement('div');
+    nameEl.className = 'flow-name';
+    nameEl.textContent = d.flow_name;
+    card.appendChild(nameEl);
+  }
+
+  // Diagnosis
+  var diag = document.createElement('div');
+  diag.className = 'pattern-rule';
+  diag.textContent = d.diagnosis || '';
+  card.appendChild(diag);
+
+  // Evidence
+  if (d.evidence) {
+    var ev = document.createElement('div');
+    ev.className = 'pattern-evidence';
+    ev.textContent = d.evidence;
+    card.appendChild(ev);
+  }
+
+  // Recommendation
+  if (d.recommendation) {
+    var rec = document.createElement('div');
+    rec.className = 'diag-recommendation';
+    rec.innerHTML = '<strong style="font-weight:600;color:var(--gg-olive);">Recommendation:</strong> ' + escapeHtml(d.recommendation);
+    card.appendChild(rec);
+  }
+
+  // A/B test hint
+  if (d.ab_test_hint) {
+    var ab = document.createElement('div');
+    ab.className = 'ab-hint';
+    ab.innerHTML = '<strong>A/B test hypothesis</strong>' + escapeHtml(d.ab_test_hint);
+    card.appendChild(ab);
+  }
+
+  // Sample messages
+  var samples = d.sample_messages;
+  if (typeof samples === 'string') {
+    try { samples = JSON.parse(samples); } catch(e) { samples = null; }
+  }
+  if (samples && Array.isArray(samples) && samples.length) {
+    var sBox = document.createElement('div');
+    sBox.className = 'pattern-winners';
+    var sLabel = document.createElement('div');
+    sLabel.className = 'pattern-winners-label';
+    sLabel.textContent = 'Messages referenced';
+    sBox.appendChild(sLabel);
+    var sList = document.createElement('div');
+    sList.className = 'pattern-winners-list';
+    samples.slice(0, 3).forEach(function(s){
+      var item = document.createElement('div');
+      item.className = 'pattern-winner-item';
+      item.textContent = '"' + s + '"';
+      sList.appendChild(item);
+    });
+    sBox.appendChild(sList);
+    card.appendChild(sBox);
+  }
+
+  // Actions
+  var actions = document.createElement('div');
+  actions.className = 'pattern-actions';
+  if (d.active) {
+    var starBtn = document.createElement('button');
+    starBtn.className = 'pattern-action-btn' + (d.starred ? ' starred' : '');
+    starBtn.textContent = d.starred ? 'Starred' : 'Star';
+    starBtn.onclick = function(){ toggleDiagnosticStar(d.id); };
+    var dismissBtn = document.createElement('button');
+    dismissBtn.className = 'pattern-action-btn';
+    dismissBtn.textContent = 'Dismiss';
+    dismissBtn.onclick = function(){ dismissDiagnostic(d.id); };
+    actions.appendChild(starBtn);
+    actions.appendChild(dismissBtn);
+  } else {
+    var restoreBtn = document.createElement('button');
+    restoreBtn.className = 'pattern-action-btn';
+    restoreBtn.textContent = 'Restore';
+    restoreBtn.onclick = function(){ restoreDiagnostic(d.id); };
+    actions.appendChild(restoreBtn);
+  }
+  card.appendChild(actions);
+
+  if (d.extracted_at) {
+    var footer = document.createElement('div');
+    footer.className = 'pattern-meta-footer';
+    var left = document.createElement('span');
+    left.textContent = d.category || '';
+    var right = document.createElement('span');
+    var dt = new Date(d.extracted_at);
+    right.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    footer.appendChild(left);
+    footer.appendChild(right);
+    card.appendChild(footer);
+  }
+
+  return card;
+}
+
+window.toggleDiagnosticStar = async function(id) {
+  var d = diagnosticsCache.find(function(x){ return x.id === id; });
+  if (!d) return;
+  var newVal = !d.starred;
+  var res = await db.from('quill_flow_diagnostics').update({ starred: newVal }).eq('id', id);
+  if (res.error) { showToast('Could not update', true); return; }
+  d.starred = newVal;
+  renderFlowDiagnostics();
+  showToast(newVal ? 'Diagnosis starred' : 'Unstarred');
+};
+
+window.dismissDiagnostic = async function(id) {
+  var res = await db.from('quill_flow_diagnostics').update({ active: false, dismissed_at: new Date().toISOString() }).eq('id', id);
+  if (res.error) { showToast('Could not dismiss', true); return; }
+  var d = diagnosticsCache.find(function(x){ return x.id === id; });
+  if (d) { d.active = false; d.dismissed_at = new Date().toISOString(); }
+  renderFlowDiagnostics();
+  showToast('Diagnosis dismissed');
+};
+
+window.restoreDiagnostic = async function(id) {
+  var res = await db.from('quill_flow_diagnostics').update({ active: true, dismissed_at: null }).eq('id', id);
+  if (res.error) { showToast('Could not restore', true); return; }
+  var d = diagnosticsCache.find(function(x){ return x.id === id; });
+  if (d) { d.active = true; d.dismissed_at = null; }
+  renderFlowDiagnostics();
+  showToast('Diagnosis restored');
+};
+
+function buildFlowPayload(flows) {
+  // Group active flow messages by flow_name
+  var byFlow = {};
+  flows.forEach(function(f){
+    var name = f.flow_name || 'Unknown';
+    if (!byFlow[name]) byFlow[name] = [];
+    byFlow[name].push(f);
+  });
+
+  // Build per-flow summaries
+  var flowSummaries = [];
+  Object.keys(byFlow).forEach(function(name){
+    var msgs = byFlow[name];
+    var totalDelivered = 0, totalRevenue = 0;
+    msgs.forEach(function(m){
+      totalDelivered += Number(m.delivered || 0);
+      totalRevenue += Number(m.revenue || 0);
+    });
+    // Only include flows with meaningful activity
+    if (totalDelivered < 100) return;
+    // Order messages by delivered desc so position is stable
+    msgs.sort(function(a, b){ return (b.delivered || 0) - (a.delivered || 0); });
+    flowSummaries.push({
+      flow_name: name,
+      message_count: msgs.length,
+      total_delivered: totalDelivered,
+      total_revenue: totalRevenue,
+      avg_open_rate: msgs.reduce(function(s, m){ return s + (Number(m.open_rate || 0)); }, 0) / msgs.length,
+      avg_click_rate: msgs.reduce(function(s, m){ return s + (Number(m.click_rate || 0)); }, 0) / msgs.length,
+      messages: msgs.map(function(m){
+        return {
+          name: m.message_name || m.subject || '(unnamed)',
+          delivered: Number(m.delivered || 0),
+          open_rate: m.open_rate,
+          click_rate: m.click_rate,
+          ctor: m.click_to_open_rate,
+          unsub_rate: m.unsubscribe_rate,
+          revenue: Number(m.revenue || 0),
+          rpr: m.revenue_per_recipient,
+          channel: m.flow_message_channel,
+          has_ab_test: !!(m.ab_test_name && m.ab_test_name !== 'n/a')
+        };
+      })
+    });
+  });
+
+  // Sort by revenue desc
+  flowSummaries.sort(function(a, b){ return b.total_revenue - a.total_revenue; });
+  return flowSummaries;
+}
+
+function formatFlowPayloadForPrompt(flows) {
+  var lines = [];
+  lines.push('=== ACTIVE FLOWS WITH MESSAGE-LEVEL PERFORMANCE ===');
+  lines.push('(Top ' + flows.length + ' flows, minimum 100 total deliveries per flow)');
+  lines.push('');
+  flows.forEach(function(f, i){
+    lines.push('FLOW ' + (i + 1) + ': ' + f.flow_name);
+    lines.push('  ' + f.message_count + ' messages | ' + Math.round(f.total_delivered).toLocaleString() + ' total delivered | $' + f.total_revenue.toFixed(2) + ' total revenue | avg open ' + (f.avg_open_rate || 0).toFixed(1) + '% | avg CTR ' + (f.avg_click_rate || 0).toFixed(2) + '%');
+    f.messages.forEach(function(m, mi){
+      var abFlag = m.has_ab_test ? ' [A/B tested]' : '';
+      lines.push('    msg ' + (mi + 1) + ' "' + (m.name || '').slice(0, 60) + '"' + abFlag + ' - delivered ' + Math.round(m.delivered).toLocaleString() + ', open ' + (m.open_rate || 0).toFixed(1) + '%, CTR ' + (m.click_rate || 0).toFixed(2) + '%, CTOR ' + (m.ctor || 0).toFixed(1) + '%, unsub ' + (m.unsub_rate || 0).toFixed(2) + '%, revenue $' + (m.revenue || 0).toFixed(2) + ', RPR $' + (m.rpr || 0).toFixed(3) + (m.channel && m.channel !== 'Email' ? ', channel ' + m.channel : ''));
+    });
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+window.extractFlowDiagnostics = async function() {
+  var btn = document.getElementById('diag-extract-btn');
+  var status = document.getElementById('diag-status');
+  if (!btn || !status) return;
+  btn.disabled = true;
+  var prevLabel = btn.textContent;
+  btn.textContent = 'Diagnosing...';
+
+  if (!insightsData.flows) {
+    status.className = 'extract-status progress';
+    status.textContent = 'Loading flow data...';
+    await loadInsightsIfNeeded();
+  }
+  var rawFlows = (insightsData.flows || []).filter(function(f){
+    if ((f.audience_type || 'consumer') !== 'consumer') return false;
+    var st = (f.status || '').toLowerCase();
+    if (st === 'draft') return false;
+    return Number(f.delivered || 0) > 0;
+  });
+  if (rawFlows.length < 5) {
+    status.className = 'extract-status error';
+    status.textContent = 'Only ' + rawFlows.length + ' active flow messages available. Need more data to diagnose.';
+    btn.disabled = false; btn.textContent = prevLabel;
+    return;
+  }
+
+  status.className = 'extract-status progress';
+  status.textContent = 'Building per-flow payload...';
+  var flows = buildFlowPayload(rawFlows);
+  if (flows.length === 0) {
+    status.className = 'extract-status error';
+    status.textContent = 'No flows meet the 100 delivery threshold.';
+    btn.disabled = false; btn.textContent = prevLabel;
+    return;
+  }
+
+  status.textContent = 'Sending ' + flows.length + ' flows to Claude for diagnosis...';
+  var formatted = formatFlowPayloadForPrompt(flows);
+
+  var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven.';
+
+  var userPrompt = 'Analyze the flow data below and produce 10 to 20 diagnoses.\n\n'
+    + 'DATA:\n' + formatted + '\n\n'
+    + 'REQUIREMENTS:\n'
+    + '- Return a JSON array of 10 to 20 diagnosis objects. No preamble, no markdown, no code fences. Just the array.\n'
+    + '- Mix severity levels. Aim for 20 to 30 percent fix_now, 30 percent opportunity, 20 percent test, 20 percent monitor.\n'
+    + '- Each diagnosis must be specific. Reference the actual flow name and message when relevant.\n'
+    + '- Look for: revenue leaks (high traffic low revenue), declining opens across sequence, flows that could be trimmed, flows that could be extended, messages with much higher CTR but low opens (hook problem), messages with high opens but low CTR (body problem), duplicates or "Copy of" messages suggesting migration issues, missing A/B tests on high-traffic messages.\n'
+    + '- Include cross-flow observations too, not just per-flow.\n'
+    + '- Avoid vague advice. "Test subject line variants" is useless. "Test a problem-first subject against current benefit-first, hypothesis open rate rises from 28% to 38%" is useful.\n\n'
+    + 'EACH OBJECT MUST HAVE:\n'
+    + '{\n'
+    + '  "flow_name": "exact flow name from the data, or null if cross-flow",\n'
+    + '  "scope": "flow | message | cross | structure",\n'
+    + '  "diagnosis": "one-sentence finding stated plainly",\n'
+    + '  "category": "revenue_leak | engagement | sequencing | hook | body | deliverability | structure | testing",\n'
+    + '  "confidence": "high | medium | exploratory",\n'
+    + '  "severity": "fix_now | opportunity | monitor | test",\n'
+    + '  "evidence": "specific numbers and message names from the data",\n'
+    + '  "recommendation": "one concrete thing to do this week or next sprint",\n'
+    + '  "ab_test_hint": "specific test hypothesis with predicted effect - only if severity is test, otherwise null",\n'
+    + '  "sample_messages": ["message name 1", "message name 2"]\n'
+    + '}\n\n'
+    + 'VOICE RULES:\n'
+    + '- No em dashes\n'
+    + '- No hyperbolic words (critical, massive, exceptional, remarkable, severe, alarming)\n'
+    + '- American English\n'
+    + '- Warm, sharp, senior consultant tone\n'
+    + '- Direct\n\n'
+    + 'Return ONLY the JSON array. Start with [ and end with ].';
+
+  try {
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 5000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(b){ if (b.type === 'text') text += b.text; });
+    }
+    if (!text) throw new Error('Empty response from model');
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    var first = text.indexOf('[');
+    var last = text.lastIndexOf(']');
+    if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
+    var jsonStr = text.substring(first, last + 1);
+    var diagnoses;
+    try {
+      diagnoses = JSON.parse(jsonStr);
+    } catch (pe) {
+      console.error('JSON parse error. Raw:', jsonStr);
+      throw new Error('Could not parse model response as JSON. See console.');
+    }
+    if (!Array.isArray(diagnoses) || !diagnoses.length) throw new Error('Response had no diagnoses');
+
+    status.textContent = 'Parsed ' + diagnoses.length + ' diagnoses. Saving to Supabase...';
+    var rows = diagnoses.map(function(d){
+      return {
+        flow_name: d.flow_name ? String(d.flow_name).slice(0, 200) : null,
+        scope: String(d.scope || 'flow').slice(0, 20),
+        diagnosis: String(d.diagnosis || '').slice(0, 500),
+        category: String(d.category || 'overall').slice(0, 50),
+        confidence: String(d.confidence || 'exploratory').slice(0, 20),
+        severity: String(d.severity || 'monitor').slice(0, 20),
+        evidence: String(d.evidence || '').slice(0, 1000),
+        recommendation: String(d.recommendation || '').slice(0, 500),
+        ab_test_hint: d.ab_test_hint ? String(d.ab_test_hint).slice(0, 500) : null,
+        sample_messages: Array.isArray(d.sample_messages) ? d.sample_messages.slice(0, 5) : [],
+        active: true,
+        starred: false
+      };
+    });
+    var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
+    if (ins.error) throw new Error('Supabase insert failed: ' + ins.error.message);
+
+    status.className = 'extract-status success';
+    status.textContent = 'Extracted ' + rows.length + ' diagnoses across ' + flows.length + ' flows.';
+    await loadFlowDiagnostics(true);
+    renderFlowDiagnostics();
+    showToast('Diagnosis complete');
+  } catch (err) {
+    console.error('Flow diagnosis error', err);
+    status.className = 'extract-status error';
+    status.textContent = 'Something went wrong. ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+};
+
 function initTipWidgets() {
-  var widgets = ['tip-patterns'];
+  var widgets = ['tip-patterns','tip-flows'];
   widgets.forEach(function(id){
     var widget = document.getElementById(id);
     if (!widget) return;
