@@ -1,28 +1,1120 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quill by GG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quill by Goldfish Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { 
-      font-family: system-ui, sans-serif; 
-      background: #fafaf7; 
-      color: #32312f; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 100vh; 
-      margin: 0; 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gg-olive: #43471d;
+      --gg-orange: #e57442;
+      --gg-charcoal: #32312f;
+      --gg-lime: #ccea6c;
+      --gg-offwhite: #f7f4ee;
+      --q-bg: #fafaf7;
+      --q-soft: #e8e4d9;
+      --q-muted: #6b6a65;
+      --q-line: #ddd8ca;
+      --radius: 10px;
+      --font-head: 'Funnel Display', system-ui, sans-serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
     }
-    .wrap { text-align: center; }
-    h1 { font-weight: 600; color: #43471d; margin-bottom: 8px; }
-    p { color: #6b6a65; font-size: 14px; }
+    html { font-family: var(--font-body); background: var(--q-bg); color: var(--gg-charcoal); font-size: 14px; }
+    body { min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar {
+      background: #fff;
+      border-bottom: 0.5px solid var(--q-line);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gg-olive);
+      letter-spacing: -0.01em;
+      margin-right: 40px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-dot { width: 8px; height: 8px; background: var(--gg-orange); border-radius: 50%; display: inline-block; }
+    .logo-sub { color: var(--q-muted); font-weight: 400; font-size: 13px; font-family: var(--font-body); }
+    .tabs { display: flex; height: 100%; }
+    .tab-btn {
+      padding: 0 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--q-muted);
+      border-bottom: 2px solid transparent;
+      height: 100%;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+      letter-spacing: 0.01em;
+    }
+    .tab-btn.active { color: var(--gg-olive); border-bottom-color: var(--gg-olive); }
+    .tab-btn:hover:not(.active) { color: var(--gg-charcoal); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .client-pill {
+      font-size: 11px;
+      color: var(--gg-olive);
+      background: var(--gg-offwhite);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .sync-indicator { font-size: 11px; color: var(--q-muted); display: flex; align-items: center; gap: 6px; }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #b4b2a9; }
+    .sync-dot.syncing { background: #e8a030; animation: pulse 1s infinite; }
+    .sync-dot.synced { background: #4b9e4b; }
+    .sync-dot.error { background: #a32d2d; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* MAIN */
+    .main { padding: 28px 32px; max-width: 1440px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* TOOLBAR */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .nav-btn { width: 30px; height: 30px; border: 0.5px solid var(--q-line); background: #fff; border-radius: 7px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--gg-charcoal); font-family: var(--font-body); }
+    .nav-btn:hover { background: var(--gg-offwhite); }
+    .month-label { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); min-width: 180px; letter-spacing: -0.01em; }
+    .view-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; }
+    .view-btn { padding: 6px 14px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
+    .view-btn.active { background: var(--gg-olive); color: #fff; }
+    .primary-btn { padding: 8px 18px; background: var(--gg-olive); color: #fff; border: none; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 500; font-family: var(--font-body); letter-spacing: 0.01em; }
+    .primary-btn:hover { opacity: 0.9; }
+    .accent-btn { padding: 8px 18px; background: var(--gg-orange); color: #fff; border: none; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: var(--font-body); }
+    .accent-btn:hover { opacity: 0.9; }
+    .ghost-btn { padding: 8px 16px; background: transparent; color: var(--gg-charcoal); border: 0.5px solid var(--q-line); border-radius: 7px; cursor: pointer; font-size: 12px; font-family: var(--font-body); }
+    .ghost-btn:hover { background: var(--gg-offwhite); }
+
+    /* FILTERS */
+    .filter-bar { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+    .filter-chip { padding: 5px 12px; border: 0.5px solid var(--q-line); border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--q-muted); background: #fff; transition: all 0.1s; font-family: var(--font-body); }
+    .filter-chip.active { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    .filter-label { font-size: 11px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; }
+
+    /* CALENDAR GRID */
+    .cal-grid { display: grid; grid-template-columns: repeat(7,minmax(130px,1fr)); border: 0.5px solid var(--q-line); border-radius: var(--radius); overflow: hidden; background: var(--q-line); gap: 0.5px; min-width: 910px; }
+    .cal-day-header { padding: 10px 8px; text-align: center; font-size: 10px; font-weight: 600; color: var(--q-muted); background: var(--gg-offwhite); letter-spacing: 0.08em; text-transform: uppercase; }
+    .cal-cell { min-height: 100px; padding: 8px; background: #fff; cursor: pointer; transition: background 0.1s; position: relative; }
+    .cal-cell:hover { background: #fdfcf7; }
+    .cal-cell.drag-over { background: #f4f0de; outline: 2px dashed var(--gg-olive); outline-offset: -2px; }
+    .cal-cell.faded { background: #f8f6f0; }
+    .cal-cell.today .cal-date-num { background: var(--gg-olive); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+    .cal-date { font-size: 11px; font-weight: 600; color: var(--q-muted); margin-bottom: 5px; }
+    .cal-chip { font-size: 10px; padding: 3px 8px; border-radius: 4px; margin-bottom: 3px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; line-height: 1.5; font-weight: 500; background: var(--gg-offwhite); color: var(--gg-charcoal); border-left: 2px solid var(--gg-olive); }
+    .cal-chip:hover { opacity: 0.85; }
+    .cal-chip.status-draft { border-left-color: #b4b2a9; }
+    .cal-chip.status-under-review { border-left-color: #e8a030; }
+    .cal-chip.status-approved { border-left-color: #4b9e4b; }
+    .cal-chip.status-sent { border-left-color: var(--gg-olive); background: #f4f0de; }
+    .draggable-chip { cursor: grab; }
+    .draggable-chip:active { cursor: grabbing; }
+
+    /* WAITING BAY */
+    .cal-waiting-bay { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px; position: sticky; top: 76px; max-height: calc(100vh - 100px); overflow-y: auto; }
+    .cal-bay-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 0.5px solid var(--q-line); }
+    .cal-bay-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: 0.01em; }
+    .cal-bay-count { font-size: 11px; color: var(--q-muted); background: var(--gg-offwhite); padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+    .cal-bay-body { min-height: 120px; padding: 4px 0; }
+    .cal-bay-body.bay-drag-over { background: #f4f0de; outline: 2px dashed var(--gg-olive); outline-offset: -2px; border-radius: 6px; }
+    .cal-bay-card { background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 7px; padding: 9px 11px; margin-bottom: 7px; cursor: grab; transition: all 0.15s; }
+    .cal-bay-card:hover { border-color: var(--gg-olive); }
+    .cal-bay-card.dragging { opacity: 0.4; }
+    .cal-bay-card-title { font-size: 12px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; line-height: 1.3; }
+    .cal-bay-card-meta { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--q-muted); }
+    .cal-bay-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .cal-bay-add { width: 100%; margin-top: 10px; padding: 8px; background: transparent; border: 0.5px dashed var(--q-line); border-radius: 7px; color: var(--q-muted); cursor: pointer; font-size: 11px; font-family: var(--font-body); }
+    .cal-bay-add:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+
+    /* LIST VIEW */
+    .list-wrap { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); overflow: hidden; }
+    .list-header, .list-row { display: grid; grid-template-columns: 100px 1fr 110px 120px 110px 100px; gap: 12px; padding: 11px 16px; align-items: center; }
+    .list-header { background: var(--gg-offwhite); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--q-muted); font-weight: 600; }
+    .list-row { border-top: 0.5px solid var(--q-line); font-size: 12px; cursor: pointer; transition: background 0.1s; }
+    .list-row:hover { background: #fdfcf7; }
+    .status-badge { font-size: 10px; padding: 3px 9px; border-radius: 10px; font-weight: 500; text-transform: capitalize; display: inline-flex; align-items: center; gap: 5px; }
+    .status-badge .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .sb-draft { background: #f0eee6; color: var(--q-muted); }
+    .sb-draft .status-dot { background: #b4b2a9; }
+    .sb-under-review { background: #fdf2de; color: #8a5a10; }
+    .sb-under-review .status-dot { background: #e8a030; }
+    .sb-approved { background: #e4eedc; color: #2e5e2e; }
+    .sb-approved .status-dot { background: #4b9e4b; }
+    .sb-sent { background: #f4f0de; color: var(--gg-olive); }
+    .sb-sent .status-dot { background: var(--gg-olive); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(50,49,47,0.35); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: var(--radius); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(50,49,47,0.2); }
+    .modal-head { padding: 18px 22px; border-bottom: 0.5px solid var(--q-line); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--q-muted); line-height: 1; padding: 4px 8px; font-family: var(--font-body); }
+    .modal-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-foot { padding: 16px 22px; border-top: 0.5px solid var(--q-line); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .field-label { font-size: 11px; font-weight: 600; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: block; }
+    .field-input, .field-select, .field-textarea { width: 100%; padding: 9px 11px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
+    .field-input:focus, .field-select:focus, .field-textarea:focus { outline: none; border-color: var(--gg-olive); }
+    .field-textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--gg-charcoal); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 12px; opacity: 0; transition: all 0.25s; z-index: 300; pointer-events: none; font-family: var(--font-body); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.showError { opacity: 1; transform: translateX(-50%) translateY(0); background: #a32d2d; }
+
+    /* KLAVIYO UPLOAD PANEL */
+    .upload-wrap { max-width: 900px; }
+    .upload-intro { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+    .upload-intro h2 { font-family: var(--font-head); font-size: 17px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 6px; letter-spacing: -0.01em; }
+    .upload-intro p { font-size: 13px; color: var(--q-muted); line-height: 1.6; }
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .upload-slot { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px; }
+    .upload-slot-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .upload-slot-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); }
+    .upload-slot-count { font-size: 11px; color: var(--gg-olive); background: var(--gg-offwhite); padding: 3px 9px; border-radius: 10px; font-weight: 500; }
+    .upload-slot-count.empty { color: var(--q-muted); background: var(--q-bg); }
+    .upload-drop { border: 1px dashed var(--q-line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: #fcfbf7; }
+    .upload-drop:hover { border-color: var(--gg-olive); background: var(--gg-offwhite); }
+    .upload-drop.drag-over { border-color: var(--gg-orange); background: #fff1e6; }
+    .upload-drop-label { font-size: 13px; color: var(--gg-charcoal); font-weight: 500; margin-bottom: 4px; }
+    .upload-drop-sub { font-size: 11px; color: var(--q-muted); }
+    .upload-file-input { display: none; }
+    .upload-status { margin-top: 14px; font-size: 12px; color: var(--q-muted); line-height: 1.6; }
+    .upload-status.success { color: #2e5e2e; }
+    .upload-status.error { color: #a32d2d; }
+    .upload-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+    /* STUDIO PLACEHOLDER */
+    .placeholder-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 40px 28px; text-align: center; max-width: 620px; margin: 0 auto; }
+    .placeholder-card h2 { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 8px; letter-spacing: -0.01em; }
+    .placeholder-card p { font-size: 13px; color: var(--q-muted); line-height: 1.7; }
+    .placeholder-card .session-note { margin-top: 14px; font-size: 11px; color: var(--gg-olive); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .cal-layout { grid-template-columns: 1fr !important; }
+      .upload-grid { grid-template-columns: 1fr; }
+      .main { padding: 20px 16px; }
+      .topbar { padding: 0 16px; }
+      .logo-sub { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Quill</h1>
-    <p>Setting up. Session 1 coming soon.</p>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Quill
+    <span class="logo-sub">by Goldfish Group</span>
   </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calendar')">Calendar</button>
+    <button class="tab-btn" onclick="switchTab('board')">Campaign Board</button>
+    <button class="tab-btn" onclick="switchTab('editor')">Campaign Editor</button>
+    <button class="tab-btn" onclick="switchTab('studio')">AI Studio</button>
+    <button class="tab-btn" onclick="switchTab('upload')">Klaviyo Data</button>
+  </div>
+  <div class="topbar-right">
+    <span class="client-pill">SFH</span>
+    <div class="sync-indicator">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncLabel">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content active">
+    <div class="toolbar">
+      <button class="nav-btn" onclick="navMonth(-1)">&#8249;</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="nav-btn" onclick="navMonth(1)">&#8250;</button>
+      <button class="ghost-btn" onclick="goToToday()">Today</button>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-cal" onclick="setCalView('month')">Month</button>
+          <button class="view-btn" id="vbtn-list" onclick="setCalView('list')">List</button>
+        </div>
+        <button class="primary-btn" onclick="openAddModal()">+ Add email</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="cal-filters">
+      <span class="filter-label">Status</span>
+      <button class="filter-chip active" onclick="toggleFilter(this,'all')">All</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'draft')">Draft</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'under-review')">Under Review</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'approved')">Approved</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'sent')">Sent</button>
+    </div>
+    <div class="cal-layout" style="display:grid;grid-template-columns:1fr 240px;gap:18px;align-items:start;">
+      <div id="month-view" style="overflow-x:auto;min-width:0;"><div class="cal-grid" id="calGrid"></div></div>
+      <div class="cal-waiting-bay" id="calWaitingBay">
+        <div class="cal-bay-header">
+          <span class="cal-bay-title">Waiting Bay</span>
+          <span class="cal-bay-count" id="calBayCount">0</span>
+        </div>
+        <div class="cal-bay-body" id="calBayList" ondragover="onBayDragOver(event)" ondragleave="onBayDragLeave(event)" ondrop="onBayDrop(event)"></div>
+        <button class="cal-bay-add" onclick="openAddModalBay()">+ Add idea</button>
+      </div>
+    </div>
+    <div id="list-view-wrap" style="display:none">
+      <div class="list-wrap">
+        <div class="list-header"><span>Date</span><span>Subject</span><span>Segment</span><span>Bucket</span><span>Type</span><span>Status</span></div>
+        <div id="listRows"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN BOARD TAB -->
+  <div id="tab-board" class="tab-content">
+    <div class="placeholder-card">
+      <h2>Campaign Board</h2>
+      <p>Kanban view across Waiting Bay, Draft, Under Review, Approved, and Sent. Filter by segment, content bucket, or send window. Click any card to jump into the Campaign Editor.</p>
+      <div class="session-note">Wiring up in Session 2</div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN EDITOR TAB -->
+  <div id="tab-editor" class="tab-content">
+    <div class="placeholder-card">
+      <h2>Campaign Editor</h2>
+      <p>Per-email workspace with Version A and Version B for subject lines, preview text, and body copy. Per-version feedback flags and notes feed the voice brief learning loop.</p>
+      <div class="session-note">Wiring up in Session 3</div>
+    </div>
+  </div>
+
+  <!-- AI STUDIO TAB -->
+  <div id="tab-studio" class="tab-content">
+    <div class="placeholder-card">
+      <h2>AI Studio</h2>
+      <p>Five sections: Ideas, Draft, Insights, Gaps, and References. Ideas and Draft generate new concepts and copy. Insights and Gaps analyze your Klaviyo data. References stores approved emails and brand docs.</p>
+      <div class="session-note">Wiring up across Sessions 2 and 3</div>
+    </div>
+  </div>
+
+  <!-- KLAVIYO UPLOAD TAB -->
+  <div id="tab-upload" class="tab-content">
+    <div class="upload-wrap">
+      <div class="upload-intro">
+        <h2>Klaviyo Data</h2>
+        <p>Upload your exported Klaviyo campaign performance CSV and flow message performance CSV. Quill reads every row to build per-email and per-message metrics for insights and gap analysis. Uploads replace the existing data for that slot.</p>
+      </div>
+      <div class="upload-grid">
+        <div class="upload-slot">
+          <div class="upload-slot-head">
+            <span class="upload-slot-title">Campaigns CSV</span>
+            <span class="upload-slot-count empty" id="campaignsCount">0 rows</span>
+          </div>
+          <label class="upload-drop" id="campaignsDrop" for="campaignsFile">
+            <div class="upload-drop-label">Drop CSV here or click to browse</div>
+            <div class="upload-drop-sub">Expected: subject, preview, send time, segment, open rate, CTR, CTOR, unsubscribe rate, revenue per recipient</div>
+            <input type="file" id="campaignsFile" class="upload-file-input" accept=".csv">
+          </label>
+          <div class="upload-status" id="campaignsStatus">No file uploaded yet.</div>
+          <div class="upload-actions">
+            <button class="ghost-btn" onclick="clearUpload('campaigns')">Clear</button>
+          </div>
+        </div>
+        <div class="upload-slot">
+          <div class="upload-slot-head">
+            <span class="upload-slot-title">Flow Messages CSV</span>
+            <span class="upload-slot-count empty" id="flowsCount">0 rows</span>
+          </div>
+          <label class="upload-drop" id="flowsDrop" for="flowsFile">
+            <div class="upload-drop-label">Drop CSV here or click to browse</div>
+            <div class="upload-drop-sub">Expected: flow name, message name, subject, trigger, open rate, CTR, CTOR, revenue per recipient</div>
+            <input type="file" id="flowsFile" class="upload-file-input" accept=".csv">
+          </label>
+          <div class="upload-status" id="flowsStatus">No file uploaded yet.</div>
+          <div class="upload-actions">
+            <button class="ghost-btn" onclick="clearUpload('flows')">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">Add email</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="field-label">Subject line / working title</label>
+        <input type="text" id="f-subject" class="field-input" placeholder="e.g. Most supplements arent what they claim">
+      </div>
+      <div>
+        <label class="field-label">Preview text</label>
+        <input type="text" id="f-preview" class="field-input" placeholder="Optional at this stage">
+      </div>
+      <div class="field-row">
+        <div>
+          <label class="field-label">Send date</label>
+          <input type="date" id="f-date" class="field-input">
+        </div>
+        <div>
+          <label class="field-label">Status</label>
+          <select id="f-status" class="field-select">
+            <option value="draft">Draft</option>
+            <option value="under-review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="sent">Sent</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label class="field-label">Content bucket</label>
+          <select id="f-bucket" class="field-select">
+            <option value="">None</option>
+            <option value="Education">Education</option>
+            <option value="Problem-Solution">Problem / Solution</option>
+            <option value="Stack Building">Stack Building</option>
+            <option value="Daily Performance">Daily Performance</option>
+            <option value="Trust / Transparency">Trust / Transparency</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Email type</label>
+          <select id="f-type" class="field-select">
+            <option value="Campaign">Campaign</option>
+            <option value="Flow">Flow</option>
+            <option value="Promo">Promo</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Segment</label>
+        <input type="text" id="f-segment" class="field-input" placeholder="e.g. All subscribers, Lapsed, New buyers">
+      </div>
+      <div>
+        <label class="field-label">Notes</label>
+        <textarea id="f-notes" class="field-textarea" placeholder="Angle, hook direction, reference emails, etc."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn" id="deleteBtn" onclick="deleteFromModal()" style="color:#a32d2d;display:none">Delete</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="ghost-btn" onclick="closeModal()">Cancel</button>
+        <button class="primary-btn" onclick="saveFromModal()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', function() {
+
+// Config
+var SUPABASE_URL = 'https://bjnfsgfulocyqhkvfjmr.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqbmZzZ2Z1bG9jeXFoa3Zmam1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MjE5NDEsImV4cCI6MjA4OTE5Nzk0MX0.hFvQgt8d_TDnVFdgSCHsJY6Cv_bWnZRndohPOE9yxzA';
+
+var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// State
+var emails = [];
+var currentYear = new Date().getFullYear();
+var currentMonth = new Date().getMonth();
+var calView = 'month';
+var activeFilter = 'all';
+var editingId = null;
+var dragEmailId = null;
+
+var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Sync status
+function setSyncStatus(state, label) {
+  var dot = document.getElementById('syncDot');
+  var lbl = document.getElementById('syncLabel');
+  if (!dot || !lbl) return;
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+function showToast(msg, isError) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? 'Error' : '');
+  setTimeout(function(){ t.className = 'toast'; }, 2200);
+}
+
+// Supabase IO
+async function loadEmails() {
+  setSyncStatus('syncing', 'Loading...');
+  var result = await db.from('quill_calendar').select('*').order('send_date', { ascending: true });
+  if (result.error) {
+    setSyncStatus('error', 'Load failed');
+    showToast('Could not load from Supabase. Check anon key.', true);
+    console.error('loadEmails error', result.error);
+    return;
+  }
+  emails = result.data || [];
+  setSyncStatus('synced', 'Saved');
+  renderCalendar();
+}
+
+async function upsertEmail(email) {
+  setSyncStatus('syncing', 'Saving...');
+  var id = email.id;
+  var fields = {};
+  Object.keys(email).forEach(function(k){ if (k !== 'id') fields[k] = email[k]; });
+  var result;
+  if (id && typeof id === 'number' && id > 0) {
+    result = await db.from('quill_calendar').update(fields).eq('id', id).select().single();
+  } else {
+    result = await db.from('quill_calendar').insert(fields).select().single();
+  }
+  if (result.error) {
+    setSyncStatus('error', 'Save failed');
+    showToast('Could not save. Check console.', true);
+    console.error('upsertEmail error', result.error);
+    return null;
+  }
+  setSyncStatus('synced', 'Saved');
+  return result.data;
+}
+
+async function deleteEmailFromDB(id) {
+  var result = await db.from('quill_calendar').delete().eq('id', id);
+  if (result.error) { showToast('Could not delete.', true); return false; }
+  return true;
+}
+
+// Tabs
+window.switchTab = function(t) {
+  var tabs = ['calendar','board','editor','studio','upload'];
+  var btns = document.querySelectorAll('.tab-btn');
+  tabs.forEach(function(n, i){
+    if (btns[i]) btns[i].classList.toggle('active', n === t);
+    var el = document.getElementById('tab-' + n);
+    if (el) el.classList.toggle('active', n === t);
+  });
+  if (t === 'upload') refreshUploadCounts();
+};
+
+// Calendar nav
+window.navMonth = function(d) {
+  currentMonth += d;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+};
+
+window.goToToday = function() {
+  var now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+  renderCalendar();
+};
+
+window.setCalView = function(v) {
+  calView = v;
+  document.getElementById('vbtn-cal').classList.toggle('active', v === 'month');
+  document.getElementById('vbtn-list').classList.toggle('active', v === 'list');
+  document.getElementById('month-view').style.display = v === 'month' ? 'block' : 'none';
+  document.getElementById('list-view-wrap').style.display = v === 'list' ? 'block' : 'none';
+  renderCalendar();
+};
+
+window.toggleFilter = function(el, f) {
+  activeFilter = f;
+  document.querySelectorAll('#cal-filters .filter-chip').forEach(function(c){
+    c.classList.remove('active');
+  });
+  el.classList.add('active');
+  renderCalendar();
+};
+
+// Filter helpers
+function emailMatchesFilter(e) {
+  if (activeFilter === 'all') return true;
+  return (e.status || 'draft') === activeFilter;
+}
+
+function filteredMonthEmails() {
+  return emails.filter(function(e){
+    if (!e.send_date) return false;
+    var d = new Date(e.send_date + 'T00:00:00');
+    var inMonth = d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    return inMonth && emailMatchesFilter(e);
+  });
+}
+
+// Render
+function renderCalendar() {
+  document.getElementById('monthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+  if (calView === 'month') renderMonthView();
+  else renderListView();
+  renderWaitingBay();
+}
+
+function renderMonthView() {
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  // Headers
+  DAYS.forEach(function(d){
+    var h = document.createElement('div');
+    h.className = 'cal-day-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+  var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  var prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+  var todayStr = new Date().toISOString().split('T')[0];
+
+  var monthEmails = filteredMonthEmails();
+
+  // Leading faded cells
+  for (var i = firstDay - 1; i >= 0; i--) {
+    var cell = document.createElement('div');
+    cell.className = 'cal-cell faded';
+    var dn = document.createElement('div');
+    dn.className = 'cal-date';
+    dn.textContent = (prevMonthDays - i);
+    cell.appendChild(dn);
+    grid.appendChild(cell);
+  }
+
+  for (var day = 1; day <= daysInMonth; day++) {
+    var ds = currentYear + '-' + String(currentMonth + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    var cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    cell.dataset.date = ds;
+    if (ds === todayStr) cell.classList.add('today');
+
+    var dateDiv = document.createElement('div');
+    dateDiv.className = 'cal-date';
+    var dateNum = document.createElement('span');
+    dateNum.className = 'cal-date-num';
+    dateNum.textContent = day;
+    dateDiv.appendChild(dateNum);
+    cell.appendChild(dateDiv);
+
+    var dayEmails = monthEmails.filter(function(e){ return e.send_date === ds; });
+    dayEmails.forEach(function(e){
+      var chip = document.createElement('div');
+      chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft');
+      chip.draggable = true;
+      chip.dataset.id = e.id;
+      chip.textContent = e.subject || 'Untitled';
+      chip.addEventListener('click', function(evt){
+        evt.stopPropagation();
+        openEditModal(e.id);
+      });
+      chip.addEventListener('dragstart', function(evt){ onChipDragStart(evt, e.id); });
+      chip.addEventListener('dragend', onChipDragEnd);
+      cell.appendChild(chip);
+    });
+
+    (function(dateStr, cellRef){
+      cellRef.addEventListener('click', function(evt){
+        if (evt.target === cellRef || evt.target === dateDiv || evt.target.classList.contains('cal-date-num')) {
+          openAddModalForDate(dateStr);
+        }
+      });
+      cellRef.addEventListener('dragover', onCellDragOver);
+      cellRef.addEventListener('dragleave', onCellDragLeave);
+      cellRef.addEventListener('drop', onCellDrop);
+    })(ds, cell);
+
+    grid.appendChild(cell);
+  }
+}
+
+function renderListView() {
+  var fe = filteredMonthEmails().sort(function(a,b){
+    return new Date(a.send_date) - new Date(b.send_date);
+  });
+  var rows = document.getElementById('listRows');
+  rows.innerHTML = '';
+  if (!fe.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:28px;text-align:center;color:#b4b2a9;font-size:12px;';
+    empty.textContent = 'No emails scheduled this month.';
+    rows.appendChild(empty);
+    return;
+  }
+  fe.forEach(function(e){
+    var row = document.createElement('div');
+    row.className = 'list-row';
+    var status = e.status || 'draft';
+    row.innerHTML = '<span style="font-size:12px;color:var(--q-muted)">' + (e.send_date || '') + '</span>'
+      + '<span style="font-weight:500">' + (e.subject || 'Untitled') + '</span>'
+      + '<span style="font-size:12px;color:var(--q-muted)">' + (e.segment || '') + '</span>'
+      + '<span style="font-size:12px;color:var(--q-muted)">' + (e.bucket || '') + '</span>'
+      + '<span style="font-size:12px;color:var(--q-muted)">' + (e.email_type || '') + '</span>'
+      + '<span><span class="status-badge sb-' + status + '"><span class="status-dot"></span>' + status.replace('-',' ') + '</span></span>';
+    (function(id){
+      row.addEventListener('click', function(){ openEditModal(id); });
+    })(e.id);
+    rows.appendChild(row);
+  });
+}
+
+function renderWaitingBay() {
+  var unscheduled = emails.filter(function(e){
+    return (!e.send_date || e.send_date === '') && emailMatchesFilter(e);
+  });
+  var countEl = document.getElementById('calBayCount');
+  var listEl = document.getElementById('calBayList');
+  if (!countEl || !listEl) return;
+  countEl.textContent = unscheduled.length;
+  listEl.innerHTML = '';
+  if (!unscheduled.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'font-size:11px;color:#b4b2a9;padding:14px 4px;text-align:center;line-height:1.6;';
+    empty.textContent = 'Drag an email here to unschedule, or click Add idea below.';
+    listEl.appendChild(empty);
+    return;
+  }
+  unscheduled.forEach(function(e){
+    var dotColors = { 'draft':'#b4b2a9','under-review':'#e8a030','approved':'#4b9e4b','sent':'#43471d' };
+    var status = e.status || 'draft';
+    var card = document.createElement('div');
+    card.className = 'cal-bay-card';
+    card.draggable = true;
+    card.dataset.id = e.id;
+    card.innerHTML = '<div class="cal-bay-card-title">' + (e.subject || 'Untitled') + '</div>'
+      + '<div class="cal-bay-card-meta">'
+      + '<span class="cal-bay-status-dot" style="background:' + dotColors[status] + '"></span>'
+      + '<span>' + status.replace('-',' ') + '</span>'
+      + (e.bucket ? '<span>&middot;</span><span>' + e.bucket + '</span>' : '')
+      + '</div>';
+    (function(id){
+      card.addEventListener('click', function(){ openEditModal(id); });
+      card.addEventListener('dragstart', function(evt){
+        dragEmailId = id;
+        evt.dataTransfer.effectAllowed = 'move';
+        evt.dataTransfer.setData('text/plain', String(id));
+        setTimeout(function(){ card.classList.add('dragging'); }, 0);
+      });
+      card.addEventListener('dragend', function(){ card.classList.remove('dragging'); });
+    })(e.id);
+    listEl.appendChild(card);
+  });
+}
+
+// Drag handlers
+function onChipDragStart(e, id) {
+  dragEmailId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(id));
+  setTimeout(function(){ e.target.style.opacity = '0.35'; }, 0);
+}
+
+function onChipDragEnd(e) {
+  e.target.style.opacity = '1';
+  document.querySelectorAll('.cal-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+}
+
+function onCellDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  this.classList.add('drag-over');
+}
+
+function onCellDragLeave(e) {
+  if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
+}
+
+async function onCellDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  var newDate = this.dataset.date;
+  if (!newDate || !dragEmailId) return;
+  var em = emails.find(function(x){ return x.id === dragEmailId; });
+  if (!em || em.send_date === newDate) { dragEmailId = null; return; }
+  em.send_date = newDate;
+  renderCalendar();
+  var saved = await upsertEmail(em);
+  if (saved) Object.assign(em, saved);
+  showToast('Moved to ' + newDate);
+  dragEmailId = null;
+}
+
+window.onBayDragOver = function(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.getElementById('calBayList').classList.add('bay-drag-over');
+};
+
+window.onBayDragLeave = function(e) {
+  var bay = document.getElementById('calBayList');
+  if (!bay.contains(e.relatedTarget)) bay.classList.remove('bay-drag-over');
+};
+
+window.onBayDrop = async function(e) {
+  e.preventDefault();
+  document.getElementById('calBayList').classList.remove('bay-drag-over');
+  if (!dragEmailId) return;
+  var em = emails.find(function(x){ return x.id === dragEmailId; });
+  if (!em) { dragEmailId = null; return; }
+  if (!em.send_date || em.send_date === '') { dragEmailId = null; return; }
+  em.send_date = null;
+  renderCalendar();
+  var saved = await upsertEmail(em);
+  if (saved) Object.assign(em, saved);
+  showToast('Moved to Waiting Bay');
+  dragEmailId = null;
+};
+
+// Modal
+window.openAddModal = function() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add email';
+  document.getElementById('deleteBtn').style.display = 'none';
+  clearModalFields();
+  var today = new Date();
+  document.getElementById('f-date').value = today.toISOString().split('T')[0];
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('f-subject').focus();
+};
+
+window.openAddModalForDate = function(dateStr) {
+  openAddModal();
+  document.getElementById('f-date').value = dateStr;
+};
+
+window.openAddModalBay = function() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add email to Waiting Bay';
+  document.getElementById('deleteBtn').style.display = 'none';
+  clearModalFields();
+  document.getElementById('f-date').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('f-subject').focus();
+};
+
+window.openEditModal = function(id) {
+  var em = emails.find(function(x){ return x.id === id; });
+  if (!em) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit email';
+  document.getElementById('deleteBtn').style.display = 'inline-block';
+  document.getElementById('f-subject').value = em.subject || '';
+  document.getElementById('f-preview').value = em.preview || '';
+  document.getElementById('f-date').value = em.send_date || '';
+  document.getElementById('f-status').value = em.status || 'draft';
+  document.getElementById('f-bucket').value = em.bucket || '';
+  document.getElementById('f-type').value = em.email_type || 'Campaign';
+  document.getElementById('f-segment').value = em.segment || '';
+  document.getElementById('f-notes').value = em.notes || '';
+  document.getElementById('modalOverlay').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+};
+
+function clearModalFields() {
+  document.getElementById('f-subject').value = '';
+  document.getElementById('f-preview').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-status').value = 'draft';
+  document.getElementById('f-bucket').value = '';
+  document.getElementById('f-type').value = 'Campaign';
+  document.getElementById('f-segment').value = '';
+  document.getElementById('f-notes').value = '';
+}
+
+window.saveFromModal = async function() {
+  var subject = document.getElementById('f-subject').value.trim();
+  if (!subject) { showToast('Subject is required', true); return; }
+  var payload = {
+    subject: subject,
+    preview: document.getElementById('f-preview').value.trim(),
+    send_date: document.getElementById('f-date').value || null,
+    status: document.getElementById('f-status').value,
+    bucket: document.getElementById('f-bucket').value,
+    email_type: document.getElementById('f-type').value,
+    segment: document.getElementById('f-segment').value.trim(),
+    notes: document.getElementById('f-notes').value.trim()
+  };
+  if (editingId) payload.id = editingId;
+  var saved = await upsertEmail(payload);
+  if (!saved) return;
+  if (editingId) {
+    var idx = emails.findIndex(function(x){ return x.id === editingId; });
+    if (idx > -1) emails[idx] = saved; else emails.push(saved);
+  } else {
+    emails.push(saved);
+  }
+  closeModal();
+  renderCalendar();
+  showToast('Saved');
+};
+
+window.deleteFromModal = async function() {
+  if (!editingId) return;
+  if (!confirm('Delete this email? This cannot be undone.')) return;
+  var ok = await deleteEmailFromDB(editingId);
+  if (!ok) return;
+  emails = emails.filter(function(x){ return x.id !== editingId; });
+  closeModal();
+  renderCalendar();
+  showToast('Deleted');
+};
+
+// ── KLAVIYO CSV UPLOAD ──────────────────────────────────────────────────────
+// Minimal CSV parser that handles quoted fields with commas
+function parseCSV(text) {
+  var rows = [];
+  var row = [];
+  var field = '';
+  var inQuotes = false;
+  var i = 0;
+  while (i < text.length) {
+    var ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i+1] === '"') { field += '"'; i += 2; continue; }
+      if (ch === '"') { inQuotes = false; i++; continue; }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQuotes = true; i++; continue; }
+    if (ch === ',') { row.push(field); field = ''; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += ch; i++;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(function(r){ return r.length > 1 || (r.length === 1 && r[0].trim() !== ''); });
+}
+
+function normalizeHeader(h) {
+  return String(h || '').toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+
+function pickNumber(v) {
+  if (v === null || v === undefined || v === '') return null;
+  var s = String(v).replace('%','').replace(/\$/g,'').replace(/,/g,'').trim();
+  var n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+function pickString(v) {
+  if (v === null || v === undefined) return null;
+  var s = String(v).trim();
+  return s === '' ? null : s;
+}
+
+function mapCampaignRow(headerMap, row) {
+  function get(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var idx = headerMap[keys[i]];
+      if (idx !== undefined && row[idx] !== undefined) return row[idx];
+    }
+    return null;
+  }
+  return {
+    campaign_name: pickString(get(['campaign_name','name','campaign'])),
+    subject: pickString(get(['subject_line','subject','subject_a'])),
+    preview: pickString(get(['preview_text','preview'])),
+    send_time: pickString(get(['send_time','send_date','sent_at','scheduled_at'])),
+    segment: pickString(get(['segment','list','audience','segments'])),
+    recipients: pickNumber(get(['recipients','total_recipients','sent'])),
+    open_rate: pickNumber(get(['open_rate','unique_open_rate','opens_unique_rate'])),
+    click_rate: pickNumber(get(['click_rate','ctr','unique_click_rate'])),
+    click_to_open_rate: pickNumber(get(['click_to_open_rate','ctor'])),
+    unsubscribe_rate: pickNumber(get(['unsubscribe_rate','unsub_rate'])),
+    revenue: pickNumber(get(['revenue','total_revenue','attributed_revenue'])),
+    revenue_per_recipient: pickNumber(get(['revenue_per_recipient','rpr']))
+  };
+}
+
+function mapFlowRow(headerMap, row) {
+  function get(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var idx = headerMap[keys[i]];
+      if (idx !== undefined && row[idx] !== undefined) return row[idx];
+    }
+    return null;
+  }
+  return {
+    flow_name: pickString(get(['flow_name','flow'])),
+    message_name: pickString(get(['message_name','message','flow_message_name'])),
+    subject: pickString(get(['subject_line','subject'])),
+    preview: pickString(get(['preview_text','preview'])),
+    trigger: pickString(get(['trigger','flow_trigger'])),
+    recipients: pickNumber(get(['recipients','total_recipients','sent'])),
+    open_rate: pickNumber(get(['open_rate','unique_open_rate'])),
+    click_rate: pickNumber(get(['click_rate','ctr','unique_click_rate'])),
+    click_to_open_rate: pickNumber(get(['click_to_open_rate','ctor'])),
+    unsubscribe_rate: pickNumber(get(['unsubscribe_rate','unsub_rate'])),
+    revenue: pickNumber(get(['revenue','attributed_revenue'])),
+    revenue_per_recipient: pickNumber(get(['revenue_per_recipient','rpr']))
+  };
+}
+
+async function processCSVFile(slot, file) {
+  var statusEl = document.getElementById(slot + 'Status');
+  var countEl = document.getElementById(slot + 'Count');
+  statusEl.className = 'upload-status';
+  statusEl.textContent = 'Reading ' + file.name + '...';
+  try {
+    var text = await file.text();
+    var rows = parseCSV(text);
+    if (rows.length < 2) {
+      statusEl.className = 'upload-status error';
+      statusEl.textContent = 'File looks empty or has no data rows.';
+      return;
+    }
+    var headers = rows[0].map(normalizeHeader);
+    var headerMap = {};
+    headers.forEach(function(h, i){ headerMap[h] = i; });
+    var dataRows = rows.slice(1);
+    var mapped = dataRows.map(function(r){
+      return slot === 'campaigns' ? mapCampaignRow(headerMap, r) : mapFlowRow(headerMap, r);
+    }).filter(function(obj){
+      return slot === 'campaigns' ? (obj.subject || obj.campaign_name) : (obj.message_name || obj.subject);
+    });
+
+    statusEl.textContent = 'Parsed ' + mapped.length + ' rows. Uploading to Supabase...';
+
+    var table = slot === 'campaigns' ? 'quill_campaigns' : 'quill_flow_messages';
+    // Replace strategy: clear then insert in batches
+    var del = await db.from(table).delete().neq('id', 0);
+    if (del.error) {
+      statusEl.className = 'upload-status error';
+      statusEl.textContent = 'Could not clear existing rows. ' + del.error.message;
+      return;
+    }
+    var batchSize = 200;
+    var inserted = 0;
+    for (var i = 0; i < mapped.length; i += batchSize) {
+      var batch = mapped.slice(i, i + batchSize);
+      var ins = await db.from(table).insert(batch);
+      if (ins.error) {
+        statusEl.className = 'upload-status error';
+        statusEl.textContent = 'Insert failed after ' + inserted + ' rows. ' + ins.error.message;
+        return;
+      }
+      inserted += batch.length;
+    }
+
+    statusEl.className = 'upload-status success';
+    statusEl.textContent = 'Uploaded ' + inserted + ' rows from ' + file.name + '.';
+    countEl.textContent = inserted + ' rows';
+    countEl.classList.remove('empty');
+    showToast('Upload complete');
+  } catch (err) {
+    console.error('CSV upload error', err);
+    statusEl.className = 'upload-status error';
+    statusEl.textContent = 'Something went wrong. ' + (err.message || err);
+  }
+}
+
+async function refreshUploadCounts() {
+  var slots = [{ slot: 'campaigns', table: 'quill_campaigns' }, { slot: 'flows', table: 'quill_flow_messages' }];
+  for (var i = 0; i < slots.length; i++) {
+    var s = slots[i];
+    var r = await db.from(s.table).select('id', { count: 'exact', head: true });
+    var countEl = document.getElementById(s.slot + 'Count');
+    if (!countEl) continue;
+    if (r.error) {
+      countEl.textContent = '? rows';
+      countEl.classList.add('empty');
+      continue;
+    }
+    var c = r.count || 0;
+    countEl.textContent = c + ' rows';
+    if (c === 0) countEl.classList.add('empty'); else countEl.classList.remove('empty');
+  }
+}
+
+window.clearUpload = async function(slot) {
+  if (!confirm('Clear all uploaded rows for ' + slot + '? This cannot be undone.')) return;
+  var table = slot === 'campaigns' ? 'quill_campaigns' : 'quill_flow_messages';
+  var del = await db.from(table).delete().neq('id', 0);
+  var statusEl = document.getElementById(slot + 'Status');
+  if (del.error) {
+    statusEl.className = 'upload-status error';
+    statusEl.textContent = 'Could not clear. ' + del.error.message;
+    return;
+  }
+  statusEl.className = 'upload-status';
+  statusEl.textContent = 'Cleared.';
+  refreshUploadCounts();
+  showToast('Cleared');
+};
+
+function wireUploadSlot(slot) {
+  var input = document.getElementById(slot + 'File');
+  var drop = document.getElementById(slot + 'Drop');
+  if (!input || !drop) return;
+  input.addEventListener('change', function(e){
+    var f = e.target.files[0];
+    if (f) processCSVFile(slot, f);
+  });
+  drop.addEventListener('dragover', function(e){
+    e.preventDefault();
+    drop.classList.add('drag-over');
+  });
+  drop.addEventListener('dragleave', function(e){
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove('drag-over');
+  });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processCSVFile(slot, e.dataTransfer.files[0]);
+    }
+  });
+}
+
+wireUploadSlot('campaigns');
+wireUploadSlot('flows');
+
+// Modal close on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && document.getElementById('modalOverlay').classList.contains('open')) closeModal();
+});
+
+// Init
+loadEmails();
+refreshUploadCounts();
+
+});
+</script>
 </body>
 </html>
