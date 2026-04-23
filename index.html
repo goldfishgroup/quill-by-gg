@@ -482,6 +482,68 @@
       .board-columns { grid-template-columns: 1fr; }
     }
 
+    /* CAMPAIGN EDITOR */
+    .editor-wrap { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+    .editor-empty { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 40px 30px; text-align: center; color: var(--q-muted); font-size: 13px; line-height: 1.6; }
+    .editor-empty strong { color: var(--gg-charcoal); display: block; margin-bottom: 6px; font-size: 15px; font-family: var(--font-head); }
+    .editor-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+    .editor-head-left { display: flex; flex-direction: column; gap: 6px; }
+    .editor-back-btn { background: transparent; border: none; color: var(--q-muted); font-size: 12px; cursor: pointer; padding: 0; font-family: var(--font-body); text-align: left; display: inline-flex; align-items: center; gap: 4px; }
+    .editor-back-btn:hover { color: var(--gg-olive); }
+    .editor-title { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; line-height: 1.3; }
+    .editor-subtitle { font-size: 12px; color: var(--q-muted); line-height: 1.5; }
+    .editor-head-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .editor-save-status { font-size: 11px; color: var(--q-muted); display: inline-flex; align-items: center; gap: 5px; min-width: 120px; justify-content: flex-end; }
+    .editor-save-status.saving { color: var(--q-muted); }
+    .editor-save-status.saved { color: #2e5e2e; }
+    .editor-save-status.dirty { color: #b4711a; }
+    .editor-save-status.error { color: #a32d2d; }
+    .editor-save-status .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .editor-save-status.saving .dot { background: #b4b2a9; }
+    .editor-save-status.saved .dot { background: #4b9e4b; }
+    .editor-save-status.dirty .dot { background: #e8a030; }
+    .editor-save-status.error .dot { background: #a32d2d; }
+    .editor-commit-btn { padding: 7px 16px; background: var(--gg-olive); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .editor-commit-btn:hover { opacity: 0.92; }
+    .editor-commit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .editor-delete-btn { padding: 7px 12px; background: transparent; color: #a32d2d; border: 0.5px solid #f4d0d0; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .editor-delete-btn:hover { background: #fce4e4; }
+
+    .editor-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+    @media (max-width: 900px) {
+      .editor-grid { grid-template-columns: 1fr; }
+    }
+
+    .editor-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px; }
+    .editor-card-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 10px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 14px; }
+    .editor-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .editor-field:last-child { margin-bottom: 0; }
+    .editor-field-label { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .editor-field-help { font-size: 10px; color: var(--q-muted); font-style: italic; line-height: 1.4; margin-top: 2px; }
+    .editor-input { width: 100%; padding: 8px 10px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
+    .editor-input:focus { outline: none; border-color: var(--gg-olive); }
+    .editor-input.headline { font-family: var(--font-head); font-size: 16px; font-weight: 600; }
+    .editor-textarea { width: 100%; padding: 10px 12px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; line-height: 1.55; resize: vertical; min-height: 80px; }
+    .editor-textarea:focus { outline: none; border-color: var(--gg-olive); }
+    .editor-textarea.body { min-height: 140px; }
+    .editor-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) {
+      .editor-row-2 { grid-template-columns: 1fr; }
+    }
+
+    .editor-meta-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; }
+    .editor-meta-card-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 8px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 12px; }
+
+    .editor-source-box { background: var(--gg-offwhite); border-left: 3px solid var(--gg-olive); padding: 12px 14px; border-radius: 6px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; }
+    .editor-source-box-label { font-size: 9px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .editor-source-toggle { margin-top: 10px; font-size: 11px; color: var(--q-muted); background: transparent; border: 0.5px solid var(--q-line); padding: 4px 10px; border-radius: 5px; cursor: pointer; font-family: var(--font-body); }
+    .editor-source-toggle:hover { background: #fff; border-color: var(--gg-olive); color: var(--gg-charcoal); }
+    .editor-other-variant { margin-top: 10px; background: #fff; border: 0.5px solid var(--q-line); border-radius: 6px; padding: 12px 14px; font-size: 11px; color: var(--gg-charcoal); line-height: 1.55; display: none; }
+    .editor-other-variant.open { display: block; }
+    .editor-other-variant .ov-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; margin-top: 8px; }
+    .editor-other-variant .ov-value { font-size: 11px; color: var(--gg-charcoal); margin-bottom: 6px; line-height: 1.5; }
+    .editor-other-variant .ov-value:first-child { margin-top: 0; }
+
     /* DRAFT */
     .draft-form { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px; }
     .draft-source-preview { background: var(--gg-offwhite); border-left: 3px solid var(--gg-olive); padding: 12px 14px; border-radius: 6px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.6; }
@@ -666,10 +728,12 @@
 
   <!-- CAMPAIGN EDITOR TAB -->
   <div id="tab-editor" class="tab-content">
-    <div class="placeholder-card">
-      <h2>Campaign Editor</h2>
-      <p>Per-email workspace with Version A and Version B for subject lines, preview text, and body copy. Per-version feedback flags and notes feed the voice brief learning loop.</p>
-      <div class="session-note">Wiring up in Session 3</div>
+    <div class="editor-wrap" id="editor-wrap">
+      <div class="editor-empty" id="editor-empty">
+        <strong>No email selected.</strong>
+        Open a card from the Campaign Board or Calendar to start editing.
+      </div>
+      <div id="editor-content" style="display:none;"></div>
     </div>
   </div>
 
@@ -5507,10 +5571,12 @@ function wireBoardDropTargets() {
       em.status = targetStatus;
       em.updated_at = new Date().toISOString();
       renderCampaignBoard();
+      if (typeof renderCalendar === 'function') renderCalendar();
       var res = await db.from('quill_calendar').update({ status: targetStatus, updated_at: em.updated_at }).eq('id', em.id).select().single();
       if (res.error) {
         em.status = oldStatus;
         renderCampaignBoard();
+        if (typeof renderCalendar === 'function') renderCalendar();
         showToast('Could not update status: ' + res.error.message, true);
       } else {
         Object.assign(em, res.data);
@@ -5528,6 +5594,392 @@ window.openCampaignEditor = function(emailId) {
   window._editorPendingEmailId = emailId;
   switchTab('editor');
 };
+
+// ── CAMPAIGN EDITOR ───────────────────────────────────────────────────────
+
+var editorEmailId = null;
+var editorPending = {};        // { field: value } - pending unsaved changes
+var editorSaveTimer = null;
+var editorSaveStatus = 'saved'; // 'saved' | 'saving' | 'dirty' | 'error'
+var editorOtherVariantOpen = false;
+
+// Called from Board card clicks, Calendar clicks, etc.
+window.openCampaignEditor = function(emailId) {
+  editorEmailId = emailId;
+  window._editorPendingEmailId = null;
+  switchTab('editor');
+  renderCampaignEditor();
+};
+
+// Also hook tab-switch so direct clicks on the Editor tab pick up a pending id
+// (e.g. from Board click before emails finished loading)
+function renderCampaignEditor() {
+  var wrap = document.getElementById('editor-wrap');
+  var emptyEl = document.getElementById('editor-empty');
+  var contentEl = document.getElementById('editor-content');
+  if (!wrap || !emptyEl || !contentEl) return;
+
+  var targetId = editorEmailId || window._editorPendingEmailId || null;
+  if (!targetId) {
+    emptyEl.style.display = '';
+    contentEl.style.display = 'none';
+    return;
+  }
+  editorEmailId = targetId;
+  window._editorPendingEmailId = null;
+
+  var em = emails.find(function(x){ return x.id === editorEmailId; });
+  if (!em) {
+    emptyEl.style.display = '';
+    emptyEl.innerHTML = '<strong>Email not found.</strong>It may have been deleted. Go back to the board.';
+    contentEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  contentEl.style.display = '';
+  contentEl.innerHTML = buildEditorHtml(em);
+  wireEditorInputs(em);
+  setEditorSaveStatus('saved');
+}
+
+function buildEditorHtml(em) {
+  var parts = [];
+
+  // HEAD
+  parts.push('<div class="editor-head">');
+  parts.push('  <div class="editor-head-left">');
+  parts.push('    <button class="editor-back-btn" onclick="editorBackToBoard()">\u2190 Back to Board</button>');
+  parts.push('    <div class="editor-title">' + escapeHtml(em.subject || '(untitled email)') + '</div>');
+  var sub = [];
+  if (em.bucket) sub.push(em.bucket);
+  if (em.email_type) sub.push(em.email_type);
+  if (em.send_date) {
+    var d = new Date(em.send_date + 'T12:00:00');
+    sub.push('sends ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  } else {
+    sub.push('unscheduled');
+  }
+  parts.push('    <div class="editor-subtitle">' + sub.join(' \u00b7 ') + '</div>');
+  parts.push('  </div>');
+  parts.push('  <div class="editor-head-right">');
+  parts.push('    <div class="editor-save-status" id="editor-save-status"><span class="dot"></span><span class="editor-save-status-text">Saved</span></div>');
+  parts.push('    <button class="editor-commit-btn" id="editor-commit-btn" onclick="editorCommit()">Save</button>');
+  parts.push('    <button class="editor-delete-btn" onclick="editorDelete()">Delete</button>');
+  parts.push('  </div>');
+  parts.push('</div>');
+
+  parts.push('<div class="editor-grid">');
+
+  // MAIN COLUMN
+  parts.push('  <div class="editor-main">');
+
+  // Subject + Preview card
+  parts.push('    <div class="editor-card">');
+  parts.push('      <div class="editor-card-title">Inbox</div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Subject line</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="subject" value="' + escapeHtml(em.subject || '') + '">');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Preview text</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="preview" value="' + escapeHtml(em.preview || '') + '">');
+  parts.push('        <div class="editor-field-help">Shown next to the subject line in most email clients.</div>');
+  parts.push('      </div>');
+  parts.push('    </div>');
+
+  // Email body (Ines structure)
+  parts.push('    <div class="editor-card">');
+  parts.push('      <div class="editor-card-title">Email body</div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Headline</label>');
+  parts.push('        <input type="text" class="editor-input headline" data-field="headline" value="' + escapeHtml(em.headline || '') + '">');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Subheadline</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="subheadline" value="' + escapeHtml(em.subheadline || '') + '">');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">First CTA (inline button text)</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="first_cta" value="' + escapeHtml(em.first_cta || '') + '">');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Body copy</label>');
+  parts.push('        <textarea class="editor-textarea body" data-field="body">' + escapeHtml(em.body || '') + '</textarea>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Bridge</label>');
+  parts.push('        <textarea class="editor-textarea" data-field="bridge">' + escapeHtml(em.bridge || '') + '</textarea>');
+  parts.push('        <div class="editor-field-help">The transition from body copy to the product pitch.</div>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Product section</label>');
+  parts.push('        <textarea class="editor-textarea body" data-field="product_section">' + escapeHtml(em.product_section || '') + '</textarea>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Final CTA (closing button text)</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="final_cta" value="' + escapeHtml(em.final_cta || '') + '">');
+  parts.push('      </div>');
+  parts.push('    </div>');
+
+  // Notes
+  parts.push('    <div class="editor-card">');
+  parts.push('      <div class="editor-card-title">Notes</div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Internal notes</label>');
+  parts.push('        <textarea class="editor-textarea" data-field="notes">' + escapeHtml(em.notes || '') + '</textarea>');
+  parts.push('        <div class="editor-field-help">Visible to strategists and design. Not sent to customers.</div>');
+  parts.push('      </div>');
+  parts.push('    </div>');
+
+  parts.push('  </div>');
+
+  // META COLUMN (right side)
+  parts.push('  <div class="editor-meta">');
+
+  // Status + scheduling
+  parts.push('    <div class="editor-meta-card">');
+  parts.push('      <div class="editor-meta-card-title">Pipeline</div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Status</label>');
+  parts.push('        <select class="editor-input" data-field="status">');
+  parts.push('          <option value="draft"' + (em.status === 'draft' ? ' selected' : '') + '>Draft</option>');
+  parts.push('          <option value="approved"' + (em.status === 'approved' ? ' selected' : '') + '>Approved</option>');
+  parts.push('          <option value="sent-to-design"' + (em.status === 'sent-to-design' ? ' selected' : '') + '>Sent to Design</option>');
+  parts.push('          <option value="scheduled"' + (em.status === 'scheduled' ? ' selected' : '') + '>Scheduled</option>');
+  parts.push('        </select>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Send date</label>');
+  parts.push('        <input type="date" class="editor-input" data-field="send_date" value="' + escapeHtml(em.send_date || '') + '">');
+  parts.push('      </div>');
+  parts.push('    </div>');
+
+  // Audience
+  parts.push('    <div class="editor-meta-card">');
+  parts.push('      <div class="editor-meta-card-title">Audience</div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Segment</label>');
+  parts.push('        <input type="text" class="editor-input" data-field="segment" value="' + escapeHtml(em.segment || '') + '">');
+  parts.push('        <div class="editor-field-help">e.g. All subscribers, Lapsed, New buyers.</div>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Email type</label>');
+  parts.push('        <select class="editor-input" data-field="email_type">');
+  parts.push('          <option value="Campaign"' + (em.email_type === 'Campaign' ? ' selected' : '') + '>Campaign</option>');
+  parts.push('          <option value="Flow"' + (em.email_type === 'Flow' ? ' selected' : '') + '>Flow</option>');
+  parts.push('          <option value="Promo"' + (em.email_type === 'Promo' ? ' selected' : '') + '>Promo</option>');
+  parts.push('        </select>');
+  parts.push('      </div>');
+  parts.push('      <div class="editor-field">');
+  parts.push('        <label class="editor-field-label">Content bucket</label>');
+  parts.push('        <select class="editor-input" data-field="bucket">');
+  parts.push('          <option value=""' + (!em.bucket ? ' selected' : '') + '>None</option>');
+  parts.push('          <option value="Education"' + (em.bucket === 'Education' ? ' selected' : '') + '>Education</option>');
+  parts.push('          <option value="Problem-Solution"' + (em.bucket === 'Problem-Solution' ? ' selected' : '') + '>Problem-Solution</option>');
+  parts.push('          <option value="Stack Building"' + (em.bucket === 'Stack Building' ? ' selected' : '') + '>Stack Building</option>');
+  parts.push('          <option value="Daily Performance"' + (em.bucket === 'Daily Performance' ? ' selected' : '') + '>Daily Performance</option>');
+  parts.push('          <option value="Trust-Transparency"' + (em.bucket === 'Trust-Transparency' ? ' selected' : '') + '>Trust-Transparency</option>');
+  parts.push('        </select>');
+  parts.push('      </div>');
+  parts.push('    </div>');
+
+  // Source draft (if applicable)
+  if (em.source_draft_id) {
+    parts.push('    <div class="editor-meta-card" id="editor-source-card">');
+    parts.push('      <div class="editor-meta-card-title">Source</div>');
+    parts.push('      <div class="editor-source-box">');
+    parts.push('        <div class="editor-source-box-label">From draft</div>');
+    parts.push('        Draft #' + em.source_draft_id + (em.source_variant ? ', variant ' + em.source_variant.toUpperCase() : ''));
+    parts.push('      </div>');
+    parts.push('      <button class="editor-source-toggle" onclick="editorToggleOtherVariant()" id="editor-other-toggle">Show other variant</button>');
+    parts.push('      <div class="editor-other-variant" id="editor-other-variant"></div>');
+    parts.push('    </div>');
+  }
+
+  parts.push('  </div>');  // meta
+  parts.push('</div>');  // grid
+
+  return parts.join('\n');
+}
+
+function wireEditorInputs(em) {
+  var content = document.getElementById('editor-content');
+  if (!content) return;
+  var inputs = content.querySelectorAll('[data-field]');
+  inputs.forEach(function(input){
+    input.addEventListener('input', function(){ markEditorDirty(); });
+    input.addEventListener('change', function(){
+      // For selects and date inputs, change fires immediately; push to pending
+      var f = input.getAttribute('data-field');
+      editorPending[f] = input.value;
+      scheduleEditorSave();
+    });
+    input.addEventListener('blur', function(){
+      var f = input.getAttribute('data-field');
+      editorPending[f] = input.value;
+      // Immediate save on blur (no debounce delay)
+      flushEditorSave();
+    });
+  });
+}
+
+function markEditorDirty() {
+  setEditorSaveStatus('dirty');
+}
+
+function setEditorSaveStatus(status, errorMsg) {
+  editorSaveStatus = status;
+  var el = document.getElementById('editor-save-status');
+  if (!el) return;
+  el.classList.remove('saving','saved','dirty','error');
+  el.classList.add(status);
+  var txt = el.querySelector('.editor-save-status-text');
+  if (txt) {
+    if (status === 'saving') txt.textContent = 'Saving...';
+    else if (status === 'saved') txt.textContent = 'Saved';
+    else if (status === 'dirty') txt.textContent = 'Unsaved changes';
+    else if (status === 'error') txt.textContent = errorMsg || 'Save failed';
+  }
+}
+
+function scheduleEditorSave() {
+  markEditorDirty();
+  if (editorSaveTimer) clearTimeout(editorSaveTimer);
+  editorSaveTimer = setTimeout(flushEditorSave, 800);
+}
+
+async function flushEditorSave() {
+  if (editorSaveTimer) { clearTimeout(editorSaveTimer); editorSaveTimer = null; }
+  if (!editorEmailId) return;
+  if (Object.keys(editorPending).length === 0) return;
+
+  var em = emails.find(function(x){ return x.id === editorEmailId; });
+  if (!em) return;
+
+  setEditorSaveStatus('saving');
+  var payload = Object.assign({}, editorPending);
+  // Normalize empty strings to null for date columns to avoid type errors
+  if (payload.send_date === '') payload.send_date = null;
+  payload.updated_at = new Date().toISOString();
+
+  var toFlush = Object.keys(editorPending);
+  editorPending = {};  // clear pending before the await
+
+  var res = await db.from('quill_calendar').update(payload).eq('id', editorEmailId).select().single();
+  if (res.error) {
+    setEditorSaveStatus('error', res.error.message);
+    // Restore pending so user can retry
+    toFlush.forEach(function(k){ editorPending[k] = payload[k]; });
+    return;
+  }
+  // Merge server response into local emails cache
+  Object.assign(em, res.data);
+  setEditorSaveStatus('saved');
+
+  // Cross-view sync: update Board and Calendar if they are also rendered
+  renderCampaignBoard();
+  if (typeof renderCalendar === 'function') renderCalendar();
+  // Also re-render subtitle/title in head if relevant fields changed
+  updateEditorHeadChrome(em);
+}
+
+function updateEditorHeadChrome(em) {
+  var titleEl = document.querySelector('#editor-content .editor-title');
+  if (titleEl) titleEl.textContent = em.subject || '(untitled email)';
+  var subEl = document.querySelector('#editor-content .editor-subtitle');
+  if (subEl) {
+    var sub = [];
+    if (em.bucket) sub.push(em.bucket);
+    if (em.email_type) sub.push(em.email_type);
+    if (em.send_date) {
+      var d = new Date(em.send_date + 'T12:00:00');
+      sub.push('sends ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+    } else {
+      sub.push('unscheduled');
+    }
+    subEl.textContent = sub.join(' \u00b7 ');
+  }
+}
+
+window.editorCommit = async function() {
+  var btn = document.getElementById('editor-commit-btn');
+  if (btn) btn.disabled = true;
+  try {
+    // Flush any pending changes first
+    await flushEditorSave();
+    // If we had anything to save, flushEditorSave already set status to saved.
+    // For an explicit commit with no pending changes, still show a confirmation.
+    if (editorSaveStatus === 'saved') {
+      showToast('Saved');
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.editorBackToBoard = function() {
+  // Flush any pending edits before leaving
+  if (Object.keys(editorPending).length > 0) {
+    flushEditorSave();
+  }
+  switchTab('board');
+};
+
+window.editorDelete = async function() {
+  if (!editorEmailId) return;
+  if (!confirm('Delete this email from the calendar? This cannot be undone.')) return;
+  var res = await db.from('quill_calendar').delete().eq('id', editorEmailId);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+  emails = emails.filter(function(x){ return x.id !== editorEmailId; });
+  editorEmailId = null;
+  renderCampaignBoard();
+  if (typeof renderCalendar === 'function') renderCalendar();
+  switchTab('board');
+  showToast('Deleted');
+};
+
+window.editorToggleOtherVariant = async function() {
+  var panel = document.getElementById('editor-other-variant');
+  var toggle = document.getElementById('editor-other-toggle');
+  if (!panel || !toggle) return;
+  editorOtherVariantOpen = !editorOtherVariantOpen;
+  if (editorOtherVariantOpen) {
+    panel.classList.add('open');
+    toggle.textContent = 'Hide other variant';
+    // Load and render the other variant
+    var em = emails.find(function(x){ return x.id === editorEmailId; });
+    if (!em || !em.source_draft_id) {
+      panel.innerHTML = '<div class="ov-label">No source draft</div>';
+      return;
+    }
+    panel.innerHTML = '<div class="ov-label">Loading...</div>';
+    var res = await db.from('quill_generated_drafts').select('*').eq('id', em.source_draft_id).single();
+    if (res.error || !res.data) { panel.innerHTML = '<div class="ov-label">Could not load draft</div>'; return; }
+    var d = res.data;
+    var other = em.source_variant === 'b' ? 'a' : 'b';
+    var pieces = [];
+    pieces.push('<div class="ov-label">Variant ' + other.toUpperCase() + ' (not picked)</div>');
+    if (d['subject_' + other]) { pieces.push('<div class="ov-label">Subject</div><div class="ov-value">' + escapeHtml(d['subject_' + other]) + '</div>'); }
+    if (d['preview_' + other]) { pieces.push('<div class="ov-label">Preview</div><div class="ov-value">' + escapeHtml(d['preview_' + other]) + '</div>'); }
+    if (d['headline_' + other]) { pieces.push('<div class="ov-label">Headline</div><div class="ov-value">' + escapeHtml(d['headline_' + other]) + '</div>'); }
+    if (d['body_' + other]) { pieces.push('<div class="ov-label">Body</div><div class="ov-value">' + escapeHtml(d['body_' + other]).replace(/\n/g, '<br>') + '</div>'); }
+    panel.innerHTML = pieces.join('');
+  } else {
+    panel.classList.remove('open');
+    toggle.textContent = 'Show other variant';
+  }
+};
+
+// Hook editor tab into switchTab so it rerenders when directly navigated to
+(function(){
+  var origSwitchTab = window.switchTab;
+  window.switchTab = function(t) {
+    origSwitchTab(t);
+    if (t === 'editor') renderCampaignEditor();
+  };
+})();
+
 
 function initTipWidgets() {
   var widgets = ['tip-patterns','tip-flows','tip-voice','tip-ideas','tip-draft','tip-products'];
