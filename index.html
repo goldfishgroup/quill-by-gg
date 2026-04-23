@@ -3948,9 +3948,10 @@ function formatIdeasPromptContext(ctx) {
 
   // Starred patterns
   lines.push('=== ' + (ctx.starredPatternsCount ? 'STARRED PATTERNS (user validated)' : 'ACTIVE PATTERNS (none starred yet, using top 8)') + ' ===');
+  lines.push('(Each pattern has a category label in brackets. Use the category as the grounded_in reference.)');
   if (ctx.patterns.length) {
-    ctx.patterns.forEach(function(p, i){
-      lines.push((i+1) + '. [' + (p.category || 'pattern') + '] ' + p.rule);
+    ctx.patterns.forEach(function(p){
+      lines.push('[' + (p.category || 'overall') + '] ' + p.rule);
       if (p.actionable) lines.push('   Next step: ' + p.actionable);
     });
   } else {
@@ -3961,8 +3962,10 @@ function formatIdeasPromptContext(ctx) {
   // Starred diagnostics
   if (ctx.starredDiagCount) {
     lines.push('=== STARRED FLOW DIAGNOSTICS ===');
-    ctx.diagnostics.forEach(function(d, i){
-      lines.push((i+1) + '. [' + (d.severity || 'monitor') + '] ' + (d.flow_name ? d.flow_name + ': ' : '') + d.diagnosis);
+    lines.push('(Each diagnostic has a category label in brackets. Use flow_name+category as the grounded_in reference.)');
+    ctx.diagnostics.forEach(function(d){
+      var label = '[' + (d.category || 'overall') + (d.flow_name ? ' - ' + d.flow_name : '') + '] ';
+      lines.push(label + d.diagnosis);
       if (d.recommendation) lines.push('   Recommendation: ' + d.recommendation);
     });
     lines.push('');
@@ -4020,11 +4023,13 @@ window.generateIdeas = async function() {
       + 'REQUIREMENTS:\n'
       + '- Return a JSON array of exactly ' + count + ' idea objects. No preamble, no markdown, no code fences. Just the JSON array.\n'
       + '- Each idea must be distinct. No two ideas should have the same angle.\n'
-      + '- Every idea must ground in at least one starred pattern OR starred diagnostic OR the buckets hook examples. Name the source in grounded_in.\n'
+      + '- Every idea must ground in at least one starred pattern OR starred diagnostic OR the buckets hook examples.\n'
+      + '- For grounded_in, use the category label from the brackets (e.g. "ingredient_education", "subject_line"), NOT a number or position. If grounding in a hook example from the bucket, use "bucket:hook_example". If there is no real grounding in the provided patterns or diagnostics, return an empty grounded_in array rather than inventing one.\n'
       + '- Respect the banned words and banned claim types absolutely. Never use them, even stylistically.\n'
       + '- Subject options must sound like SFH: calm, confident, slightly contrarian when appropriate. Not hype.\n'
       + '- Hooks should be 1 sentence, direct, human.\n'
-      + '- Do not repeat angles from the dismissed ideas list.\n\n'
+      + '- Do not repeat angles from the dismissed ideas list.\n'
+      + '- CTA fit matters. Use "learn" or "explore" for education-heavy ideas where the email teaches first. Use "shop" only when the hook explicitly drives toward purchase action. Use "stack" when the idea is about combining products. Use "trust" when the idea is about brand credibility or transparency.\n\n'
       + 'EACH OBJECT MUST HAVE:\n'
       + '{\n'
       + '  "hook": "one-sentence angle for the idea",\n'
@@ -4032,14 +4037,15 @@ window.generateIdeas = async function() {
       + '  "preview_text": "suggested preview text",\n'
       + '  "angle": "one to two sentences on why this works",\n'
       + '  "cta_angle": "shop | learn | stack | trust | explore",\n'
-      + '  "grounded_in": ["short label of pattern/diagnostic 1", "short label 2"],\n'
+      + '  "grounded_in": ["category_label_1", "category_label_2"],\n'
       + '  "reasoning_notes": "one sentence on why this fits SFH voice and this bucket"\n'
       + '}\n\n'
       + 'VOICE RULES:\n'
       + '- No em dashes anywhere\n'
       + '- No hyperbolic words (critical, massive, exceptional, remarkable, phenomenal, concerning)\n'
       + '- American English\n'
-      + '- Honor the banned words list without exception\n\n'
+      + '- Honor the banned words list without exception\n'
+      + '- Use proper apostrophes and contractions in all user-facing copy. Contractions like here\u0027s, don\u0027t, you\u0027re, it\u0027s, won\u0027t, what\u0027s must include the apostrophe (\u0027). Never drop apostrophes from contractions. Correct: "Here\u0027s what actually matters." Wrong: "Heres what actually matters."\n\n'
       + 'Return ONLY the JSON array. Start with [ and end with ].';
 
     var res = await fetch('/api/diagnose', {
