@@ -361,6 +361,50 @@
     .flow-status-cross { background: var(--gg-offwhite); color: var(--gg-olive); }
     .flow-revisit-pill { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: lowercase; background: #fff1e6; color: var(--gg-orange); border: 0.5px dashed var(--gg-orange); cursor: help; }
 
+    /* BUCKETS */
+    .bucket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin-top: 14px; }
+    .bucket-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.15s; }
+    .bucket-card:hover { border-color: var(--gg-olive); }
+    .bucket-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .bucket-order { font-family: var(--font-head); font-size: 28px; font-weight: 600; color: var(--gg-olive); line-height: 1; letter-spacing: -0.02em; opacity: 0.5; }
+    .bucket-name { font-family: var(--font-head); font-size: 17px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; line-height: 1.2; }
+    .bucket-desc { font-size: 13px; color: var(--gg-charcoal); line-height: 1.6; }
+    .bucket-section { padding-top: 10px; border-top: 0.5px solid var(--q-line); }
+    .bucket-section-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .bucket-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .bucket-tag { font-size: 11px; padding: 3px 9px; background: var(--gg-offwhite); color: var(--gg-charcoal); border-radius: 10px; line-height: 1.4; }
+    .bucket-hooks { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--gg-charcoal); font-style: italic; line-height: 1.5; }
+    .bucket-hook-item { padding: 2px 0; }
+    .bucket-makesgood { background: var(--gg-offwhite); border-left: 2px solid var(--gg-olive); padding: 8px 12px; border-radius: 6px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; margin-top: auto; }
+    .bucket-makesgood strong { color: var(--gg-olive); font-weight: 600; }
+    .bucket-edit-btn { margin-top: 4px; align-self: flex-start; padding: 5px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .bucket-edit-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); border-color: var(--gg-olive); }
+
+    /* BUCKET EDIT MODAL (reuses .modal styles) */
+    .bucket-modal-textarea { min-height: 80px; }
+
+    /* VOICE BRIEF */
+    .voice-wrap { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; margin-top: 14px; }
+    .voice-col { display: flex; flex-direction: column; gap: 14px; }
+    .voice-panel { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; }
+    .voice-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .voice-panel-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.005em; }
+    .voice-panel-sub { font-size: 10px; color: var(--q-muted); }
+    .voice-tag-area { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+    .voice-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 4px 6px 4px 10px; background: var(--gg-offwhite); color: var(--gg-charcoal); border-radius: 10px; line-height: 1.4; }
+    .voice-tag.banned { background: #fce4e4; color: #a32d2d; }
+    .voice-tag.phrase { background: var(--gg-lime); color: #3d4e0e; }
+    .voice-tag-remove { background: transparent; border: none; color: inherit; opacity: 0.5; cursor: pointer; font-size: 12px; padding: 0 2px; line-height: 1; font-family: var(--font-body); }
+    .voice-tag-remove:hover { opacity: 1; }
+    .voice-tag-input { font-size: 11px; border: 0.5px dashed var(--q-line); background: transparent; padding: 4px 10px; border-radius: 10px; font-family: var(--font-body); color: var(--gg-charcoal); width: 140px; }
+    .voice-tag-input:focus { outline: none; border-color: var(--gg-olive); border-style: solid; }
+    .voice-single-field { width: 100%; border: 0.5px solid var(--q-line); padding: 8px 10px; border-radius: 7px; font-size: 12px; font-family: var(--font-body); color: var(--gg-charcoal); line-height: 1.5; background: #fff; }
+    .voice-single-field:focus { outline: none; border-color: var(--gg-olive); }
+    .voice-narrative-text { min-height: 80px; resize: vertical; }
+    .voice-save-note { font-size: 11px; color: var(--q-muted); margin-top: 6px; font-style: italic; }
+    .voice-save-note.saved { color: #2e5e2e; }
+    .voice-save-note.error { color: #a32d2d; }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .cal-layout { grid-template-columns: 1fr !important; }
@@ -371,6 +415,7 @@
       .studio-wrap { grid-template-columns: 1fr; }
       .studio-nav { flex-direction: row; overflow-x: auto; position: static; }
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .voice-wrap { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -468,6 +513,8 @@
         <button class="studio-nav-btn active" onclick="setStudioSection('insights')" id="snav-insights">Insights</button>
         <button class="studio-nav-btn" onclick="setStudioSection('patterns')" id="snav-patterns">Patterns</button>
         <button class="studio-nav-btn" onclick="setStudioSection('flows')" id="snav-flows">Flow Diagnostics</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('buckets')" id="snav-buckets">Buckets</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('voice')" id="snav-voice">Voice</button>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
         <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
         <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
@@ -699,6 +746,52 @@
           </div>
           <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
           <div class="pattern-grid" id="diag-grid"></div>
+        </div>
+
+        <div class="studio-section" id="studio-buckets">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Content Buckets</div>
+              <div class="patterns-sub">The 5 SFH content categories from Ines voice doc. Ideas and Draft generators use these as organizing principles. Edit a bucket to refine how it steers future output.</div>
+            </div>
+          </div>
+          <div class="bucket-grid" id="bucket-grid"></div>
+        </div>
+
+        <div class="studio-section" id="studio-voice">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Voice Brief</div>
+              <div class="patterns-sub">SFH voice and strategy reference. Structured fields drive hard constraints in generators. Narrative sections provide context. Edit anything to keep it current.</div>
+            </div>
+            <div class="patterns-head-right">
+              <span class="voice-save-note" id="voice-save-note">Loaded</span>
+            </div>
+          </div>
+          <div class="tip-widget" id="tip-voice">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-voice')">
+              <div class="tip-widget-title">How the Voice Brief is used</div>
+              <button class="tip-widget-toggle" id="tip-voice-toggle">Hide</button>
+            </div>
+            <div class="tip-widget-body">
+              <div class="tip-section-title">What generators read</div>
+              <ul>
+                <li><strong>Structured fields on the left.</strong> Voice adjectives, signature phrases, banned words, and banned claim types become hard constraints in every prompt. Generators cannot output banned language.</li>
+                <li><strong>Narrative sections on the right.</strong> Brand snapshot, customer profile, differentiation, and positioning give Claude context for the deeper "why" behind SFH output.</li>
+                <li><strong>Editing flows through immediately.</strong> Changes save on blur. Next Ideas or Draft run picks up the new voice.</li>
+              </ul>
+              <div class="tip-section-title">When to update</div>
+              <ul>
+                <li><strong>Positioning shifts.</strong> If SFH launches a new product line or changes market positioning, update the positioning and differentiation sections.</li>
+                <li><strong>New banned language surfaces.</strong> Any time you dismiss generated copy because of a word or phrase, add it to banned words so it never comes back.</li>
+                <li><strong>Signature phrases evolve.</strong> When a winning phrase emerges from campaigns, add it here so Claude can reach for it.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="voice-wrap">
+            <div class="voice-col" id="voice-structured-col"></div>
+            <div class="voice-col" id="voice-narrative-col"></div>
+          </div>
         </div>
 
         <div class="studio-section" id="studio-ideas">
@@ -1212,6 +1305,7 @@ window.onBayDrop = async function(e) {
 
 // Modal
 window.openAddModal = function() {
+  ensureCalendarModalDom();
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add email';
   document.getElementById('deleteBtn').style.display = 'none';
@@ -1228,6 +1322,7 @@ window.openAddModalForDate = function(dateStr) {
 };
 
 window.openAddModalBay = function() {
+  ensureCalendarModalDom();
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add email to Waiting Bay';
   document.getElementById('deleteBtn').style.display = 'none';
@@ -1238,6 +1333,7 @@ window.openAddModalBay = function() {
 };
 
 window.openEditModal = function(id) {
+  ensureCalendarModalDom();
   var em = emails.find(function(x){ return x.id === id; });
   if (!em) return;
   editingId = id;
@@ -1254,9 +1350,23 @@ window.openEditModal = function(id) {
   document.getElementById('modalOverlay').classList.add('open');
 };
 
+// If something else hijacked the modal body (e.g. bucket edit) and crashed
+// before restoring, detect that by checking for f-subject and restore.
+function ensureCalendarModalDom() {
+  if (!document.getElementById('f-subject') && typeof restoreCalendarModal === 'function') {
+    restoreCalendarModal();
+  }
+}
+
 window.closeModal = function() {
   document.getElementById('modalOverlay').classList.remove('open');
   editingId = null;
+  // If the modal was in bucket-edit mode, restore the calendar modal fields
+  // so the next calendar open has the correct DOM structure.
+  if (typeof bucketEditingId !== 'undefined' && bucketEditingId !== null) {
+    bucketEditingId = null;
+    restoreCalendarModal();
+  }
 };
 
 function clearModalFields() {
@@ -1672,7 +1782,7 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','patterns','flows','ideas','draft','gaps','refs'].forEach(function(s){
+  ['insights','patterns','flows','buckets','voice','ideas','draft','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
@@ -1681,6 +1791,8 @@ window.setStudioSection = function(section) {
   if (section === 'insights') loadInsightsIfNeeded();
   if (section === 'patterns') showPatternsOnOpen();
   if (section === 'flows') showFlowDiagnosticsOnOpen();
+  if (section === 'buckets') showBucketsOnOpen();
+  if (section === 'voice') showVoiceOnOpen();
 };
 
 window.setTimeRange = function(val) {
@@ -3372,7 +3484,7 @@ window.extractFlowDiagnostics = async function() {
 };
 
 function initTipWidgets() {
-  var widgets = ['tip-patterns','tip-flows'];
+  var widgets = ['tip-patterns','tip-flows','tip-voice'];
   widgets.forEach(function(id){
     var widget = document.getElementById(id);
     if (!widget) return;
@@ -3385,6 +3497,411 @@ function initTipWidgets() {
       }
     } catch (e) {}
   });
+}
+
+// ── CONTENT BUCKETS ───────────────────────────────────────────────────────
+
+var bucketsCache = null;
+var bucketsLoadedAt = 0;
+var bucketEditingId = null;
+
+async function loadBuckets(force) {
+  if (!force && bucketsCache && (Date.now() - bucketsLoadedAt) < 30000) return;
+  var res = await db.from('quill_content_buckets').select('*').eq('active', true).order('display_order', { ascending: true });
+  if (res.error) {
+    console.error('loadBuckets error', res.error);
+    return;
+  }
+  bucketsCache = res.data || [];
+  bucketsLoadedAt = Date.now();
+}
+
+async function showBucketsOnOpen() {
+  await loadBuckets(false);
+  renderBuckets();
+}
+
+function renderBuckets() {
+  var grid = document.getElementById('bucket-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!bucketsCache || !bucketsCache.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No buckets seeded yet.</strong><br>Run the session 3.1 migration to seed the 5 SFH buckets from Ines doc.</div>';
+    return;
+  }
+  bucketsCache.forEach(function(b){ grid.appendChild(buildBucketCard(b)); });
+}
+
+function parseJsonField(v) {
+  if (!v) return [];
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') {
+    try { var p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; }
+  }
+  return [];
+}
+
+function buildBucketCard(b) {
+  var card = document.createElement('div');
+  card.className = 'bucket-card';
+
+  var head = document.createElement('div');
+  head.className = 'bucket-card-head';
+  var nameBox = document.createElement('div');
+  var nameEl = document.createElement('div');
+  nameEl.className = 'bucket-name';
+  nameEl.textContent = b.name || '';
+  nameBox.appendChild(nameEl);
+  var orderEl = document.createElement('div');
+  orderEl.className = 'bucket-order';
+  orderEl.textContent = String(b.display_order || 0).padStart(2, '0');
+  head.appendChild(nameBox);
+  head.appendChild(orderEl);
+  card.appendChild(head);
+
+  if (b.description) {
+    var desc = document.createElement('div');
+    desc.className = 'bucket-desc';
+    desc.textContent = b.description;
+    card.appendChild(desc);
+  }
+
+  var patterns = parseJsonField(b.key_patterns);
+  if (patterns.length) {
+    var patSec = document.createElement('div');
+    patSec.className = 'bucket-section';
+    var patLbl = document.createElement('div');
+    patLbl.className = 'bucket-section-label';
+    patLbl.textContent = 'Key patterns';
+    patSec.appendChild(patLbl);
+    var tags = document.createElement('div');
+    tags.className = 'bucket-tags';
+    patterns.forEach(function(p){
+      var tag = document.createElement('span');
+      tag.className = 'bucket-tag';
+      tag.textContent = p;
+      tags.appendChild(tag);
+    });
+    patSec.appendChild(tags);
+    card.appendChild(patSec);
+  }
+
+  var hooks = parseJsonField(b.hook_examples);
+  if (hooks.length) {
+    var hookSec = document.createElement('div');
+    hookSec.className = 'bucket-section';
+    var hookLbl = document.createElement('div');
+    hookLbl.className = 'bucket-section-label';
+    hookLbl.textContent = 'Hook examples';
+    hookSec.appendChild(hookLbl);
+    var hookList = document.createElement('div');
+    hookList.className = 'bucket-hooks';
+    hooks.slice(0, 3).forEach(function(h){
+      var item = document.createElement('div');
+      item.className = 'bucket-hook-item';
+      item.textContent = '"' + h + '"';
+      hookList.appendChild(item);
+    });
+    hookSec.appendChild(hookList);
+    card.appendChild(hookSec);
+  }
+
+  if (b.what_makes_good) {
+    var mg = document.createElement('div');
+    mg.className = 'bucket-makesgood';
+    mg.innerHTML = '<strong>What makes it good:</strong> ' + escapeHtml(b.what_makes_good);
+    card.appendChild(mg);
+  }
+
+  var editBtn = document.createElement('button');
+  editBtn.className = 'bucket-edit-btn';
+  editBtn.textContent = 'Edit bucket';
+  (function(id){ editBtn.onclick = function(){ openBucketEditModal(id); }; })(b.id);
+  card.appendChild(editBtn);
+
+  return card;
+}
+
+window.openBucketEditModal = function(id) {
+  var b = bucketsCache.find(function(x){ return x.id === id; });
+  if (!b) return;
+  bucketEditingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit bucket';
+  document.getElementById('deleteBtn').style.display = 'none';
+  // Hijack existing modal: replace body with bucket-specific fields
+  var body = document.querySelector('#modalOverlay .modal-body');
+  body.innerHTML = '';
+
+  function addField(label, id, value, isTextarea) {
+    var wrap = document.createElement('div');
+    var lbl = document.createElement('label');
+    lbl.className = 'field-label';
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+    var input = document.createElement(isTextarea ? 'textarea' : 'input');
+    input.id = id;
+    input.className = isTextarea ? 'field-textarea bucket-modal-textarea' : 'field-input';
+    input.value = value || '';
+    if (!isTextarea) input.type = 'text';
+    wrap.appendChild(input);
+    body.appendChild(wrap);
+  }
+  addField('Name', 'b-name', b.name, false);
+  addField('Description', 'b-description', b.description, true);
+  addField('Key patterns (comma-separated)', 'b-patterns', parseJsonField(b.key_patterns).join(', '), false);
+  addField('Hook examples (one per line)', 'b-hooks', parseJsonField(b.hook_examples).join('\n'), true);
+  addField('What makes it good', 'b-makesgood', b.what_makes_good, false);
+
+  // Rewire footer save to bucket save
+  var footSave = document.querySelector('#modalOverlay .primary-btn');
+  footSave.textContent = 'Save bucket';
+  footSave.onclick = saveBucketFromModal;
+
+  document.getElementById('modalOverlay').classList.add('open');
+};
+
+async function saveBucketFromModal() {
+  if (!bucketEditingId) return;
+  var name = (document.getElementById('b-name').value || '').trim();
+  if (!name) { showToast('Bucket name is required', true); return; }
+  var patterns = (document.getElementById('b-patterns').value || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var hooks = (document.getElementById('b-hooks').value || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  var payload = {
+    name: name,
+    description: (document.getElementById('b-description').value || '').trim(),
+    key_patterns: patterns,
+    hook_examples: hooks,
+    what_makes_good: (document.getElementById('b-makesgood').value || '').trim(),
+    updated_at: new Date().toISOString()
+  };
+  var res = await db.from('quill_content_buckets').update(payload).eq('id', bucketEditingId).select().single();
+  if (res.error) { showToast('Save failed: ' + res.error.message, true); return; }
+  var idx = bucketsCache.findIndex(function(x){ return x.id === bucketEditingId; });
+  if (idx > -1) bucketsCache[idx] = res.data;
+  closeBucketModal();
+  renderBuckets();
+  showToast('Bucket updated');
+}
+
+function closeBucketModal() {
+  bucketEditingId = null;
+  document.getElementById('modalOverlay').classList.remove('open');
+  // Restore original modal body and save handler for calendar modal
+  restoreCalendarModal();
+}
+
+function restoreCalendarModal() {
+  var body = document.querySelector('#modalOverlay .modal-body');
+  body.innerHTML = ''
+    + '<div><label class="field-label">Subject line / working title</label>'
+    + '<input type="text" id="f-subject" class="field-input" placeholder="e.g. Most supplements arent what they claim"></div>'
+    + '<div><label class="field-label">Preview text</label>'
+    + '<input type="text" id="f-preview" class="field-input" placeholder="Optional at this stage"></div>'
+    + '<div class="field-row">'
+    + '<div><label class="field-label">Send date</label><input type="date" id="f-date" class="field-input"></div>'
+    + '<div><label class="field-label">Status</label><select id="f-status" class="field-select">'
+    + '<option value="draft">Draft</option><option value="under-review">Under Review</option>'
+    + '<option value="approved">Approved</option><option value="sent">Sent</option></select></div>'
+    + '</div>'
+    + '<div class="field-row">'
+    + '<div><label class="field-label">Content bucket</label><select id="f-bucket" class="field-select">'
+    + '<option value="">None</option>'
+    + '<option value="Education">Education</option>'
+    + '<option value="Problem-Solution">Problem / Solution</option>'
+    + '<option value="Stack Building">Stack Building</option>'
+    + '<option value="Daily Performance">Daily Performance</option>'
+    + '<option value="Trust-Transparency">Trust / Transparency</option>'
+    + '</select></div>'
+    + '<div><label class="field-label">Email type</label><select id="f-type" class="field-select">'
+    + '<option value="Campaign">Campaign</option><option value="Flow">Flow</option><option value="Promo">Promo</option>'
+    + '</select></div>'
+    + '</div>'
+    + '<div><label class="field-label">Segment</label>'
+    + '<input type="text" id="f-segment" class="field-input" placeholder="e.g. All subscribers, Lapsed, New buyers"></div>'
+    + '<div><label class="field-label">Notes</label>'
+    + '<textarea id="f-notes" class="field-textarea" placeholder="Angle, hook direction, reference emails, etc."></textarea></div>';
+  var footSave = document.querySelector('#modalOverlay .primary-btn');
+  footSave.textContent = 'Save';
+  footSave.onclick = window.saveFromModal;
+}
+
+// ── VOICE BRIEF ───────────────────────────────────────────────────────────
+
+var voiceCache = null;
+var voiceLoadedAt = 0;
+
+async function loadVoiceBrief(force) {
+  if (!force && voiceCache && (Date.now() - voiceLoadedAt) < 30000) return;
+  var res = await db.from('quill_voice_brief').select('*').eq('client', 'SFH').maybeSingle();
+  if (res.error) {
+    console.error('loadVoiceBrief error', res.error);
+    return;
+  }
+  voiceCache = res.data || null;
+  voiceLoadedAt = Date.now();
+}
+
+async function showVoiceOnOpen() {
+  await loadVoiceBrief(false);
+  renderVoiceBrief();
+}
+
+function renderVoiceBrief() {
+  var structuredCol = document.getElementById('voice-structured-col');
+  var narrativeCol = document.getElementById('voice-narrative-col');
+  if (!structuredCol || !narrativeCol) return;
+  structuredCol.innerHTML = '';
+  narrativeCol.innerHTML = '';
+  if (!voiceCache) {
+    structuredCol.innerHTML = '<div class="empty-hint"><strong>Voice brief not seeded yet.</strong><br>Run the session 3.1 migration to seed from Ines doc.</div>';
+    return;
+  }
+
+  // Structured fields
+  structuredCol.appendChild(buildVoiceTagPanel('Voice adjectives', 'What SFH sounds like', 'voice_adjectives', parseJsonField(voiceCache.voice_adjectives), 'base'));
+  structuredCol.appendChild(buildVoiceTagPanel('Signature phrases', 'Reach for these', 'signature_phrases', parseJsonField(voiceCache.signature_phrases), 'phrase'));
+  structuredCol.appendChild(buildVoiceTagPanel('Banned words', 'Never use these', 'banned_words', parseJsonField(voiceCache.banned_words), 'banned'));
+  structuredCol.appendChild(buildVoiceTagPanel('Banned claim types', 'Never do these', 'banned_claims', parseJsonField(voiceCache.banned_claims), 'banned'));
+  structuredCol.appendChild(buildVoiceSingleFieldPanel('Point of view', 'pov', voiceCache.pov));
+  structuredCol.appendChild(buildVoiceSingleFieldPanel('Formality', 'formality', voiceCache.formality));
+
+  // Narrative sections
+  narrativeCol.appendChild(buildVoiceNarrativePanel('Brand snapshot', 'What SFH is', 'brand_snapshot', voiceCache.brand_snapshot));
+  narrativeCol.appendChild(buildVoiceNarrativePanel('Customer profile', 'Demographics, pain points, desires', 'customer_profile', voiceCache.customer_profile));
+  narrativeCol.appendChild(buildVoiceNarrativePanel('Differentiation', 'What makes SFH different', 'differentiation', voiceCache.differentiation));
+  narrativeCol.appendChild(buildVoiceNarrativePanel('Positioning', 'Market position and competitors', 'positioning', voiceCache.positioning));
+  narrativeCol.appendChild(buildVoiceNarrativePanel('Tone nuances', 'Subtleties of voice', 'tone_nuances', voiceCache.tone_nuances));
+}
+
+function buildVoiceTagPanel(title, sub, field, tags, style) {
+  var panel = document.createElement('div');
+  panel.className = 'voice-panel';
+  var head = document.createElement('div');
+  head.className = 'voice-panel-head';
+  var titleBox = document.createElement('div');
+  var titleEl = document.createElement('div');
+  titleEl.className = 'voice-panel-title';
+  titleEl.textContent = title;
+  titleBox.appendChild(titleEl);
+  if (sub) {
+    var subEl = document.createElement('div');
+    subEl.className = 'voice-panel-sub';
+    subEl.textContent = sub;
+    titleBox.appendChild(subEl);
+  }
+  head.appendChild(titleBox);
+  panel.appendChild(head);
+
+  var area = document.createElement('div');
+  area.className = 'voice-tag-area';
+  panel.appendChild(area);
+
+  function renderTags() {
+    area.innerHTML = '';
+    tags.forEach(function(t, idx){
+      var chip = document.createElement('span');
+      chip.className = 'voice-tag' + (style === 'banned' ? ' banned' : (style === 'phrase' ? ' phrase' : ''));
+      chip.textContent = t;
+      var rm = document.createElement('button');
+      rm.className = 'voice-tag-remove';
+      rm.textContent = '\u00d7';
+      rm.title = 'Remove';
+      (function(index){
+        rm.onclick = function(){
+          tags.splice(index, 1);
+          renderTags();
+          saveVoiceField(field, tags);
+        };
+      })(idx);
+      chip.appendChild(rm);
+      area.appendChild(chip);
+    });
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'voice-tag-input';
+    inp.placeholder = '+ add';
+    inp.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && inp.value.trim()) {
+        tags.push(inp.value.trim());
+        inp.value = '';
+        renderTags();
+        saveVoiceField(field, tags);
+      }
+    });
+    area.appendChild(inp);
+  }
+  renderTags();
+  return panel;
+}
+
+function buildVoiceSingleFieldPanel(title, field, value) {
+  var panel = document.createElement('div');
+  panel.className = 'voice-panel';
+  var head = document.createElement('div');
+  head.className = 'voice-panel-head';
+  var titleEl = document.createElement('div');
+  titleEl.className = 'voice-panel-title';
+  titleEl.textContent = title;
+  head.appendChild(titleEl);
+  panel.appendChild(head);
+  var input = document.createElement('textarea');
+  input.className = 'voice-single-field';
+  input.rows = 2;
+  input.value = value || '';
+  input.addEventListener('blur', function(){
+    var newVal = input.value.trim();
+    if (newVal !== (value || '')) saveVoiceField(field, newVal);
+  });
+  panel.appendChild(input);
+  return panel;
+}
+
+function buildVoiceNarrativePanel(title, sub, field, value) {
+  var panel = document.createElement('div');
+  panel.className = 'voice-panel';
+  var head = document.createElement('div');
+  head.className = 'voice-panel-head';
+  var titleBox = document.createElement('div');
+  var titleEl = document.createElement('div');
+  titleEl.className = 'voice-panel-title';
+  titleEl.textContent = title;
+  titleBox.appendChild(titleEl);
+  if (sub) {
+    var subEl = document.createElement('div');
+    subEl.className = 'voice-panel-sub';
+    subEl.textContent = sub;
+    titleBox.appendChild(subEl);
+  }
+  head.appendChild(titleBox);
+  panel.appendChild(head);
+  var textarea = document.createElement('textarea');
+  textarea.className = 'voice-single-field voice-narrative-text';
+  textarea.value = value || '';
+  textarea.addEventListener('blur', function(){
+    var newVal = textarea.value.trim();
+    if (newVal !== (value || '')) saveVoiceField(field, newVal);
+  });
+  panel.appendChild(textarea);
+  return panel;
+}
+
+async function saveVoiceField(field, value) {
+  var note = document.getElementById('voice-save-note');
+  if (note) { note.className = 'voice-save-note'; note.textContent = 'Saving...'; }
+  var payload = {};
+  payload[field] = value;
+  payload.updated_at = new Date().toISOString();
+  var res = await db.from('quill_voice_brief').update(payload).eq('client', 'SFH').select().maybeSingle();
+  if (res.error) {
+    if (note) { note.className = 'voice-save-note error'; note.textContent = 'Save failed: ' + res.error.message; }
+    return;
+  }
+  if (res.data) voiceCache = res.data;
+  if (note) { note.className = 'voice-save-note saved'; note.textContent = 'Saved'; }
+  setTimeout(function(){
+    var n2 = document.getElementById('voice-save-note');
+    if (n2 && n2.textContent === 'Saved') n2.textContent = 'Loaded';
+  }, 2000);
 }
 
 // Init
