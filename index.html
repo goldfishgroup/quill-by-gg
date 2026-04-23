@@ -4920,6 +4920,16 @@ function buildDraftCard(d) {
     source.textContent = 'From idea: ' + (srcIdea ? (srcIdea.hook || '').slice(0, 120) : 'idea #' + d.source_idea_id);
     headMeta.appendChild(source);
   }
+  if (d.source_calendar_id) {
+    var srcEm = (emails || []).find(function(e){ return e.id === d.source_calendar_id; });
+    var calSource = document.createElement('div');
+    calSource.className = 'draft-card-source';
+    calSource.style.color = 'var(--gg-orange)';
+    calSource.style.fontStyle = 'normal';
+    calSource.style.fontWeight = '600';
+    calSource.textContent = 'For calendar row: ' + (srcEm ? '"' + (srcEm.subject || 'untitled') + '"' + (srcEm.send_date ? ' (' + srcEm.send_date + ')' : '') : '#' + d.source_calendar_id);
+    headMeta.appendChild(calSource);
+  }
   head.appendChild(headMeta);
   card.appendChild(head);
 
@@ -4954,8 +4964,12 @@ function buildDraftCard(d) {
     var promoteBtn = document.createElement('button');
     if (d.promoted_to_calendar_id) {
       promoteBtn.className = 'draft-action-btn promoted';
-      promoteBtn.textContent = 'In calendar';
+      promoteBtn.textContent = d.source_calendar_id ? 'Applied to row' : 'In calendar';
       promoteBtn.disabled = true;
+    } else if (d.source_calendar_id) {
+      promoteBtn.className = 'draft-action-btn promote';
+      promoteBtn.textContent = 'Apply to calendar row';
+      promoteBtn.onclick = function(){ promoteDraftToCalendar(d.id); };
     } else {
       promoteBtn.className = 'draft-action-btn promote';
       promoteBtn.textContent = 'Add to Waiting Bay';
@@ -5099,29 +5113,59 @@ window.promoteDraftToCalendar = async function(id) {
   var d = draftsCache.find(function(x){ return x.id === id; });
   if (!d) return;
   var pref = d.preferred || 'a';
-  var payload = {
+  var variantData = {
     subject: d['subject_' + pref] || '',
     preview: d['preview_' + pref] || '',
-    send_date: null,
-    status: 'draft',
-    bucket: d.bucket || '',
-    email_type: 'Campaign',
-    segment: '',
     headline: d['headline_' + pref] || '',
     subheadline: d['subheadline_' + pref] || '',
     first_cta: d['first_cta_' + pref] || '',
     body: d['body_' + pref] || '',
     bridge: d['bridge_' + pref] || '',
     product_section: d['product_section_' + pref] || '',
-    final_cta: d['final_cta_' + pref] || '',
+    final_cta: d['final_cta_' + pref] || ''
+  };
+
+  // If draft came from an existing calendar row, update that row in place.
+  if (d.source_calendar_id) {
+    var updatePayload = Object.assign({}, variantData, {
+      source_draft_id: d.id,
+      source_variant: pref,
+      notes: (function(){
+        var existing = (emails.find(function(e){ return e.id === d.source_calendar_id; }) || {}).notes || '';
+        var stamp = 'Draft applied from #' + d.id + ', variant ' + pref.toUpperCase() + '.';
+        return existing ? (existing + '\n\n' + stamp) : stamp;
+      })()
+    });
+    var upd = await db.from('quill_calendar').update(updatePayload).eq('id', d.source_calendar_id).select().single();
+    if (upd.error) { showToast('Could not update calendar row: ' + upd.error.message, true); return; }
+    // Update in-memory cache
+    var idx = emails.findIndex(function(e){ return e.id === d.source_calendar_id; });
+    if (idx !== -1) emails[idx] = upd.data;
+    var pUpd = await db.from('quill_generated_drafts').update({ promoted_to_calendar_id: d.source_calendar_id }).eq('id', id);
+    if (!pUpd.error) d.promoted_to_calendar_id = d.source_calendar_id;
+    renderDrafts();
+    // If Calendar or Board rendered, refresh them
+    if (typeof renderCalendar === 'function') try { renderCalendar(); } catch(e){}
+    if (typeof renderCampaignBoard === 'function') try { renderCampaignBoard(); } catch(e){}
+    showToast('Draft applied to calendar row');
+    return;
+  }
+
+  // Default path: create a new row in the Waiting Bay
+  var payload = Object.assign({}, variantData, {
+    send_date: null,
+    status: 'draft',
+    bucket: d.bucket || '',
+    email_type: 'Campaign',
+    segment: '',
     source_draft_id: d.id,
     source_variant: pref,
     notes: 'Promoted from draft #' + d.id + ', variant ' + pref.toUpperCase() + '. Edit in Campaign Editor to refine before sending.'
-  };
+  });
   var ins = await db.from('quill_calendar').insert(payload).select().single();
   if (ins.error) { showToast('Could not add to calendar: ' + ins.error.message, true); return; }
-  var upd = await db.from('quill_generated_drafts').update({ promoted_to_calendar_id: ins.data.id }).eq('id', id);
-  if (!upd.error) d.promoted_to_calendar_id = ins.data.id;
+  var upd2 = await db.from('quill_generated_drafts').update({ promoted_to_calendar_id: ins.data.id }).eq('id', id);
+  if (!upd2.error) d.promoted_to_calendar_id = ins.data.id;
   emails.push(ins.data);
   renderDrafts();
   showToast('Added to Waiting Bay');
@@ -5146,15 +5190,22 @@ function getTopWinningSubjects() {
   return list.slice(0, 6);
 }
 
-async function buildDraftContext(idea, strategy, extraDirection) {
+async function buildDraftContext(source, strategy, extraDirection) {
   if (!voiceCache) await loadVoiceBrief(true);
   if (!bucketsCache) await loadBuckets(true);
   if (!productsCache) await loadProducts(true);
   if (!insightsData.campaigns) await loadInsightsIfNeeded();
-  var bucket = (bucketsCache || []).find(function(b){ return b.name === idea.bucket; });
+  // Source can be either a starred Idea row or a Calendar row (concept in place)
+  // We keep both fields so formatDraftPromptContext can render the appropriate framing.
+  var bucketName = source && source.bucket ? source.bucket : null;
+  var bucket = bucketName ? (bucketsCache || []).find(function(b){ return b.name === bucketName; }) : null;
   var topSubjects = getTopWinningSubjects();
+  var isConcept = source && source.source_type === 'concept';
   return {
-    idea: idea,
+    source: source,
+    isConcept: isConcept,
+    idea: isConcept ? null : source,
+    concept: isConcept ? source : null,
     bucket: bucket,
     voice: voiceCache || {},
     products: productsCache || [],
@@ -5166,19 +5217,40 @@ async function buildDraftContext(idea, strategy, extraDirection) {
 
 function formatDraftPromptContext(ctx) {
   var lines = [];
-  var idea = ctx.idea;
-  lines.push('=== SOURCE IDEA ===');
-  lines.push('Hook: ' + (idea.hook || ''));
-  var subjects = idea.subject_options;
-  if (typeof subjects === 'string') { try { subjects = JSON.parse(subjects); } catch(e){ subjects = []; } }
-  if (Array.isArray(subjects) && subjects.length) {
-    lines.push('Subject directions from idea: ' + subjects.map(function(s){ return '"' + s + '"'; }).join(', '));
+  if (ctx.isConcept) {
+    var concept = ctx.concept || {};
+    lines.push('=== SOURCE: CALENDAR CONCEPT (strategist has already committed this to the calendar for a specific send date) ===');
+    lines.push('The strategist has already placed this email on the calendar. Your job is to flesh it out into a full production-ready draft that respects whatever direction is already present. Do NOT re-scope the concept; do NOT reframe the intent. Expand faithfully.');
+    lines.push('');
+    if (concept.subject) lines.push('Current subject (may be rough, refine if needed): "' + concept.subject + '"');
+    if (concept.preview) lines.push('Current preview (may be rough): "' + concept.preview + '"');
+    if (concept.headline) lines.push('Existing headline direction: "' + concept.headline + '"');
+    if (concept.subheadline) lines.push('Existing subheadline direction: "' + concept.subheadline + '"');
+    if (concept.body) lines.push('Existing body direction:\n' + concept.body);
+    if (concept.bridge) lines.push('Existing bridge direction: ' + concept.bridge);
+    if (concept.product_section) lines.push('Existing product section direction: ' + concept.product_section);
+    if (concept.final_cta) lines.push('Existing final CTA direction: ' + concept.final_cta);
+    if (concept.notes) lines.push('Strategist notes (may contain angle, core idea, direction): ' + concept.notes);
+    if (concept.send_date) lines.push('Scheduled for: ' + concept.send_date);
+    if (concept.segment) lines.push('Target segment: ' + concept.segment);
+    lines.push('');
+    lines.push('APPROACH: Read what is there. Respect the angle. Respect anything already written. If a field is blank, fill it. If a field has rough direction, polish it into final copy. Keep the strategists core idea intact. Match the voice in the rest of this prompt.');
+    lines.push('');
+  } else {
+    var idea = ctx.idea || {};
+    lines.push('=== SOURCE IDEA (evaluated concept to expand into a draft) ===');
+    lines.push('Hook: ' + (idea.hook || ''));
+    var subjects = idea.subject_options;
+    if (typeof subjects === 'string') { try { subjects = JSON.parse(subjects); } catch(e){ subjects = []; } }
+    if (Array.isArray(subjects) && subjects.length) {
+      lines.push('Subject directions from idea: ' + subjects.map(function(s){ return '"' + s + '"'; }).join(', '));
+    }
+    if (idea.preview_text) lines.push('Preview direction: "' + idea.preview_text + '"');
+    if (idea.angle) lines.push('Angle: ' + idea.angle);
+    if (idea.cta_angle) lines.push('CTA intent: ' + idea.cta_angle);
+    if (idea.reasoning_notes) lines.push('Why it works: ' + idea.reasoning_notes);
+    lines.push('');
   }
-  if (idea.preview_text) lines.push('Preview direction: "' + idea.preview_text + '"');
-  if (idea.angle) lines.push('Angle: ' + idea.angle);
-  if (idea.cta_angle) lines.push('CTA intent: ' + idea.cta_angle);
-  if (idea.reasoning_notes) lines.push('Why it works: ' + idea.reasoning_notes);
-  lines.push('');
 
   if (ctx.bucket) {
     var b = ctx.bucket;
@@ -5271,6 +5343,18 @@ window.generateDraft = async function() {
   var idea = (ideasCache || []).find(function(i){ return i.id === draftSelectedIdeaId; });
   if (!idea) { status.className = 'extract-status error'; status.textContent = 'Selected idea not found.'; return; }
 
+  return runDraftGeneration({ source: idea, strategy: draftStrategy, extraEl: extraEl, btn: btn, status: status, sourceIdeaId: idea.id, sourceCalendarId: null });
+};
+
+async function runDraftGeneration(opts) {
+  var btn = opts.btn;
+  var status = opts.status;
+  var extraEl = opts.extraEl;
+  var source = opts.source;
+  var strategy = opts.strategy;
+  var sourceIdeaId = opts.sourceIdeaId || null;
+  var sourceCalendarId = opts.sourceCalendarId || null;
+
   btn.disabled = true;
   var prevLabel = btn.textContent;
   btn.textContent = 'Generating...';
@@ -5279,7 +5363,7 @@ window.generateDraft = async function() {
 
   try {
     var extraDirection = (extraEl && extraEl.value) ? extraEl.value.trim() : '';
-    var ctx = await buildDraftContext(idea, draftStrategy, extraDirection);
+    var ctx = await buildDraftContext(source, strategy, extraDirection);
     var formatted = formatDraftPromptContext(ctx);
     status.textContent = 'Sending to Claude for draft generation...';
 
@@ -5287,7 +5371,7 @@ window.generateDraft = async function() {
 
     var userPrompt = formatted + '\n\n'
       + 'YOUR TASK:\n'
-      + 'Generate TWO complete email variants (A and B) for the source idea, following the specified variant strategy.\n\n'
+      + 'Generate TWO complete email variants (A and B) for the source, following the specified variant strategy.\n\n'
       + 'REQUIREMENTS:\n'
       + '- Return a single JSON object (not an array). No preamble, no markdown, no code fences. Just the JSON object.\n'
       + '- Target body length per variant: 150 to 250 words total across body + bridge + product section.\n'
@@ -5373,9 +5457,10 @@ window.generateDraft = async function() {
     status.textContent = 'Saving draft to Supabase...';
     var a = parsed.variant_a, b = parsed.variant_b;
     var row = {
-      source_idea_id: idea.id,
-      bucket: idea.bucket || null,
-      variant_strategy: draftStrategy,
+      source_idea_id: sourceIdeaId,
+      source_calendar_id: sourceCalendarId,
+      bucket: source.bucket || null,
+      variant_strategy: strategy,
       extra_direction: extraDirection ? extraDirection.slice(0, 1000) : null,
       subject_a: String(a.subject || '').slice(0, 300),
       subject_b: String(b.subject || '').slice(0, 300),
@@ -5399,7 +5484,7 @@ window.generateDraft = async function() {
       active: true,
       starred: false
     };
-    var ins = await db.from('quill_generated_drafts').insert(row).select();
+    var ins = await db.from('quill_generated_drafts').insert(row).select().single();
     if (ins.error) throw new Error('Supabase insert failed: ' + ins.error.message);
 
     status.className = 'extract-status success';
@@ -5407,13 +5492,75 @@ window.generateDraft = async function() {
     await loadDrafts(true);
     renderDrafts();
     showToast('Draft generated');
+    return ins.data;
   } catch (err) {
     console.error('Draft generation error', err);
     status.className = 'extract-status error';
     status.textContent = 'Something went wrong. ' + (err.message || err);
+    return null;
   } finally {
     btn.disabled = false;
     btn.textContent = prevLabel;
+  }
+}
+
+// Generate a draft from an existing calendar row (concept in place).
+// Landing behavior: the drafts get source_calendar_id so "Use this variant"
+// writes back to the original row instead of creating a new one.
+window.generateDraftFromCalendarRow = async function(calendarId) {
+  var em = (emails || []).find(function(e){ return e.id === calendarId; });
+  if (!em) { showToast('Calendar row not found', true); return; }
+
+  // Build a lightweight status line right inside the Source card.
+  var statusEl = document.getElementById('editor-gen-from-concept-status');
+  var btn = document.getElementById('editor-gen-from-concept-btn');
+  if (!statusEl || !btn) return;
+
+  statusEl.className = 'extract-status progress';
+  statusEl.textContent = 'Generating draft from this calendar concept...';
+  statusEl.style.display = 'block';
+
+  // Wrap the calendar row as a "concept" source
+  var concept = {
+    source_type: 'concept',
+    subject: em.subject || '',
+    preview: em.preview || '',
+    bucket: em.bucket || '',
+    headline: em.headline || '',
+    subheadline: em.subheadline || '',
+    body: em.body || '',
+    bridge: em.bridge || '',
+    product_section: em.product_section || '',
+    final_cta: em.final_cta || '',
+    notes: em.notes || '',
+    send_date: em.send_date || '',
+    segment: em.segment || ''
+  };
+
+  // Stub extraEl (no user-supplied extra direction here)
+  var stubExtra = { value: '' };
+  var result = await runDraftGeneration({
+    source: concept,
+    strategy: 'different_angle',
+    extraEl: stubExtra,
+    btn: btn,
+    status: statusEl,
+    sourceIdeaId: null,
+    sourceCalendarId: calendarId
+  });
+
+  if (result) {
+    statusEl.className = 'extract-status success';
+    statusEl.innerHTML = 'Draft generated. Open the Draft studio (AI Studio \u2192 Draft) to pick a variant, or <a href="#" id="editor-gen-open-draft" style="color:var(--gg-olive);text-decoration:underline;">click here</a>.';
+    var link = document.getElementById('editor-gen-open-draft');
+    if (link) {
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        // Navigate to AI Studio > Draft
+        if (typeof switchTab === 'function') switchTab('studio');
+        if (typeof setStudioSection === 'function') setStudioSection('draft');
+      });
+    }
   }
 };
 
@@ -5784,18 +5931,25 @@ function buildEditorHtml(em) {
   parts.push('      </div>');
   parts.push('    </div>');
 
-  // Source draft (if applicable)
+  // Source card - either shows existing draft link OR offers to generate from concept
+  parts.push('    <div class="editor-meta-card" id="editor-source-card">');
+  parts.push('      <div class="editor-meta-card-title">Source</div>');
   if (em.source_draft_id) {
-    parts.push('    <div class="editor-meta-card" id="editor-source-card">');
-    parts.push('      <div class="editor-meta-card-title">Source</div>');
     parts.push('      <div class="editor-source-box">');
     parts.push('        <div class="editor-source-box-label">From draft</div>');
     parts.push('        Draft #' + em.source_draft_id + (em.source_variant ? ', variant ' + em.source_variant.toUpperCase() : ''));
     parts.push('      </div>');
     parts.push('      <button class="editor-source-toggle" onclick="editorToggleOtherVariant()" id="editor-other-toggle">Show other variant</button>');
     parts.push('      <div class="editor-other-variant" id="editor-other-variant"></div>');
-    parts.push('    </div>');
+  } else {
+    parts.push('      <div class="editor-source-box" style="border-left-color: var(--gg-orange);">');
+    parts.push('        <div class="editor-source-box-label" style="color: var(--gg-orange);">No draft yet</div>');
+    parts.push('        This row has a concept in place. Generate a full Ines-structured draft from whatever direction is written here.');
+    parts.push('      </div>');
+    parts.push('      <button class="editor-source-toggle" id="editor-gen-from-concept-btn" onclick="generateDraftFromCalendarRow(' + em.id + ')" style="margin-top:10px;">Generate draft from this concept</button>');
+    parts.push('      <div class="extract-status" id="editor-gen-from-concept-status" style="display:none; margin-top:8px;"></div>');
   }
+  parts.push('    </div>');
 
   parts.push('  </div>');  // meta
   parts.push('</div>');  // grid
