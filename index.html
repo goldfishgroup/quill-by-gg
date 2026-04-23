@@ -4052,7 +4052,17 @@ window.generateIdeas = async function() {
         messages: [{ role: 'user', content: userPrompt }]
       })
     });
-    var data = await res.json();
+    // Detect non-JSON responses (e.g. Vercel HTML error pages on timeout) so
+    // the user gets a useful message instead of "Unexpected token '<'".
+    var rawText = await res.text();
+    var data;
+    try { data = JSON.parse(rawText); }
+    catch (e) {
+      if (res.status === 504 || rawText.indexOf('<!DOCTYPE') === 0 || rawText.indexOf('<html') === 0) {
+        throw new Error('The AI request timed out on Vercel. Make sure vercel.json sets maxDuration to 60 for /api/diagnose, then redeploy.');
+      }
+      throw new Error('Server returned a non-JSON response. Status ' + res.status + '. First 200 chars: ' + rawText.slice(0, 200));
+    }
     if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
     var text = '';
     if (data.content && Array.isArray(data.content)) {
