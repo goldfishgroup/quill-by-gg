@@ -442,6 +442,8 @@
     .idea-action-btn.promote:hover { opacity: 0.9; background: var(--gg-olive); color: #fff; }
     .idea-action-btn.promoted { background: var(--gg-offwhite); color: var(--gg-olive); cursor: default; }
     .idea-meta-footer { font-size: 10px; color: var(--q-muted); display: flex; gap: 10px; justify-content: space-between; }
+    .fact-check-notice { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--q-muted); padding: 6px 10px; background: #fef6e4; border: 0.5px solid #f4d58d; border-radius: 6px; margin-top: 4px; line-height: 1.4; font-style: italic; }
+    .fact-check-notice .fact-check-icon { color: #b4711a; font-weight: 700; font-style: normal; font-size: 11px; flex-shrink: 0; }
 
     /* DRAFT */
     .draft-form { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px; }
@@ -599,6 +601,7 @@
         <button class="studio-nav-btn" onclick="setStudioSection('flows')" id="snav-flows">Flow Diagnostics</button>
         <button class="studio-nav-btn" onclick="setStudioSection('buckets')" id="snav-buckets">Buckets</button>
         <button class="studio-nav-btn" onclick="setStudioSection('voice')" id="snav-voice">Voice</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('products')" id="snav-products">Products</button>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
         <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
         <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
@@ -878,6 +881,38 @@
           </div>
         </div>
 
+        <div class="studio-section" id="studio-products">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Products</div>
+              <div class="patterns-sub">SFH product catalog. Ideas and Draft generators read from here to avoid inventing product details or claims. Edit each product to refine its description, ingredients, signature claims, and stack pairs.</div>
+            </div>
+          </div>
+          <div class="tip-widget" id="tip-products">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-products')">
+              <div class="tip-widget-title">How Products ground generation</div>
+              <button class="tip-widget-toggle" id="tip-products-toggle">Hide</button>
+            </div>
+            <div class="tip-widget-body">
+              <div class="tip-section-title">What generators read</div>
+              <ul>
+                <li><strong>Short description.</strong> The 1-2 sentence pitch. Used when an email features the product.</li>
+                <li><strong>Key ingredients.</strong> Keeps Claude from inventing "clinical doses" or ingredient claims.</li>
+                <li><strong>Signature claims.</strong> Brand-approved factual phrases. Claude pulls from this list rather than writing its own.</li>
+                <li><strong>Stack pairs.</strong> Guides Claude when suggesting routines. Behavioral framing, not biochemical.</li>
+                <li><strong>Notes.</strong> Anything worth Claude knowing about how SFH talks about this product.</li>
+              </ul>
+              <div class="tip-section-title">Tips</div>
+              <ul>
+                <li><strong>Refine signature claims from real product pages.</strong> The seeded claims are starting points. Paste what your product page actually says.</li>
+                <li><strong>Stack pairs are behavioral.</strong> "Creatine + Magnesium" means they fit in the same routine, not that one enhances the other.</li>
+                <li><strong>Notes is where judgment lives.</strong> If a product has a specific talking point you dont want generators missing, put it here.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="bucket-grid" id="products-grid"></div>
+        </div>
+
         <div class="studio-section" id="studio-ideas">
           <div class="patterns-head">
             <div class="patterns-head-left">
@@ -999,8 +1034,8 @@
               <div class="ideas-form-field">
                 <label>Variant strategy</label>
                 <div class="draft-strategy-toggle">
-                  <button class="draft-strategy-btn active" onclick="setDraftStrategy(\u0027different_angle\u0027)" id="ds-different_angle">Different angles</button>
-                  <button class="draft-strategy-btn" onclick="setDraftStrategy(\u0027tonal_variant\u0027)" id="ds-tonal_variant">Tonal variant</button>
+                  <button class="draft-strategy-btn active" id="ds-different_angle">Different angles</button>
+                  <button class="draft-strategy-btn" id="ds-tonal_variant">Tonal variant</button>
                 </div>
               </div>
               <div class="draft-strategy-help" id="draft-strategy-help">A and B explore different angles of the same idea. Better for testing which hook framing resonates.</div>
@@ -1567,12 +1602,16 @@ function ensureCalendarModalDom() {
 window.closeModal = function() {
   document.getElementById('modalOverlay').classList.remove('open');
   editingId = null;
-  // If the modal was in bucket-edit mode, restore the calendar modal fields
-  // so the next calendar open has the correct DOM structure.
+  // If the modal was in bucket-edit or product-edit mode, restore the
+  // calendar modal fields so the next calendar open has the correct DOM.
+  var wasHijacked = false;
   if (typeof bucketEditingId !== 'undefined' && bucketEditingId !== null) {
-    bucketEditingId = null;
-    restoreCalendarModal();
+    bucketEditingId = null; wasHijacked = true;
   }
+  if (typeof productEditingId !== 'undefined' && productEditingId !== null) {
+    productEditingId = null; wasHijacked = true;
+  }
+  if (wasHijacked) restoreCalendarModal();
 };
 
 function clearModalFields() {
@@ -1988,7 +2027,7 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','patterns','flows','buckets','voice','ideas','draft','gaps','refs'].forEach(function(s){
+  ['insights','patterns','flows','buckets','voice','products','ideas','draft','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
@@ -1999,6 +2038,7 @@ window.setStudioSection = function(section) {
   if (section === 'flows') showFlowDiagnosticsOnOpen();
   if (section === 'buckets') showBucketsOnOpen();
   if (section === 'voice') showVoiceOnOpen();
+  if (section === 'products') showProductsOnOpen();
   if (section === 'ideas') showIdeasOnOpen();
   if (section === 'draft') showDraftOnOpen();
 };
@@ -3691,7 +3731,211 @@ window.extractFlowDiagnostics = async function() {
   }
 };
 
-// ── IDEAS GENERATOR ───────────────────────────────────────────────────────
+// ── PRODUCTS ─────────────────────────────────────────────────────────────
+
+var productsCache = null;
+var productsLoadedAt = 0;
+var productEditingId = null;
+
+async function loadProducts(force) {
+  if (!force && productsCache && (Date.now() - productsLoadedAt) < 30000) return;
+  var res = await db.from('quill_products').select('*').eq('active', true).order('display_order', { ascending: true });
+  if (res.error) { console.error('loadProducts error', res.error); return; }
+  productsCache = res.data || [];
+  productsLoadedAt = Date.now();
+}
+
+async function showProductsOnOpen() {
+  await loadProducts(false);
+  renderProducts();
+}
+
+function renderProducts() {
+  var grid = document.getElementById('products-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!productsCache || !productsCache.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No products seeded yet.</strong><br>Run the session 3.5 migration to seed the SFH product catalog.</div>';
+    return;
+  }
+  productsCache.forEach(function(p){ grid.appendChild(buildProductCard(p)); });
+}
+
+function buildProductCard(p) {
+  var card = document.createElement('div');
+  card.className = 'bucket-card';
+
+  var head = document.createElement('div');
+  head.className = 'bucket-card-head';
+  var nameBox = document.createElement('div');
+  var nameEl = document.createElement('div');
+  nameEl.className = 'bucket-name';
+  nameEl.textContent = p.name || '';
+  nameBox.appendChild(nameEl);
+  if (p.category) {
+    var catEl = document.createElement('div');
+    catEl.style.cssText = 'font-size:10px;color:var(--q-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;';
+    catEl.textContent = p.category;
+    nameBox.appendChild(catEl);
+  }
+  head.appendChild(nameBox);
+  if (p.positioning) {
+    var pos = document.createElement('span');
+    pos.style.cssText = 'font-size:9px;font-weight:700;color:var(--gg-olive);background:var(--gg-offwhite);padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;';
+    pos.textContent = p.positioning;
+    head.appendChild(pos);
+  }
+  card.appendChild(head);
+
+  if (p.short_description) {
+    var desc = document.createElement('div');
+    desc.className = 'bucket-desc';
+    desc.textContent = p.short_description;
+    card.appendChild(desc);
+  }
+
+  if (p.key_ingredients) {
+    var ing = document.createElement('div');
+    ing.className = 'bucket-section';
+    var lbl = document.createElement('div');
+    lbl.className = 'bucket-section-label';
+    lbl.textContent = 'Key ingredients';
+    ing.appendChild(lbl);
+    var v = document.createElement('div');
+    v.style.cssText = 'font-size:12px;color:var(--gg-charcoal);line-height:1.5;';
+    v.textContent = p.key_ingredients;
+    ing.appendChild(v);
+    card.appendChild(ing);
+  }
+
+  var claims = parseJsonField(p.signature_claims);
+  if (claims.length) {
+    var cs = document.createElement('div');
+    cs.className = 'bucket-section';
+    var cl = document.createElement('div');
+    cl.className = 'bucket-section-label';
+    cl.textContent = 'Signature claims';
+    cs.appendChild(cl);
+    var tags = document.createElement('div');
+    tags.className = 'bucket-tags';
+    claims.forEach(function(c){
+      var tag = document.createElement('span');
+      tag.className = 'bucket-tag';
+      tag.textContent = c;
+      tags.appendChild(tag);
+    });
+    cs.appendChild(tags);
+    card.appendChild(cs);
+  }
+
+  var pairs = parseJsonField(p.stack_pairs);
+  if (pairs.length) {
+    var ps = document.createElement('div');
+    ps.className = 'bucket-section';
+    var pl = document.createElement('div');
+    pl.className = 'bucket-section-label';
+    pl.textContent = 'Stack pairs';
+    ps.appendChild(pl);
+    var ptags = document.createElement('div');
+    ptags.className = 'bucket-tags';
+    pairs.forEach(function(x){
+      var t = document.createElement('span');
+      t.className = 'bucket-tag';
+      t.textContent = x;
+      ptags.appendChild(t);
+    });
+    ps.appendChild(ptags);
+    card.appendChild(ps);
+  }
+
+  if (p.notes) {
+    var n = document.createElement('div');
+    n.className = 'bucket-makesgood';
+    n.innerHTML = '<strong>Notes:</strong> ' + escapeHtml(p.notes);
+    card.appendChild(n);
+  }
+
+  var editBtn = document.createElement('button');
+  editBtn.className = 'bucket-edit-btn';
+  editBtn.textContent = 'Edit product';
+  (function(id){ editBtn.onclick = function(){ openProductEditModal(id); }; })(p.id);
+  card.appendChild(editBtn);
+
+  return card;
+}
+
+window.openProductEditModal = function(id) {
+  var p = productsCache.find(function(x){ return x.id === id; });
+  if (!p) return;
+  productEditingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit product';
+  document.getElementById('deleteBtn').style.display = 'none';
+  var body = document.querySelector('#modalOverlay .modal-body');
+  body.innerHTML = '';
+
+  function addField(label, id, value, isTextarea) {
+    var wrap = document.createElement('div');
+    var lbl = document.createElement('label');
+    lbl.className = 'field-label';
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+    var input = document.createElement(isTextarea ? 'textarea' : 'input');
+    input.id = id;
+    input.className = isTextarea ? 'field-textarea bucket-modal-textarea' : 'field-input';
+    input.value = value || '';
+    if (!isTextarea) input.type = 'text';
+    wrap.appendChild(input);
+    body.appendChild(wrap);
+  }
+  addField('Name', 'p-name', p.name, false);
+  addField('Category', 'p-category', p.category, false);
+  addField('Short description', 'p-description', p.short_description, true);
+  addField('Key ingredients', 'p-ingredients', p.key_ingredients, false);
+  addField('Positioning', 'p-positioning', p.positioning, false);
+  addField('Signature claims (one per line)', 'p-claims', parseJsonField(p.signature_claims).join('\n'), true);
+  addField('Stack pairs (comma-separated product names)', 'p-pairs', parseJsonField(p.stack_pairs).join(', '), false);
+  addField('Notes', 'p-notes', p.notes, true);
+
+  var footSave = document.querySelector('#modalOverlay .primary-btn');
+  footSave.textContent = 'Save product';
+  footSave.onclick = saveProductFromModal;
+
+  document.getElementById('modalOverlay').classList.add('open');
+};
+
+async function saveProductFromModal() {
+  if (!productEditingId) return;
+  var name = (document.getElementById('p-name').value || '').trim();
+  if (!name) { showToast('Product name required', true); return; }
+  var claims = (document.getElementById('p-claims').value || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+  var pairs = (document.getElementById('p-pairs').value || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var payload = {
+    name: name,
+    category: (document.getElementById('p-category').value || '').trim(),
+    short_description: (document.getElementById('p-description').value || '').trim(),
+    key_ingredients: (document.getElementById('p-ingredients').value || '').trim(),
+    positioning: (document.getElementById('p-positioning').value || '').trim(),
+    signature_claims: claims,
+    stack_pairs: pairs,
+    notes: (document.getElementById('p-notes').value || '').trim(),
+    updated_at: new Date().toISOString()
+  };
+  var res = await db.from('quill_products').update(payload).eq('id', productEditingId).select().single();
+  if (res.error) { showToast('Save failed: ' + res.error.message, true); return; }
+  var idx = productsCache.findIndex(function(x){ return x.id === productEditingId; });
+  if (idx > -1) productsCache[idx] = res.data;
+  closeProductModal();
+  renderProducts();
+  showToast('Product updated');
+}
+
+function closeProductModal() {
+  productEditingId = null;
+  document.getElementById('modalOverlay').classList.remove('open');
+  restoreCalendarModal();
+}
+
+
 
 var ideasView = 'active';
 var ideasCache = null;
@@ -3906,6 +4150,14 @@ function buildIdeaCard(idea) {
     actions.appendChild(restoreBtn);
   }
   card.appendChild(actions);
+
+  // Fact-check reminder
+  if (idea.active) {
+    var fc = document.createElement('div');
+    fc.className = 'fact-check-notice';
+    fc.innerHTML = '<span class="fact-check-icon">\u26a0</span><span>Always fact-check scientific claims before sending.</span>';
+    card.appendChild(fc);
+  }
 
   // Footer
   if (idea.generated_at) {
@@ -4143,7 +4395,8 @@ window.generateIdeas = async function() {
       + '- Subject options must sound like SFH: calm, confident, slightly contrarian when appropriate. Not hype.\n'
       + '- Hooks should be 1 sentence, direct, human.\n'
       + '- Do not repeat angles from the dismissed ideas list.\n'
-      + '- CTA fit matters. Use "learn" or "explore" for education-heavy ideas where the email teaches first. Use "shop" only when the hook explicitly drives toward purchase action. Use "stack" when the idea is about combining products. Use "trust" when the idea is about brand credibility or transparency.\n\n'
+      + '- CTA fit matters. Use "learn" or "explore" for education-heavy ideas where the email teaches first. Use "shop" only when the hook explicitly drives toward purchase action. Use "stack" when the idea is about combining products. Use "trust" when the idea is about brand credibility or transparency.\n'
+      + '- FACTUAL FRAMING: Do not invent biochemical mechanisms, absorption claims, or pair-interaction claims (e.g. "X works better with Y", "A enhances B\u0027s absorption", "this pairs with that for potency"). When suggesting stacking or routines, frame it STRATEGICALLY (daily routine, comprehensive stack, behavioral consistency) not BIOCHEMICALLY (absorption, uptake, synergistic effect). If a claim feels like it needs science to back it up, rephrase it as behavior or perception. Example: avoid "Creatine works better when paired with recovery support." Instead: "Creatine belongs in any serious recovery stack." The first invents a mechanism; the second is a strategic framing.\n\n'
       + 'HOOK VARIETY PATTERNS to draw from (aim for a mix):\n'
       + '- Problem diagnosis: "Your sleep issue might not be a sleep problem"\n'
       + '- Aspirational reframe: "Sleep better in 3 weeks with one change"\n'
@@ -4317,6 +4570,18 @@ async function showDraftOnOpen() {
   populateIdeaDropdown();
   await loadDrafts(false);
   renderDrafts();
+  // Wire variant strategy buttons (inline onclick with unicode escapes breaks
+  // in HTML attributes, so we attach here instead).
+  var btnDA = document.getElementById('ds-different_angle');
+  var btnTV = document.getElementById('ds-tonal_variant');
+  if (btnDA && !btnDA.dataset.wired) {
+    btnDA.addEventListener('click', function(){ setDraftStrategy('different_angle'); });
+    btnDA.dataset.wired = '1';
+  }
+  if (btnTV && !btnTV.dataset.wired) {
+    btnTV.addEventListener('click', function(){ setDraftStrategy('tonal_variant'); });
+    btnTV.dataset.wired = '1';
+  }
 }
 
 function populateIdeaDropdown() {
@@ -4510,6 +4775,14 @@ function buildDraftCard(d) {
   }
   card.appendChild(actions);
 
+  // Fact-check reminder
+  if (d.active) {
+    var fc = document.createElement('div');
+    fc.className = 'fact-check-notice';
+    fc.innerHTML = '<span class="fact-check-icon">\u26a0</span><span>Always fact-check scientific claims before sending.</span>';
+    card.appendChild(fc);
+  }
+
   // Footer
   if (d.created_at) {
     var footer = document.createElement('div');
@@ -4674,6 +4947,7 @@ function getTopWinningSubjects() {
 async function buildDraftContext(idea, strategy, extraDirection) {
   if (!voiceCache) await loadVoiceBrief(true);
   if (!bucketsCache) await loadBuckets(true);
+  if (!productsCache) await loadProducts(true);
   if (!insightsData.campaigns) await loadInsightsIfNeeded();
   var bucket = (bucketsCache || []).find(function(b){ return b.name === idea.bucket; });
   var topSubjects = getTopWinningSubjects();
@@ -4681,6 +4955,7 @@ async function buildDraftContext(idea, strategy, extraDirection) {
     idea: idea,
     bucket: bucket,
     voice: voiceCache || {},
+    products: productsCache || [],
     topSubjects: topSubjects,
     strategy: strategy,
     extraDirection: extraDirection || ''
@@ -4731,6 +5006,23 @@ function formatDraftPromptContext(ctx) {
   if (v.differentiation) lines.push('Differentiation: ' + v.differentiation);
   if (v.tone_nuances) lines.push('Tone nuances: ' + v.tone_nuances);
   lines.push('');
+
+  if (ctx.products && ctx.products.length) {
+    lines.push('=== SFH PRODUCT CATALOG (use these details, do NOT invent) ===');
+    ctx.products.forEach(function(p){
+      var entry = '- ' + p.name;
+      if (p.category) entry += ' [' + p.category + ']';
+      if (p.short_description) entry += ': ' + p.short_description;
+      if (p.key_ingredients) entry += ' | Ingredients: ' + p.key_ingredients;
+      var claims = parseJsonField(p.signature_claims);
+      if (claims.length) entry += ' | Signature claims: ' + claims.join('; ');
+      var pairs = parseJsonField(p.stack_pairs);
+      if (pairs.length) entry += ' | Stacks with: ' + pairs.join(', ');
+      if (p.notes) entry += ' | Note: ' + p.notes;
+      lines.push(entry);
+    });
+    lines.push('');
+  }
 
   if (ctx.topSubjects.length) {
     lines.push('=== TOP WINNING SFH SUBJECT LINES (voice anchor) ===');
@@ -4792,7 +5084,9 @@ window.generateDraft = async function() {
       + '- Subject lines should feel like SFH: calm, contrarian-lite, slightly curious. Not hype.\n'
       + '- Each section has a distinct job. Headline grabs. Subheadline reinforces. First CTA is inline. Body teaches. Bridge connects body to product. Product section pitches the product with specifics. Final CTA closes.\n'
       + '- Use signature phrases naturally when they fit. Do not force them.\n'
-      + '- Keep paragraphs short and skimmable. 1-3 sentences each.\n\n'
+      + '- Keep paragraphs short and skimmable. 1-3 sentences each.\n'
+      + '- FACTUAL FRAMING: Do not invent biochemical mechanisms, absorption claims, or pair-interaction claims (e.g. "X works better with Y", "A enhances B\u0027s absorption"). When suggesting stacking or routines, frame it STRATEGICALLY (daily routine, comprehensive stack, behavioral consistency) not BIOCHEMICALLY (absorption, uptake, synergistic effect). Do not cite specific percentages or study results you cannot verify. If a claim would need science to back it up, rephrase it as behavior, routine, or perception instead.\n'
+      + '- PRODUCT GROUNDING: The product section and any product mentions must use ONLY products from the SFH product catalog above. Use the provided short_description, key_ingredients, and signature_claims. Do NOT invent product names, dose numbers, clinical study citations, or ingredient breakdowns beyond what the catalog provides. When pairing products, use the stack_pairs from the catalog.\n\n'
       + 'RETURN A SINGLE JSON OBJECT WITH THIS EXACT STRUCTURE:\n'
       + '{\n'
       + '  "variant_a": {\n'
@@ -4912,7 +5206,7 @@ window.generateDraft = async function() {
 };
 
 function initTipWidgets() {
-  var widgets = ['tip-patterns','tip-flows','tip-voice','tip-ideas','tip-draft'];
+  var widgets = ['tip-patterns','tip-flows','tip-voice','tip-ideas','tip-draft','tip-products'];
   widgets.forEach(function(id){
     var widget = document.getElementById(id);
     if (!widget) return;
