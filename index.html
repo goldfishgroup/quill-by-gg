@@ -126,9 +126,9 @@
     .cal-chip { font-size: 10px; padding: 3px 8px; border-radius: 4px; margin-bottom: 3px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; line-height: 1.5; font-weight: 500; background: var(--gg-offwhite); color: var(--gg-charcoal); border-left: 2px solid var(--gg-olive); }
     .cal-chip:hover { opacity: 0.85; }
     .cal-chip.status-draft { border-left-color: #b4b2a9; }
-    .cal-chip.status-under-review { border-left-color: #e8a030; }
     .cal-chip.status-approved { border-left-color: #4b9e4b; }
-    .cal-chip.status-sent { border-left-color: var(--gg-olive); background: #f4f0de; }
+    .cal-chip.status-sent-to-design { border-left-color: #e8a030; }
+    .cal-chip.status-scheduled { border-left-color: var(--gg-olive); background: #f4f0de; }
     .draggable-chip { cursor: grab; }
     .draggable-chip:active { cursor: grabbing; }
 
@@ -158,12 +158,12 @@
     .status-badge .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
     .sb-draft { background: #f0eee6; color: var(--q-muted); }
     .sb-draft .status-dot { background: #b4b2a9; }
-    .sb-under-review { background: #fdf2de; color: #8a5a10; }
-    .sb-under-review .status-dot { background: #e8a030; }
     .sb-approved { background: #e4eedc; color: #2e5e2e; }
     .sb-approved .status-dot { background: #4b9e4b; }
-    .sb-sent { background: #f4f0de; color: var(--gg-olive); }
-    .sb-sent .status-dot { background: var(--gg-olive); }
+    .sb-sent-to-design { background: #fdf2de; color: #8a5a10; }
+    .sb-sent-to-design .status-dot { background: #e8a030; }
+    .sb-scheduled { background: #f4f0de; color: var(--gg-olive); }
+    .sb-scheduled .status-dot { background: var(--gg-olive); }
 
     /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(50,49,47,0.35); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
@@ -445,6 +445,43 @@
     .fact-check-notice { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--q-muted); padding: 6px 10px; background: #fef6e4; border: 0.5px solid #f4d58d; border-radius: 6px; margin-top: 4px; line-height: 1.4; font-style: italic; }
     .fact-check-notice .fact-check-icon { color: #b4711a; font-weight: 700; font-style: normal; font-size: 11px; flex-shrink: 0; }
 
+    /* CAMPAIGN BOARD */
+    .board-wrap { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+    .board-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
+    .board-title { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: -0.01em; }
+    .board-sub { font-size: 12px; color: var(--q-muted); margin-top: 4px; line-height: 1.5; }
+    .board-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .board-filter { font-size: 12px; padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 6px; background: #fff; font-family: var(--font-body); color: var(--gg-charcoal); }
+    .board-add-btn { padding: 7px 14px; background: var(--gg-orange); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .board-add-btn:hover { opacity: 0.92; }
+    .board-columns { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 14px; align-items: start; }
+    .board-col { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); display: flex; flex-direction: column; min-height: 200px; }
+    .board-col-head { padding: 12px 14px; border-bottom: 0.5px solid var(--q-line); display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--gg-offwhite); border-radius: var(--radius) var(--radius) 0 0; }
+    .board-col-name { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; }
+    .board-col-count { font-size: 11px; font-weight: 600; color: var(--q-muted); padding: 2px 8px; background: #fff; border-radius: 10px; }
+    .board-col-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 140px; transition: background 0.15s; }
+    .board-col-body.drag-over { background: #f3efe3; border-radius: 0 0 var(--radius) var(--radius); }
+    .board-col-empty { font-size: 11px; color: var(--q-muted); font-style: italic; text-align: center; padding: 20px 8px; }
+    .board-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: 8px; padding: 10px 12px; cursor: grab; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.12s, box-shadow 0.12s; }
+    .board-card:hover { border-color: var(--gg-olive); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .board-card:active { cursor: grabbing; }
+    .board-card.dragging { opacity: 0.45; }
+    .board-card-subject { font-size: 12px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.4; }
+    .board-card-preview { font-size: 11px; color: var(--q-muted); line-height: 1.4; font-style: italic; }
+    .board-card-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 2px; }
+    .board-card-pill { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.07em; }
+    .board-card-pill.bucket { background: var(--gg-offwhite); color: var(--gg-olive); }
+    .board-card-pill.date { background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); }
+    .board-card-pill.unscheduled { background: #fef6e4; color: #b4711a; border: 0.5px solid #f4d58d; }
+    .board-card-pill.segment { background: transparent; border: 0.5px dashed var(--q-line); color: var(--q-muted); }
+    .board-card-pill.draft-source { background: #eef5ff; color: #3d5c99; border: 0.5px solid #c7dafc; }
+    @media (max-width: 1100px) {
+      .board-columns { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .board-columns { grid-template-columns: 1fr; }
+    }
+
     /* DRAFT */
     .draft-form { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px; }
     .draft-source-preview { background: var(--gg-offwhite); border-left: 3px solid var(--gg-olive); padding: 12px 14px; border-radius: 6px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.6; }
@@ -551,9 +588,9 @@
       <span class="filter-label">Status</span>
       <button class="filter-chip active" onclick="toggleFilter(this,'all')">All</button>
       <button class="filter-chip" onclick="toggleFilter(this,'draft')">Draft</button>
-      <button class="filter-chip" onclick="toggleFilter(this,'under-review')">Under Review</button>
       <button class="filter-chip" onclick="toggleFilter(this,'approved')">Approved</button>
-      <button class="filter-chip" onclick="toggleFilter(this,'sent')">Sent</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'sent-to-design')">Sent to Design</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'scheduled')">Scheduled</button>
     </div>
     <div class="cal-layout" style="display:grid;grid-template-columns:1fr 240px;gap:18px;align-items:start;">
       <div id="month-view" style="overflow-x:auto;min-width:0;"><div class="cal-grid" id="calGrid"></div></div>
@@ -576,10 +613,54 @@
 
   <!-- CAMPAIGN BOARD TAB -->
   <div id="tab-board" class="tab-content">
-    <div class="placeholder-card">
-      <h2>Campaign Board</h2>
-      <p>Kanban view across Waiting Bay, Draft, Under Review, Approved, and Sent. Filter by segment, content bucket, or send window. Click any card to jump into the Campaign Editor.</p>
-      <div class="session-note">Wiring up in Session 2</div>
+    <div class="board-wrap">
+      <div class="board-head">
+        <div>
+          <div class="board-title">Campaign Board</div>
+          <div class="board-sub">Pipeline view of every email in the calendar. Drag cards between columns to change status. Click a card to open it in the Campaign Editor.</div>
+        </div>
+        <div class="board-controls">
+          <select class="board-filter" id="board-bucket-filter" onchange="renderCampaignBoard()">
+            <option value="">All buckets</option>
+            <option value="Education">Education</option>
+            <option value="Problem-Solution">Problem-Solution</option>
+            <option value="Stack Building">Stack Building</option>
+            <option value="Daily Performance">Daily Performance</option>
+            <option value="Trust-Transparency">Trust-Transparency</option>
+          </select>
+          <button class="board-add-btn" onclick="openAddModalFromBoard()">+ Add email</button>
+        </div>
+      </div>
+      <div class="board-columns">
+        <div class="board-col" data-status="draft">
+          <div class="board-col-head">
+            <div class="board-col-name">Draft</div>
+            <div class="board-col-count" id="board-count-draft">0</div>
+          </div>
+          <div class="board-col-body" data-status="draft" id="board-col-draft"></div>
+        </div>
+        <div class="board-col" data-status="approved">
+          <div class="board-col-head">
+            <div class="board-col-name">Approved</div>
+            <div class="board-col-count" id="board-count-approved">0</div>
+          </div>
+          <div class="board-col-body" data-status="approved" id="board-col-approved"></div>
+        </div>
+        <div class="board-col" data-status="sent-to-design">
+          <div class="board-col-head">
+            <div class="board-col-name">Sent to Design</div>
+            <div class="board-col-count" id="board-count-sent-to-design">0</div>
+          </div>
+          <div class="board-col-body" data-status="sent-to-design" id="board-col-sent-to-design"></div>
+        </div>
+        <div class="board-col" data-status="scheduled">
+          <div class="board-col-head">
+            <div class="board-col-name">Scheduled</div>
+            <div class="board-col-count" id="board-count-scheduled">0</div>
+          </div>
+          <div class="board-col-body" data-status="scheduled" id="board-col-scheduled"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1136,9 +1217,9 @@
           <label class="field-label">Status</label>
           <select id="f-status" class="field-select">
             <option value="draft">Draft</option>
-            <option value="under-review">Under Review</option>
             <option value="approved">Approved</option>
-            <option value="sent">Sent</option>
+            <option value="sent-to-design">Sent to Design</option>
+            <option value="scheduled">Scheduled</option>
           </select>
         </div>
       </div>
@@ -1275,6 +1356,7 @@ window.switchTab = function(t) {
   });
   if (t === 'upload') refreshUploadCounts();
   if (t === 'studio') loadInsightsIfNeeded();
+  if (t === 'board') renderCampaignBoard();
 };
 
 // Calendar nav
@@ -1454,7 +1536,7 @@ function renderWaitingBay() {
     return;
   }
   unscheduled.forEach(function(e){
-    var dotColors = { 'draft':'#b4b2a9','under-review':'#e8a030','approved':'#4b9e4b','sent':'#43471d' };
+    var dotColors = { 'draft':'#b4b2a9','approved':'#4b9e4b','sent-to-design':'#e8a030','scheduled':'#43471d' };
     var status = e.status || 'draft';
     var card = document.createElement('div');
     card.className = 'cal-bay-card';
@@ -4953,29 +5035,24 @@ window.promoteDraftToCalendar = async function(id) {
   var d = draftsCache.find(function(x){ return x.id === id; });
   if (!d) return;
   var pref = d.preferred || 'a';
-  var subject = d['subject_' + pref] || '';
-  var preview = d['preview_' + pref] || '';
-  var headline = d['headline_' + pref] || '';
-  var body = d['body_' + pref] || '';
-  var bridge = d['bridge_' + pref] || '';
-  var product = d['product_section_' + pref] || '';
-  var finalCta = d['final_cta_' + pref] || '';
-  var notesBlocks = [];
-  if (headline) notesBlocks.push('Headline: ' + headline);
-  if (body) notesBlocks.push('Body:\n' + body);
-  if (bridge) notesBlocks.push('Bridge:\n' + bridge);
-  if (product) notesBlocks.push('Product section:\n' + product);
-  if (finalCta) notesBlocks.push('Final CTA: ' + finalCta);
-  notesBlocks.push('(From draft #' + d.id + ', variant ' + pref.toUpperCase() + ')');
   var payload = {
-    subject: subject,
-    preview: preview,
+    subject: d['subject_' + pref] || '',
+    preview: d['preview_' + pref] || '',
     send_date: null,
     status: 'draft',
     bucket: d.bucket || '',
     email_type: 'Campaign',
     segment: '',
-    notes: notesBlocks.join('\n\n')
+    headline: d['headline_' + pref] || '',
+    subheadline: d['subheadline_' + pref] || '',
+    first_cta: d['first_cta_' + pref] || '',
+    body: d['body_' + pref] || '',
+    bridge: d['bridge_' + pref] || '',
+    product_section: d['product_section_' + pref] || '',
+    final_cta: d['final_cta_' + pref] || '',
+    source_draft_id: d.id,
+    source_variant: pref,
+    notes: 'Promoted from draft #' + d.id + ', variant ' + pref.toUpperCase() + '. Edit in Campaign Editor to refine before sending.'
   };
   var ins = await db.from('quill_calendar').insert(payload).select().single();
   if (ins.error) { showToast('Could not add to calendar: ' + ins.error.message, true); return; }
@@ -5276,6 +5353,182 @@ window.generateDraft = async function() {
   }
 };
 
+// ── CAMPAIGN BOARD ────────────────────────────────────────────────────────
+
+var boardDragEmailId = null;
+
+window.openAddModalFromBoard = function() {
+  openAddModalBay();
+};
+
+function renderCampaignBoard() {
+  var filter = (document.getElementById('board-bucket-filter') || {}).value || '';
+  var statuses = ['draft','approved','sent-to-design','scheduled'];
+  var counts = { 'draft': 0, 'approved': 0, 'sent-to-design': 0, 'scheduled': 0 };
+
+  statuses.forEach(function(s){
+    var col = document.getElementById('board-col-' + s);
+    if (!col) return;
+    col.innerHTML = '';
+  });
+
+  if (!emails || !emails.length) {
+    statuses.forEach(function(s){
+      var col = document.getElementById('board-col-' + s);
+      if (col) col.innerHTML = '<div class="board-col-empty">No emails in this column.</div>';
+      var countEl = document.getElementById('board-count-' + s);
+      if (countEl) countEl.textContent = '0';
+    });
+    wireBoardDropTargets();
+    return;
+  }
+
+  var filtered = emails.filter(function(e){
+    if (filter && e.bucket !== filter) return false;
+    return true;
+  });
+
+  filtered.forEach(function(em){
+    var status = em.status || 'draft';
+    if (statuses.indexOf(status) === -1) status = 'draft';
+    counts[status] = (counts[status] || 0) + 1;
+    var col = document.getElementById('board-col-' + status);
+    if (!col) return;
+    col.appendChild(buildBoardCard(em));
+  });
+
+  statuses.forEach(function(s){
+    var col = document.getElementById('board-col-' + s);
+    var countEl = document.getElementById('board-count-' + s);
+    if (countEl) countEl.textContent = String(counts[s] || 0);
+    if (col && !col.children.length) {
+      col.innerHTML = '<div class="board-col-empty">Drop emails here or add from another column.</div>';
+    }
+  });
+
+  wireBoardDropTargets();
+}
+
+function buildBoardCard(em) {
+  var card = document.createElement('div');
+  card.className = 'board-card';
+  card.draggable = true;
+  card.dataset.emailId = String(em.id);
+
+  var subj = document.createElement('div');
+  subj.className = 'board-card-subject';
+  subj.textContent = em.subject || '(no subject)';
+  card.appendChild(subj);
+
+  if (em.preview) {
+    var prev = document.createElement('div');
+    prev.className = 'board-card-preview';
+    prev.textContent = em.preview.length > 90 ? em.preview.slice(0, 90) + '...' : em.preview;
+    card.appendChild(prev);
+  }
+
+  var meta = document.createElement('div');
+  meta.className = 'board-card-meta';
+  if (em.bucket) {
+    var bkt = document.createElement('span');
+    bkt.className = 'board-card-pill bucket';
+    bkt.textContent = em.bucket;
+    meta.appendChild(bkt);
+  }
+  if (em.send_date) {
+    var dt = document.createElement('span');
+    dt.className = 'board-card-pill date';
+    var d = new Date(em.send_date + 'T12:00:00');
+    dt.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    meta.appendChild(dt);
+  } else {
+    var un = document.createElement('span');
+    un.className = 'board-card-pill unscheduled';
+    un.textContent = 'unscheduled';
+    meta.appendChild(un);
+  }
+  if (em.segment) {
+    var seg = document.createElement('span');
+    seg.className = 'board-card-pill segment';
+    seg.textContent = em.segment.length > 22 ? em.segment.slice(0, 22) + '...' : em.segment;
+    meta.appendChild(seg);
+  }
+  if (em.source_draft_id) {
+    var ds = document.createElement('span');
+    ds.className = 'board-card-pill draft-source';
+    ds.textContent = 'from draft';
+    ds.title = 'Generated from draft #' + em.source_draft_id + (em.source_variant ? ' (variant ' + em.source_variant.toUpperCase() + ')' : '');
+    meta.appendChild(ds);
+  }
+  card.appendChild(meta);
+
+  card.addEventListener('dragstart', function(e){
+    boardDragEmailId = em.id;
+    card.classList.add('dragging');
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(em.id)); } catch(err) {}
+    }
+  });
+  card.addEventListener('dragend', function(){
+    card.classList.remove('dragging');
+    boardDragEmailId = null;
+  });
+
+  card.addEventListener('click', function(){
+    if (card.classList.contains('dragging')) return;
+    openCampaignEditor(em.id);
+  });
+
+  return card;
+}
+
+function wireBoardDropTargets() {
+  var cols = document.querySelectorAll('.board-col-body');
+  cols.forEach(function(col){
+    if (col.dataset.wired) return;
+    col.dataset.wired = '1';
+    col.addEventListener('dragover', function(e){
+      e.preventDefault();
+      col.classList.add('drag-over');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    });
+    col.addEventListener('dragleave', function(e){
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', async function(e){
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      var targetStatus = col.dataset.status;
+      if (!boardDragEmailId || !targetStatus) return;
+      var em = emails.find(function(x){ return x.id === boardDragEmailId; });
+      if (!em || em.status === targetStatus) { boardDragEmailId = null; return; }
+      var oldStatus = em.status;
+      em.status = targetStatus;
+      em.updated_at = new Date().toISOString();
+      renderCampaignBoard();
+      var res = await db.from('quill_calendar').update({ status: targetStatus, updated_at: em.updated_at }).eq('id', em.id).select().single();
+      if (res.error) {
+        em.status = oldStatus;
+        renderCampaignBoard();
+        showToast('Could not update status: ' + res.error.message, true);
+      } else {
+        Object.assign(em, res.data);
+        showToast('Moved to ' + targetStatus.replace(/-/g, ' '));
+      }
+      boardDragEmailId = null;
+    });
+  });
+}
+
+// Campaign Editor stub. Full editor is wired up in Half 2 of this build.
+// For now, clicking a card on the Board just switches to the editor tab and
+// stores the email id so the editor can pick it up when it ships.
+window.openCampaignEditor = function(emailId) {
+  window._editorPendingEmailId = emailId;
+  switchTab('editor');
+};
+
 function initTipWidgets() {
   var widgets = ['tip-patterns','tip-flows','tip-voice','tip-ideas','tip-draft','tip-products'];
   widgets.forEach(function(id){
@@ -5493,8 +5746,8 @@ function restoreCalendarModal() {
     + '<div class="field-row">'
     + '<div><label class="field-label">Send date</label><input type="date" id="f-date" class="field-input"></div>'
     + '<div><label class="field-label">Status</label><select id="f-status" class="field-select">'
-    + '<option value="draft">Draft</option><option value="under-review">Under Review</option>'
-    + '<option value="approved">Approved</option><option value="sent">Sent</option></select></div>'
+    + '<option value="draft">Draft</option><option value="approved">Approved</option>'
+    + '<option value="sent-to-design">Sent to Design</option><option value="scheduled">Scheduled</option></select></div>'
     + '</div>'
     + '<div class="field-row">'
     + '<div><label class="field-label">Content bucket</label><select id="f-bucket" class="field-select">'
