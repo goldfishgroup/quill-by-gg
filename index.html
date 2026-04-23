@@ -405,6 +405,44 @@
     .voice-save-note.saved { color: #2e5e2e; }
     .voice-save-note.error { color: #a32d2d; }
 
+    /* IDEAS */
+    .ideas-form { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .ideas-form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .ideas-form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+    .ideas-form-field label { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .ideas-form-field select, .ideas-form-field input { padding: 8px 10px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); background: #fff; color: var(--gg-charcoal); }
+    .ideas-form-field textarea { padding: 8px 10px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 12px; font-family: var(--font-body); background: #fff; color: var(--gg-charcoal); line-height: 1.5; min-height: 60px; resize: vertical; }
+    .ideas-form-count { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--q-muted); }
+    .ideas-form-count input { width: 48px; text-align: center; padding: 6px 4px; border: 0.5px solid var(--q-line); border-radius: 6px; font-family: var(--font-body); }
+    .idea-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .idea-card.starred { border-color: var(--gg-orange); border-width: 1px; }
+    .idea-card.dismissed { opacity: 0.5; }
+    .idea-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .idea-bucket-pill { font-size: 9px; font-weight: 700; color: var(--gg-olive); background: var(--gg-offwhite); padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .idea-cta-pill { font-size: 9px; font-weight: 600; color: var(--q-muted); border: 0.5px solid var(--q-line); padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .idea-hook { font-size: 15px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.4; }
+    .idea-subjects { padding-top: 10px; border-top: 0.5px solid var(--q-line); }
+    .idea-subjects-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .idea-subjects-list { display: flex; flex-direction: column; gap: 4px; }
+    .idea-subject-item { font-size: 13px; color: var(--gg-charcoal); line-height: 1.4; padding: 4px 0; font-style: italic; }
+    .idea-preview { font-size: 11px; color: var(--q-muted); margin-top: 4px; font-style: italic; }
+    .idea-preview-label { font-weight: 600; color: var(--gg-charcoal); font-style: normal; text-transform: uppercase; letter-spacing: 0.07em; font-size: 9px; }
+    .idea-angle { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; background: var(--gg-offwhite); padding: 10px 12px; border-radius: 6px; border-left: 2px solid var(--gg-olive); }
+    .idea-angle strong { color: var(--gg-olive); font-weight: 600; }
+    .idea-grounded { font-size: 10px; color: var(--q-muted); padding-top: 10px; border-top: 0.5px solid var(--q-line); line-height: 1.5; }
+    .idea-grounded-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; font-size: 9px; color: var(--q-muted); margin-bottom: 4px; }
+    .idea-grounded-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .idea-grounded-tag { font-size: 10px; padding: 2px 6px; background: var(--gg-offwhite); border-radius: 8px; color: var(--gg-olive); font-weight: 500; }
+    .idea-reasoning { font-size: 11px; color: var(--q-muted); line-height: 1.55; font-style: italic; padding-top: 8px; }
+    .idea-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
+    .idea-action-btn { flex: 1; padding: 6px 10px; border: 0.5px solid var(--q-line); background: #fff; border-radius: 6px; font-size: 11px; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); transition: all 0.12s; }
+    .idea-action-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .idea-action-btn.starred { background: var(--gg-orange); color: #fff; border-color: var(--gg-orange); }
+    .idea-action-btn.promote { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    .idea-action-btn.promote:hover { opacity: 0.9; background: var(--gg-olive); color: #fff; }
+    .idea-action-btn.promoted { background: var(--gg-offwhite); color: var(--gg-olive); cursor: default; }
+    .idea-meta-footer { font-size: 10px; color: var(--q-muted); display: flex; gap: 10px; justify-content: space-between; }
+
     /* RESPONSIVE */
     @media (max-width: 900px) {
       .cal-layout { grid-template-columns: 1fr !important; }
@@ -795,11 +833,71 @@
         </div>
 
         <div class="studio-section" id="studio-ideas">
-          <div class="placeholder-card">
-            <h2>Ideas</h2>
-            <p>Generate 5-10 email ideas per content bucket, grounded in SFH voice and past winners.</p>
-            <div class="session-note">Session 3</div>
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Ideas</div>
+              <div class="patterns-sub">Generate email concepts grounded in SFH voice, your starred patterns, and your starred flow diagnostics. Ideas become the backbone of your calendar and the starting point for drafts.</div>
+            </div>
+            <div class="patterns-head-right">
+              <div class="patterns-filter-toggle">
+                <button class="patterns-filter-btn active" onclick="setIdeasView('active')" id="iv-active">Active</button>
+                <button class="patterns-filter-btn" onclick="setIdeasView('starred')" id="iv-starred">Starred</button>
+                <button class="patterns-filter-btn" onclick="setIdeasView('dismissed')" id="iv-dismissed">Dismissed</button>
+              </div>
+            </div>
           </div>
+          <div class="tip-widget" id="tip-ideas">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-ideas')">
+              <div class="tip-widget-title">How Ideas generation works</div>
+              <button class="tip-widget-toggle" id="tip-ideas-toggle">Hide</button>
+            </div>
+            <div class="tip-widget-body">
+              <div class="tip-section-title">What Claude sees when generating</div>
+              <ul>
+                <li><strong>Selected bucket definition.</strong> Name, description, key patterns, hook examples, and "what makes it good" from the Buckets tab.</li>
+                <li><strong>Your starred patterns.</strong> Every pattern you starred under Patterns. If you have none, Claude uses your active patterns.</li>
+                <li><strong>Your starred flow diagnostics.</strong> Starred flow findings so ideas can address known gaps and losers.</li>
+                <li><strong>Voice brief structured fields.</strong> Banned words, banned claim types, signature phrases, POV, formality all become hard constraints.</li>
+                <li><strong>Voice brief narrative sections.</strong> Brand snapshot, customer profile, differentiation, positioning as context.</li>
+                <li><strong>Optional extra context.</strong> Anything you add in the form (seasonality, launch, campaign focus).</li>
+              </ul>
+              <div class="tip-section-title">Assessing an idea</div>
+              <ul>
+                <li><strong>Check the hook.</strong> Would you actually want to open this email? If not, dismiss.</li>
+                <li><strong>Check the grounded-in tags.</strong> Every idea cites which starred pattern or diagnostic shaped it. If the attribution feels thin or wrong, the idea is probably off.</li>
+                <li><strong>Star what you want to build.</strong> Starred ideas feed Draft generation next.</li>
+                <li><strong>Promote to calendar.</strong> Click "Add to Waiting Bay" to schedule the concept for a real send.</li>
+              </ul>
+              <div class="tip-section-title">If generation feels repetitive</div>
+              <ul>
+                <li><strong>Star patterns more aggressively.</strong> More starred intel gives Claude more distinct angles to draw from.</li>
+                <li><strong>Use extra context.</strong> "Creatine launch in 2 weeks" or "Coming off BFCM, focus on new-year health reset" pushes generation toward fresh territory.</li>
+                <li><strong>Dismiss aggressively.</strong> Dismissed ideas arent shown to Claude on next run, so you wont get the same idea twice.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="ideas-form">
+            <div class="ideas-form-row">
+              <div class="ideas-form-field">
+                <label>Bucket</label>
+                <select id="ideas-bucket-select"></select>
+              </div>
+              <div class="ideas-form-field ideas-form-count">
+                <label>Count</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <input type="number" id="ideas-count" value="6" min="3" max="10">
+                  <span>ideas (3-10)</span>
+                </div>
+              </div>
+              <button class="extract-btn" id="ideas-generate-btn" onclick="generateIdeas()">Generate ideas</button>
+            </div>
+            <div class="ideas-form-field">
+              <label>Extra context (optional)</label>
+              <textarea id="ideas-extra-context" placeholder="e.g. Creatine launch next week, or focus on new-year health reset, or Post-BFCM come-down campaign"></textarea>
+            </div>
+          </div>
+          <div class="extract-status" id="ideas-status">Select a bucket and click Generate ideas.</div>
+          <div class="pattern-grid" id="ideas-grid"></div>
         </div>
         <div class="studio-section" id="studio-draft">
           <div class="placeholder-card">
@@ -1793,6 +1891,7 @@ window.setStudioSection = function(section) {
   if (section === 'flows') showFlowDiagnosticsOnOpen();
   if (section === 'buckets') showBucketsOnOpen();
   if (section === 'voice') showVoiceOnOpen();
+  if (section === 'ideas') showIdeasOnOpen();
 };
 
 window.setTimeRange = function(val) {
@@ -3483,8 +3582,557 @@ window.extractFlowDiagnostics = async function() {
   }
 };
 
+// ── IDEAS GENERATOR ───────────────────────────────────────────────────────
+
+var ideasView = 'active';
+var ideasCache = null;
+var ideasLoadedAt = 0;
+
+window.setIdeasView = function(view) {
+  ideasView = view;
+  ['active','starred','dismissed'].forEach(function(v){
+    var el = document.getElementById('iv-' + v);
+    if (el) el.classList.toggle('active', v === view);
+  });
+  renderIdeas();
+};
+
+async function loadIdeas(force) {
+  if (!force && ideasCache && (Date.now() - ideasLoadedAt) < 30000) return;
+  var res = await db.from('quill_ideas').select('*').order('generated_at', { ascending: false });
+  if (res.error) { console.error('loadIdeas error', res.error); return; }
+  ideasCache = res.data || [];
+  ideasLoadedAt = Date.now();
+}
+
+async function showIdeasOnOpen() {
+  // Need buckets loaded to populate the dropdown
+  await loadBuckets(false);
+  populateBucketDropdown();
+  await loadIdeas(false);
+  renderIdeas();
+}
+
+function populateBucketDropdown() {
+  var sel = document.getElementById('ideas-bucket-select');
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (!bucketsCache || !bucketsCache.length) {
+    var opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'No buckets available';
+    sel.appendChild(opt);
+    return;
+  }
+  bucketsCache.forEach(function(b){
+    var opt = document.createElement('option');
+    opt.value = b.name;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+}
+
+function renderIdeas() {
+  var grid = document.getElementById('ideas-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!ideasCache || !ideasCache.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;"><strong>No ideas yet.</strong><br>Pick a bucket above and click Generate ideas.</div>';
+    return;
+  }
+  var filtered;
+  if (ideasView === 'dismissed') {
+    filtered = ideasCache.filter(function(i){ return !i.active; });
+  } else if (ideasView === 'starred') {
+    filtered = ideasCache.filter(function(i){ return i.active && i.starred; });
+  } else {
+    filtered = ideasCache.filter(function(i){ return i.active; });
+    filtered.sort(function(a, b){
+      if (a.starred !== b.starred) return a.starred ? -1 : 1;
+      return new Date(b.generated_at) - new Date(a.generated_at);
+    });
+  }
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">No ideas in this view.</div>';
+    return;
+  }
+  filtered.forEach(function(idea){ grid.appendChild(buildIdeaCard(idea)); });
+}
+
+function buildIdeaCard(idea) {
+  var card = document.createElement('div');
+  card.className = 'idea-card' + (idea.starred ? ' starred' : '') + (idea.active ? '' : ' dismissed');
+
+  // Head: bucket + CTA pills
+  var head = document.createElement('div');
+  head.className = 'idea-card-head';
+  var leftGroup = document.createElement('div');
+  leftGroup.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+  if (idea.bucket) {
+    var bkt = document.createElement('span');
+    bkt.className = 'idea-bucket-pill';
+    bkt.textContent = idea.bucket;
+    leftGroup.appendChild(bkt);
+  }
+  if (idea.cta_angle) {
+    var cta = document.createElement('span');
+    cta.className = 'idea-cta-pill';
+    cta.textContent = idea.cta_angle;
+    leftGroup.appendChild(cta);
+  }
+  head.appendChild(leftGroup);
+  card.appendChild(head);
+
+  // Hook
+  var hook = document.createElement('div');
+  hook.className = 'idea-hook';
+  hook.textContent = idea.hook || '';
+  card.appendChild(hook);
+
+  // Subject options
+  var subjects = idea.subject_options;
+  if (typeof subjects === 'string') {
+    try { subjects = JSON.parse(subjects); } catch (e) { subjects = []; }
+  }
+  if (Array.isArray(subjects) && subjects.length) {
+    var subBox = document.createElement('div');
+    subBox.className = 'idea-subjects';
+    var subLabel = document.createElement('div');
+    subLabel.className = 'idea-subjects-label';
+    subLabel.textContent = 'Subject directions';
+    subBox.appendChild(subLabel);
+    var subList = document.createElement('div');
+    subList.className = 'idea-subjects-list';
+    subjects.slice(0, 3).forEach(function(s){
+      var item = document.createElement('div');
+      item.className = 'idea-subject-item';
+      item.textContent = '"' + s + '"';
+      subList.appendChild(item);
+    });
+    subBox.appendChild(subList);
+    if (idea.preview_text) {
+      var prev = document.createElement('div');
+      prev.className = 'idea-preview';
+      prev.innerHTML = '<span class="idea-preview-label">Preview</span> "' + escapeHtml(idea.preview_text) + '"';
+      subBox.appendChild(prev);
+    }
+    card.appendChild(subBox);
+  }
+
+  // Angle
+  if (idea.angle) {
+    var angle = document.createElement('div');
+    angle.className = 'idea-angle';
+    angle.innerHTML = '<strong>Angle:</strong> ' + escapeHtml(idea.angle);
+    card.appendChild(angle);
+  }
+
+  // Grounded-in tags
+  var grounded = idea.grounded_in;
+  if (typeof grounded === 'string') {
+    try { grounded = JSON.parse(grounded); } catch (e) { grounded = []; }
+  }
+  if (Array.isArray(grounded) && grounded.length) {
+    var gBox = document.createElement('div');
+    gBox.className = 'idea-grounded';
+    var gLabel = document.createElement('div');
+    gLabel.className = 'idea-grounded-label';
+    gLabel.textContent = 'Grounded in';
+    gBox.appendChild(gLabel);
+    var gTags = document.createElement('div');
+    gTags.className = 'idea-grounded-tags';
+    grounded.slice(0, 5).forEach(function(g){
+      var tag = document.createElement('span');
+      tag.className = 'idea-grounded-tag';
+      tag.textContent = g;
+      gTags.appendChild(tag);
+    });
+    gBox.appendChild(gTags);
+    card.appendChild(gBox);
+  }
+
+  // Reasoning
+  if (idea.reasoning_notes) {
+    var reason = document.createElement('div');
+    reason.className = 'idea-reasoning';
+    reason.textContent = idea.reasoning_notes;
+    card.appendChild(reason);
+  }
+
+  // Actions
+  var actions = document.createElement('div');
+  actions.className = 'idea-actions';
+  if (idea.active) {
+    var starBtn = document.createElement('button');
+    starBtn.className = 'idea-action-btn' + (idea.starred ? ' starred' : '');
+    starBtn.textContent = idea.starred ? 'Starred' : 'Star';
+    starBtn.onclick = function(){ toggleIdeaStar(idea.id); };
+    var promoteBtn = document.createElement('button');
+    if (idea.promoted_to_calendar_id) {
+      promoteBtn.className = 'idea-action-btn promoted';
+      promoteBtn.textContent = 'In calendar';
+      promoteBtn.disabled = true;
+    } else {
+      promoteBtn.className = 'idea-action-btn promote';
+      promoteBtn.textContent = 'Add to Waiting Bay';
+      promoteBtn.onclick = function(){ promoteIdeaToCalendar(idea.id); };
+    }
+    var dismissBtn = document.createElement('button');
+    dismissBtn.className = 'idea-action-btn';
+    dismissBtn.textContent = 'Dismiss';
+    dismissBtn.onclick = function(){ dismissIdea(idea.id); };
+    actions.appendChild(starBtn);
+    actions.appendChild(promoteBtn);
+    actions.appendChild(dismissBtn);
+  } else {
+    var restoreBtn = document.createElement('button');
+    restoreBtn.className = 'idea-action-btn';
+    restoreBtn.textContent = 'Restore';
+    restoreBtn.onclick = function(){ restoreIdea(idea.id); };
+    actions.appendChild(restoreBtn);
+  }
+  card.appendChild(actions);
+
+  // Footer
+  if (idea.generated_at) {
+    var footer = document.createElement('div');
+    footer.className = 'idea-meta-footer';
+    var dt = new Date(idea.generated_at);
+    var left = document.createElement('span');
+    left.textContent = idea.extra_context ? ('Context: ' + idea.extra_context.slice(0, 40) + (idea.extra_context.length > 40 ? '...' : '')) : '';
+    var right = document.createElement('span');
+    right.textContent = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    footer.appendChild(left);
+    footer.appendChild(right);
+    card.appendChild(footer);
+  }
+
+  return card;
+}
+
+window.toggleIdeaStar = async function(id) {
+  var idea = ideasCache.find(function(x){ return x.id === id; });
+  if (!idea) return;
+  var newVal = !idea.starred;
+  var res = await db.from('quill_ideas').update({ starred: newVal }).eq('id', id);
+  if (res.error) { showToast('Could not update', true); return; }
+  idea.starred = newVal;
+  renderIdeas();
+  showToast(newVal ? 'Idea starred' : 'Unstarred');
+};
+
+window.dismissIdea = async function(id) {
+  var res = await db.from('quill_ideas').update({ active: false, dismissed_at: new Date().toISOString() }).eq('id', id);
+  if (res.error) { showToast('Could not dismiss', true); return; }
+  var idea = ideasCache.find(function(x){ return x.id === id; });
+  if (idea) { idea.active = false; idea.dismissed_at = new Date().toISOString(); }
+  renderIdeas();
+  showToast('Idea dismissed');
+};
+
+window.restoreIdea = async function(id) {
+  var res = await db.from('quill_ideas').update({ active: true, dismissed_at: null }).eq('id', id);
+  if (res.error) { showToast('Could not restore', true); return; }
+  var idea = ideasCache.find(function(x){ return x.id === id; });
+  if (idea) { idea.active = true; idea.dismissed_at = null; }
+  renderIdeas();
+  showToast('Idea restored');
+};
+
+// Promote an idea to the calendar (Waiting Bay, draft status).
+// Adds a new row in quill_calendar and links it back to the idea.
+window.promoteIdeaToCalendar = async function(id) {
+  var idea = ideasCache.find(function(x){ return x.id === id; });
+  if (!idea) return;
+  // Pick the first subject option as the working title
+  var subjects = idea.subject_options;
+  if (typeof subjects === 'string') {
+    try { subjects = JSON.parse(subjects); } catch (e) { subjects = []; }
+  }
+  var workingTitle = (Array.isArray(subjects) && subjects.length) ? subjects[0] : idea.hook;
+  var payload = {
+    subject: workingTitle,
+    preview: idea.preview_text || '',
+    send_date: null,  // Waiting Bay
+    status: 'draft',
+    bucket: idea.bucket || '',
+    email_type: 'Campaign',
+    segment: '',
+    notes: 'From idea: ' + (idea.hook || '') + (idea.angle ? ('\n\nAngle: ' + idea.angle) : '')
+  };
+  var ins = await db.from('quill_calendar').insert(payload).select().single();
+  if (ins.error) { showToast('Could not add to calendar: ' + ins.error.message, true); return; }
+  // Back-link the idea to the calendar row
+  var upd = await db.from('quill_ideas').update({ promoted_to_calendar_id: ins.data.id }).eq('id', id);
+  if (!upd.error) idea.promoted_to_calendar_id = ins.data.id;
+  // Refresh local emails cache so the Calendar tab shows it too
+  emails.push(ins.data);
+  renderIdeas();
+  showToast('Added to Waiting Bay');
+};
+
+async function buildIdeasContext(bucketName, extraContext, count) {
+  // Load everything we need in parallel where possible
+  var bucket = (bucketsCache || []).find(function(b){ return b.name === bucketName; });
+  if (!bucket) throw new Error('Bucket not found: ' + bucketName);
+
+  // Ensure voice brief is loaded
+  if (!voiceCache) await loadVoiceBrief(true);
+  var voice = voiceCache || {};
+
+  // Pull starred patterns + diagnostics (fallback to active if none starred)
+  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
+  var patterns = (patternsRes.data || []);
+  var starredPatterns = patterns.filter(function(p){ return p.starred; });
+  var patternsForPrompt = starredPatterns.length ? starredPatterns : patterns.slice(0, 8);
+
+  var diagRes = await db.from('quill_flow_diagnostics').select('*').eq('active', true).order('extracted_at', { ascending: false });
+  var diagnostics = (diagRes.data || []);
+  var starredDiag = diagnostics.filter(function(d){ return d.starred; });
+  var diagnosticsForPrompt = starredDiag.length ? starredDiag : [];
+
+  // Recent dismissed ideas: give Claude a "don't repeat these" list
+  var recentDismissed = (ideasCache || []).filter(function(i){ return !i.active; }).slice(0, 20);
+
+  return {
+    bucket: bucket,
+    voice: voice,
+    patterns: patternsForPrompt,
+    starredPatternsCount: starredPatterns.length,
+    diagnostics: diagnosticsForPrompt,
+    starredDiagCount: starredDiag.length,
+    dismissedIdeas: recentDismissed,
+    extraContext: extraContext,
+    count: count
+  };
+}
+
+function formatIdeasPromptContext(ctx) {
+  var lines = [];
+
+  // Bucket definition
+  var b = ctx.bucket;
+  lines.push('=== CONTENT BUCKET ===');
+  lines.push('Name: ' + b.name);
+  if (b.description) lines.push('Description: ' + b.description);
+  var keyPatterns = parseJsonField(b.key_patterns);
+  if (keyPatterns.length) lines.push('Key patterns: ' + keyPatterns.join(', '));
+  var hookExamples = parseJsonField(b.hook_examples);
+  if (hookExamples.length) lines.push('Hook examples: ' + hookExamples.map(function(h){ return '"' + h + '"'; }).join(', '));
+  if (b.what_makes_good) lines.push('What makes it good: ' + b.what_makes_good);
+  lines.push('');
+
+  // Voice brief structured fields
+  var v = ctx.voice;
+  lines.push('=== VOICE BRIEF - HARD CONSTRAINTS ===');
+  var adj = parseJsonField(v.voice_adjectives);
+  if (adj.length) lines.push('Voice adjectives (SFH sounds like this): ' + adj.join(', '));
+  var phrases = parseJsonField(v.signature_phrases);
+  if (phrases.length) lines.push('Signature phrases (reach for these): ' + phrases.map(function(p){ return '"' + p + '"'; }).join(', '));
+  var bannedWords = parseJsonField(v.banned_words);
+  if (bannedWords.length) lines.push('BANNED WORDS (never use): ' + bannedWords.join(', '));
+  var bannedClaims = parseJsonField(v.banned_claims);
+  if (bannedClaims.length) lines.push('BANNED CLAIM TYPES (never do): ' + bannedClaims.join(', '));
+  if (v.pov) lines.push('POV: ' + v.pov);
+  if (v.formality) lines.push('Formality: ' + v.formality);
+  lines.push('');
+
+  // Voice brief narrative context
+  lines.push('=== VOICE BRIEF - CONTEXT ===');
+  if (v.brand_snapshot) lines.push('Brand snapshot: ' + v.brand_snapshot);
+  if (v.customer_profile) lines.push('Customer profile: ' + v.customer_profile);
+  if (v.differentiation) lines.push('Differentiation: ' + v.differentiation);
+  if (v.positioning) lines.push('Positioning: ' + v.positioning);
+  if (v.tone_nuances) lines.push('Tone nuances: ' + v.tone_nuances);
+  lines.push('');
+
+  // Starred patterns
+  lines.push('=== ' + (ctx.starredPatternsCount ? 'STARRED PATTERNS (user validated)' : 'ACTIVE PATTERNS (none starred yet, using top 8)') + ' ===');
+  if (ctx.patterns.length) {
+    ctx.patterns.forEach(function(p, i){
+      lines.push((i+1) + '. [' + (p.category || 'pattern') + '] ' + p.rule);
+      if (p.actionable) lines.push('   Next step: ' + p.actionable);
+    });
+  } else {
+    lines.push('(no patterns available)');
+  }
+  lines.push('');
+
+  // Starred diagnostics
+  if (ctx.starredDiagCount) {
+    lines.push('=== STARRED FLOW DIAGNOSTICS ===');
+    ctx.diagnostics.forEach(function(d, i){
+      lines.push((i+1) + '. [' + (d.severity || 'monitor') + '] ' + (d.flow_name ? d.flow_name + ': ' : '') + d.diagnosis);
+      if (d.recommendation) lines.push('   Recommendation: ' + d.recommendation);
+    });
+    lines.push('');
+  }
+
+  // Don't-repeat list
+  if (ctx.dismissedIdeas.length) {
+    lines.push('=== RECENTLY DISMISSED IDEAS (do not repeat these angles) ===');
+    ctx.dismissedIdeas.slice(0, 15).forEach(function(i){
+      lines.push('- "' + (i.hook || '').slice(0, 120) + '"');
+    });
+    lines.push('');
+  }
+
+  // Extra user context
+  if (ctx.extraContext) {
+    lines.push('=== EXTRA CONTEXT FROM USER ===');
+    lines.push(ctx.extraContext);
+    lines.push('');
+  }
+
+  lines.push('=== REQUEST ===');
+  lines.push('Generate ' + ctx.count + ' distinct email IDEAS (high-level concepts, not full copy) for the "' + b.name + '" bucket.');
+
+  return lines.join('\n');
+}
+
+window.generateIdeas = async function() {
+  var btn = document.getElementById('ideas-generate-btn');
+  var status = document.getElementById('ideas-status');
+  var bucketSel = document.getElementById('ideas-bucket-select');
+  var countInput = document.getElementById('ideas-count');
+  var extraCtx = document.getElementById('ideas-extra-context');
+  if (!btn || !status || !bucketSel || !countInput) return;
+
+  var bucketName = bucketSel.value;
+  if (!bucketName) { status.className = 'extract-status error'; status.textContent = 'Select a bucket first.'; return; }
+  var count = Math.max(3, Math.min(10, parseInt(countInput.value, 10) || 6));
+  var extraContext = (extraCtx.value || '').trim();
+
+  btn.disabled = true;
+  var prevLabel = btn.textContent;
+  btn.textContent = 'Generating...';
+  status.className = 'extract-status progress';
+  status.textContent = 'Loading bucket, voice brief, patterns, and diagnostics...';
+
+  try {
+    var ctx = await buildIdeasContext(bucketName, extraContext, count);
+    status.textContent = 'Sending context to Claude (' + ctx.patterns.length + ' patterns, ' + ctx.diagnostics.length + ' diagnostics)...';
+    var formatted = formatIdeasPromptContext(ctx);
+
+    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You generate email concepts (not full copy) for SFH, a premium supplement brand. Each idea is a distinct angle with subject line directions, a preview, a rationale, and an attribution showing which starred pattern or diagnostic inspired it. You are evidence-driven, brand-aware, and you never violate voice constraints.';
+
+    var userPrompt = formatted + '\n\n'
+      + 'REQUIREMENTS:\n'
+      + '- Return a JSON array of exactly ' + count + ' idea objects. No preamble, no markdown, no code fences. Just the JSON array.\n'
+      + '- Each idea must be distinct. No two ideas should have the same angle.\n'
+      + '- Every idea must ground in at least one starred pattern OR starred diagnostic OR the buckets hook examples. Name the source in grounded_in.\n'
+      + '- Respect the banned words and banned claim types absolutely. Never use them, even stylistically.\n'
+      + '- Subject options must sound like SFH: calm, confident, slightly contrarian when appropriate. Not hype.\n'
+      + '- Hooks should be 1 sentence, direct, human.\n'
+      + '- Do not repeat angles from the dismissed ideas list.\n\n'
+      + 'EACH OBJECT MUST HAVE:\n'
+      + '{\n'
+      + '  "hook": "one-sentence angle for the idea",\n'
+      + '  "subject_options": ["option 1", "option 2", "option 3"],\n'
+      + '  "preview_text": "suggested preview text",\n'
+      + '  "angle": "one to two sentences on why this works",\n'
+      + '  "cta_angle": "shop | learn | stack | trust | explore",\n'
+      + '  "grounded_in": ["short label of pattern/diagnostic 1", "short label 2"],\n'
+      + '  "reasoning_notes": "one sentence on why this fits SFH voice and this bucket"\n'
+      + '}\n\n'
+      + 'VOICE RULES:\n'
+      + '- No em dashes anywhere\n'
+      + '- No hyperbolic words (critical, massive, exceptional, remarkable, phenomenal, concerning)\n'
+      + '- American English\n'
+      + '- Honor the banned words list without exception\n\n'
+      + 'Return ONLY the JSON array. Start with [ and end with ].';
+
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 6000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(blk){ if (blk.type === 'text') text += blk.text; });
+    }
+    if (!text) throw new Error('Empty response from model');
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    var first = text.indexOf('[');
+    var last = text.lastIndexOf(']');
+    if (first === -1) throw new Error('Response did not start with a JSON array');
+    var ideas;
+    if (last !== -1) {
+      try { ideas = JSON.parse(text.substring(first, last + 1)); } catch (pe1) { ideas = null; }
+    }
+    // JSON repair fallback
+    if (!ideas) {
+      var body = text.substring(first + 1);
+      var depth = 0, inString = false, escape = false, lastComplete = -1;
+      for (var ci = 0; ci < body.length; ci++) {
+        var ch = body[ci];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') { depth--; if (depth === 0) lastComplete = ci; }
+      }
+      if (lastComplete > 0) {
+        var repaired = '[' + body.substring(0, lastComplete + 1) + ']';
+        try {
+          ideas = JSON.parse(repaired);
+          status.textContent = 'Response was truncated. Salvaged ' + ideas.length + ' complete ideas.';
+        } catch (pe2) {
+          console.error('Repair parse error. Repaired:', repaired);
+          console.error('Original text:', text);
+          throw new Error('Could not parse or repair model response. See console.');
+        }
+      } else {
+        console.error('Raw response:', text);
+        throw new Error('Could not parse model response as JSON. See console.');
+      }
+    }
+    if (!Array.isArray(ideas) || !ideas.length) throw new Error('Response had no ideas');
+
+    status.textContent = 'Parsed ' + ideas.length + ' ideas. Saving to Supabase...';
+    var rows = ideas.map(function(idea){
+      return {
+        hook: String(idea.hook || '').slice(0, 500),
+        subject_options: Array.isArray(idea.subject_options) ? idea.subject_options.slice(0, 5) : [],
+        preview_text: String(idea.preview_text || '').slice(0, 300),
+        angle: String(idea.angle || '').slice(0, 500),
+        cta_angle: String(idea.cta_angle || '').slice(0, 50),
+        bucket: bucketName,
+        grounded_in: Array.isArray(idea.grounded_in) ? idea.grounded_in.slice(0, 5) : [],
+        reasoning_notes: String(idea.reasoning_notes || '').slice(0, 500),
+        extra_context: extraContext ? extraContext.slice(0, 500) : null,
+        active: true,
+        starred: false
+      };
+    });
+    var ins = await db.from('quill_ideas').insert(rows).select();
+    if (ins.error) throw new Error('Supabase insert failed: ' + ins.error.message);
+
+    status.className = 'extract-status success';
+    status.textContent = 'Generated ' + rows.length + ' ideas for ' + bucketName + '.';
+    await loadIdeas(true);
+    renderIdeas();
+    showToast('Ideas generated');
+  } catch (err) {
+    console.error('Ideas generation error', err);
+    status.className = 'extract-status error';
+    status.textContent = 'Something went wrong. ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+};
+
 function initTipWidgets() {
-  var widgets = ['tip-patterns','tip-flows','tip-voice'];
+  var widgets = ['tip-patterns','tip-flows','tip-voice','tip-ideas'];
   widgets.forEach(function(id){
     var widget = document.getElementById(id);
     if (!widget) return;
