@@ -3779,12 +3779,21 @@ function buildProductCard(p) {
     nameBox.appendChild(catEl);
   }
   head.appendChild(nameBox);
+  var headRight = document.createElement('div');
+  headRight.style.cssText = 'display:flex;flex-direction:column;gap:4px;align-items:flex-end;';
   if (p.positioning) {
     var pos = document.createElement('span');
     pos.style.cssText = 'font-size:9px;font-weight:700;color:var(--gg-olive);background:var(--gg-offwhite);padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;';
     pos.textContent = p.positioning;
-    head.appendChild(pos);
+    headRight.appendChild(pos);
   }
+  if (p.sold_out) {
+    var so = document.createElement('span');
+    so.style.cssText = 'font-size:9px;font-weight:700;color:#a32d2d;background:#fce4e4;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;';
+    so.textContent = 'sold out';
+    headRight.appendChild(so);
+  }
+  head.appendChild(headRight);
   card.appendChild(head);
 
   if (p.short_description) {
@@ -3806,6 +3815,20 @@ function buildProductCard(p) {
     v.textContent = p.key_ingredients;
     ing.appendChild(v);
     card.appendChild(ing);
+  }
+
+  if (p.variants) {
+    var varSec = document.createElement('div');
+    varSec.className = 'bucket-section';
+    var varLbl = document.createElement('div');
+    varLbl.className = 'bucket-section-label';
+    varLbl.textContent = 'Variants';
+    varSec.appendChild(varLbl);
+    var varVal = document.createElement('div');
+    varVal.style.cssText = 'font-size:12px;color:var(--gg-charcoal);line-height:1.5;';
+    varVal.textContent = p.variants;
+    varSec.appendChild(varVal);
+    card.appendChild(varSec);
   }
 
   var claims = parseJsonField(p.signature_claims);
@@ -3891,10 +3914,27 @@ window.openProductEditModal = function(id) {
   addField('Category', 'p-category', p.category, false);
   addField('Short description', 'p-description', p.short_description, true);
   addField('Key ingredients', 'p-ingredients', p.key_ingredients, false);
+  addField('Variants (flavors, sizes)', 'p-variants', p.variants, false);
   addField('Positioning', 'p-positioning', p.positioning, false);
   addField('Signature claims (one per line)', 'p-claims', parseJsonField(p.signature_claims).join('\n'), true);
   addField('Stack pairs (comma-separated product names)', 'p-pairs', parseJsonField(p.stack_pairs).join(', '), false);
   addField('Notes', 'p-notes', p.notes, true);
+
+  // Sold out checkbox
+  var soWrap = document.createElement('div');
+  soWrap.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 0;border-top:0.5px solid var(--q-line);margin-top:4px;';
+  var soInput = document.createElement('input');
+  soInput.type = 'checkbox';
+  soInput.id = 'p-sold-out';
+  soInput.checked = !!p.sold_out;
+  soInput.style.cssText = 'cursor:pointer;';
+  var soLabel = document.createElement('label');
+  soLabel.htmlFor = 'p-sold-out';
+  soLabel.style.cssText = 'font-size:13px;color:var(--gg-charcoal);cursor:pointer;';
+  soLabel.textContent = 'Sold out (generators will avoid promoting this product)';
+  soWrap.appendChild(soInput);
+  soWrap.appendChild(soLabel);
+  body.appendChild(soWrap);
 
   var footSave = document.querySelector('#modalOverlay .primary-btn');
   footSave.textContent = 'Save product';
@@ -3914,10 +3954,12 @@ async function saveProductFromModal() {
     category: (document.getElementById('p-category').value || '').trim(),
     short_description: (document.getElementById('p-description').value || '').trim(),
     key_ingredients: (document.getElementById('p-ingredients').value || '').trim(),
+    variants: (document.getElementById('p-variants').value || '').trim(),
     positioning: (document.getElementById('p-positioning').value || '').trim(),
     signature_claims: claims,
     stack_pairs: pairs,
     notes: (document.getElementById('p-notes').value || '').trim(),
+    sold_out: !!document.getElementById('p-sold-out').checked,
     updated_at: new Date().toISOString()
   };
   var res = await db.from('quill_products').update(payload).eq('id', productEditingId).select().single();
@@ -4242,9 +4284,11 @@ async function buildIdeasContext(bucketName, extraContext, count) {
   var bucket = (bucketsCache || []).find(function(b){ return b.name === bucketName; });
   if (!bucket) throw new Error('Bucket not found: ' + bucketName);
 
-  // Ensure voice brief is loaded
+  // Ensure voice brief and products are loaded
   if (!voiceCache) await loadVoiceBrief(true);
+  if (!productsCache) await loadProducts(true);
   var voice = voiceCache || {};
+  var products = productsCache || [];
 
   // Pull starred patterns + diagnostics (fallback to active if none starred)
   var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
@@ -4263,6 +4307,7 @@ async function buildIdeasContext(bucketName, extraContext, count) {
   return {
     bucket: bucket,
     voice: voice,
+    products: products,
     patterns: patternsForPrompt,
     starredPatternsCount: starredPatterns.length,
     diagnostics: diagnosticsForPrompt,
@@ -4311,6 +4356,22 @@ function formatIdeasPromptContext(ctx) {
   if (v.positioning) lines.push('Positioning: ' + v.positioning);
   if (v.tone_nuances) lines.push('Tone nuances: ' + v.tone_nuances);
   lines.push('');
+
+  // SFH products (compact form for ideas; full detail is reserved for drafts)
+  if (ctx.products && ctx.products.length) {
+    var inStock = ctx.products.filter(function(p){ return !p.sold_out; });
+    var soldOut = ctx.products.filter(function(p){ return p.sold_out; });
+    lines.push('=== SFH PRODUCTS AVAILABLE ===');
+    inStock.forEach(function(p){
+      lines.push('- ' + p.name + (p.category ? ' [' + p.category + ']' : '') + (p.positioning ? ' (' + p.positioning + ')' : ''));
+    });
+    if (soldOut.length) {
+      lines.push('');
+      lines.push('CURRENTLY SOLD OUT (do NOT build ideas around these products, do NOT drive CTAs toward them):');
+      soldOut.forEach(function(p){ lines.push('- ' + p.name); });
+    }
+    lines.push('');
+  }
 
   // Starred patterns
   lines.push('=== ' + (ctx.starredPatternsCount ? 'STARRED PATTERNS (user validated)' : 'ACTIVE PATTERNS (none starred yet, using top 8)') + ' ===');
@@ -5008,12 +5069,15 @@ function formatDraftPromptContext(ctx) {
   lines.push('');
 
   if (ctx.products && ctx.products.length) {
+    var inStock = ctx.products.filter(function(p){ return !p.sold_out; });
+    var soldOut = ctx.products.filter(function(p){ return p.sold_out; });
     lines.push('=== SFH PRODUCT CATALOG (use these details, do NOT invent) ===');
-    ctx.products.forEach(function(p){
+    inStock.forEach(function(p){
       var entry = '- ' + p.name;
       if (p.category) entry += ' [' + p.category + ']';
       if (p.short_description) entry += ': ' + p.short_description;
       if (p.key_ingredients) entry += ' | Ingredients: ' + p.key_ingredients;
+      if (p.variants) entry += ' | Variants: ' + p.variants;
       var claims = parseJsonField(p.signature_claims);
       if (claims.length) entry += ' | Signature claims: ' + claims.join('; ');
       var pairs = parseJsonField(p.stack_pairs);
@@ -5021,6 +5085,13 @@ function formatDraftPromptContext(ctx) {
       if (p.notes) entry += ' | Note: ' + p.notes;
       lines.push(entry);
     });
+    if (soldOut.length) {
+      lines.push('');
+      lines.push('SOLD OUT (do NOT promote or feature these products; mentioning them as context is allowed if essential, but do not drive CTAs toward them):');
+      soldOut.forEach(function(p){
+        lines.push('- ' + p.name + (p.category ? ' [' + p.category + ']' : ''));
+      });
+    }
     lines.push('');
   }
 
