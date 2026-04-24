@@ -6608,38 +6608,10 @@ function buildEditorHtml(em) {
   parts.push('      </div>');
   parts.push('    </div>');
 
-  // Email body (Ines structure)
+  // Email body \u2014 block editor (mounted post-render)
   parts.push('    <div class="editor-card">');
   parts.push('      <div class="editor-card-title">Email body</div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Headline</label>');
-  parts.push('        <input type="text" class="editor-input headline" data-field="headline" value="' + escapeHtml(em.headline || '') + '">');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Subheadline</label>');
-  parts.push('        <input type="text" class="editor-input" data-field="subheadline" value="' + escapeHtml(em.subheadline || '') + '">');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">First CTA (inline button text)</label>');
-  parts.push('        <input type="text" class="editor-input" data-field="first_cta" value="' + escapeHtml(em.first_cta || '') + '">');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Body copy</label>');
-  parts.push('        <textarea class="editor-textarea body" data-field="body">' + escapeHtml(em.body || '') + '</textarea>');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Bridge</label>');
-  parts.push('        <textarea class="editor-textarea" data-field="bridge">' + escapeHtml(em.bridge || '') + '</textarea>');
-  parts.push('        <div class="editor-field-help">The transition from body copy to the product pitch.</div>');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Product section</label>');
-  parts.push('        <textarea class="editor-textarea body" data-field="product_section">' + escapeHtml(em.product_section || '') + '</textarea>');
-  parts.push('      </div>');
-  parts.push('      <div class="editor-field">');
-  parts.push('        <label class="editor-field-label">Final CTA (closing button text)</label>');
-  parts.push('        <input type="text" class="editor-input" data-field="final_cta" value="' + escapeHtml(em.final_cta || '') + '">');
-  parts.push('      </div>');
+  parts.push('      <div id="editor-block-editor-mount"></div>');
   parts.push('    </div>');
 
   // Notes
@@ -6749,6 +6721,88 @@ function wireEditorInputs(em) {
       flushEditorSave();
     });
   });
+
+  // Mount the BlockEditor into the body card
+  mountBlockEditorForRow(em);
+}
+
+function mountBlockEditorForRow(em) {
+  var mount = document.getElementById('editor-block-editor-mount');
+  if (!mount) return;
+  // Normalize: prefer em.blocks, fallback to building from fixed fields
+  var blocks = BlockEditor.normalize(em.blocks, em);
+  // Unmount any prior instance
+  if (window._editorBlockCtrl && typeof window._editorBlockCtrl.unmount === 'function') {
+    try { window._editorBlockCtrl.unmount(); } catch (e) {}
+  }
+  window._editorBlockCtrl = BlockEditor.mount(mount, blocks, function(updatedBlocks){
+    // Push block changes into pending payload
+    editorPending.blocks = updatedBlocks;
+    // Also compute a best-effort fixed-field projection for backward compat
+    var projection = blocksToFixedFields(updatedBlocks);
+    Object.keys(projection).forEach(function(k){
+      editorPending[k] = projection[k];
+    });
+    markEditorDirty();
+    scheduleEditorSave();
+  });
+}
+
+// Best-effort projection: pull the first few text-heavy blocks into legacy
+// fixed-column fields so that if someone rolls back the code, the row still
+// renders reasonably. This is a one-way safety rail; the canonical content
+// lives in the blocks column.
+function blocksToFixedFields(blocks) {
+  var out = { headline: '', subheadline: '', first_cta: '', body: '', bridge: '', product_section: '', final_cta: '' };
+  if (!Array.isArray(blocks)) return out;
+  var firstHeadlineTaken = false;
+  var firstSubheadTaken = false;
+  var firstCtaTaken = false;
+  var textChunks = [];
+  var bridgeCandidate = '';
+  var productCandidate = '';
+  var finalCtaTaken = false;
+
+  blocks.forEach(function(b, idx){
+    var c = b.content || {};
+    if (b.type === 'headline' && !firstHeadlineTaken) {
+      out.headline = c.text || '';
+      firstHeadlineTaken = true;
+    } else if (b.type === 'subheadline' && !firstSubheadTaken) {
+      out.subheadline = c.text || '';
+      firstSubheadTaken = true;
+    } else if (b.type === 'image-hero') {
+      if (!firstHeadlineTaken) { out.headline = c.headline || ''; firstHeadlineTaken = true; }
+      if (!firstSubheadTaken) { out.subheadline = c.subheadline || ''; firstSubheadTaken = true; }
+    } else if (b.type === 'cta') {
+      if (!firstCtaTaken) { out.first_cta = c.text || ''; firstCtaTaken = true; }
+      else if (idx >= blocks.length - 3) { out.final_cta = c.text || ''; finalCtaTaken = true; }
+      else { out.final_cta = c.text || ''; } // last cta wins
+    } else if (b.type === 'text') {
+      textChunks.push(c.text || '');
+    } else if (b.type === 'image-text') {
+      if (c.text) textChunks.push(c.text);
+    } else if (b.type === 'quote') {
+      textChunks.push(c.text || '');
+    } else if (b.type === 'product' || b.type === 'product-row') {
+      if (b.type === 'product') {
+        productCandidate = (c.productName || '') + (c.description ? ' \u2014 ' + c.description : '');
+      } else {
+        var names = (c.items || []).map(function(it){ return it.productName || ''; }).filter(Boolean).join(', ');
+        if (names) productCandidate = names;
+      }
+    }
+  });
+
+  if (textChunks.length >= 2) {
+    out.body = textChunks.slice(0, textChunks.length - 1).join('\n\n');
+    out.bridge = textChunks[textChunks.length - 1];
+  } else if (textChunks.length === 1) {
+    out.body = textChunks[0];
+  }
+  if (productCandidate) out.product_section = productCandidate;
+
+  return out;
 }
 
 function markEditorDirty() {
