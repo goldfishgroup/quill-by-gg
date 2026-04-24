@@ -833,6 +833,11 @@
     .draft-action-btn.promote { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
     .draft-action-btn.promote:hover { opacity: 0.9; color: #fff; background: var(--gg-olive); }
     .draft-action-btn.promoted { background: var(--gg-offwhite); color: var(--gg-olive); cursor: default; }
+    .draft-action-btn.delete { flex: 0 0 auto; min-width: 0; padding: 8px 11px; color: #a32d2d; border-color: #f0d6d6; }
+    .draft-action-btn.delete:hover { background: #fce4e4; color: #8a1e1e; border-color: #e8b8b8; }
+    .draft-bulk-delete-bar { margin-bottom: 10px; display: flex; justify-content: flex-end; }
+    .draft-bulk-delete-btn { padding: 6px 12px; background: transparent; border: 0.5px solid #f0d6d6; color: #a32d2d; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .draft-bulk-delete-btn:hover { background: #fce4e4; color: #8a1e1e; }
     .draft-meta-footer { display: flex; justify-content: space-between; font-size: 10px; color: var(--q-muted); padding-top: 6px; }
     .draft-extras-wrap { margin-top: 12px; padding-top: 12px; border-top: 0.5px dashed var(--q-line); display: flex; flex-direction: column; gap: 7px; }
     .draft-extras-label { font-size: 10px; font-weight: 700; color: var(--gg-orange); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 5px; }
@@ -5304,6 +5309,18 @@ function renderDrafts() {
     return;
   }
 
+  // Bulk delete bar (only on Dismissed tab, when there are cards)
+  if (draftsView === 'dismissed' && filtered.length > 0) {
+    var bulkBar = document.createElement('div');
+    bulkBar.className = 'draft-bulk-delete-bar';
+    var bulkBtn = document.createElement('button');
+    bulkBtn.className = 'draft-bulk-delete-btn';
+    bulkBtn.textContent = 'Delete all dismissed (' + filtered.length + ')';
+    bulkBtn.onclick = function(){ deleteAllDismissed(); };
+    bulkBar.appendChild(bulkBtn);
+    grid.appendChild(bulkBar);
+  }
+
   // Collapse all / Expand all helper bar (only if more than 2 drafts)
   if (filtered.length > 2) {
     var actionsBar = document.createElement('div');
@@ -5459,16 +5476,28 @@ function buildDraftCard(d) {
     dismissBtn.className = 'draft-action-btn';
     dismissBtn.textContent = 'Dismiss';
     dismissBtn.onclick = function(){ dismissDraft(d.id); };
+    var deleteBtn = document.createElement('button');
+    deleteBtn.className = 'draft-action-btn delete';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.title = 'Permanently delete (cannot be undone)';
+    deleteBtn.onclick = function(){ deleteDraft(d.id); };
     actions.appendChild(starBtn);
     actions.appendChild(promoteBtn);
     actions.appendChild(regenBtn);
     actions.appendChild(dismissBtn);
+    actions.appendChild(deleteBtn);
   } else {
     var restoreBtn = document.createElement('button');
     restoreBtn.className = 'draft-action-btn';
     restoreBtn.textContent = 'Restore';
     restoreBtn.onclick = function(){ restoreDraft(d.id); };
+    var delDismissedBtn = document.createElement('button');
+    delDismissedBtn.className = 'draft-action-btn delete';
+    delDismissedBtn.textContent = 'Delete';
+    delDismissedBtn.title = 'Permanently delete (cannot be undone)';
+    delDismissedBtn.onclick = function(){ deleteDraft(d.id); };
     actions.appendChild(restoreBtn);
+    actions.appendChild(delDismissedBtn);
   }
   card.appendChild(actions);
 
@@ -5624,6 +5653,61 @@ window.restoreDraft = async function(id) {
   if (d) { d.active = true; d.dismissed_at = null; }
   renderDrafts();
   showToast('Draft restored');
+};
+
+// Hard delete. Asks for confirmation, removes the row from Supabase,
+// removes from local cache, re-renders. Also detaches any calendar row
+// that was referencing this draft (null out source_draft_id).
+window.deleteDraft = async function(id) {
+  var d = draftsCache.find(function(x){ return x.id === id; });
+  if (!d) return;
+  var subj = d['subject_' + (d.preferred || 'a')] || '(untitled)';
+  if (!confirm('Delete this draft permanently?\n\n"' + subj + '"\n\nThis cannot be undone.')) return;
+
+  // Detach calendar rows that link back to this draft
+  if (d.promoted_to_calendar_id) {
+    await db.from('quill_calendar').update({ source_draft_id: null, source_variant: null }).eq('id', d.promoted_to_calendar_id);
+    var calIdx = emails.findIndex(function(e){ return e.id === d.promoted_to_calendar_id; });
+    if (calIdx !== -1) { emails[calIdx].source_draft_id = null; emails[calIdx].source_variant = null; }
+  }
+
+  var res = await db.from('quill_generated_drafts').delete().eq('id', id);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+
+  // Remove from cache
+  var idx = draftsCache.findIndex(function(x){ return x.id === id; });
+  if (idx !== -1) draftsCache.splice(idx, 1);
+
+  renderDrafts();
+  showToast('Draft deleted');
+};
+
+// Bulk delete all dismissed drafts. Shown only in the Dismissed tab.
+window.deleteAllDismissed = async function() {
+  var dismissed = (draftsCache || []).filter(function(d){ return !d.active; });
+  if (!dismissed.length) { showToast('No dismissed drafts to delete'); return; }
+  var msg = 'Permanently delete ' + dismissed.length + ' dismissed draft' + (dismissed.length === 1 ? '' : 's') + '?\n\nThis cannot be undone.';
+  if (!confirm(msg)) return;
+
+  // Detach any calendar rows that happen to reference these drafts
+  var idsWithCalLinks = dismissed.filter(function(d){ return d.promoted_to_calendar_id; }).map(function(d){ return d.promoted_to_calendar_id; });
+  if (idsWithCalLinks.length) {
+    await db.from('quill_calendar').update({ source_draft_id: null, source_variant: null }).in('id', idsWithCalLinks);
+    idsWithCalLinks.forEach(function(calId){
+      var calIdx = emails.findIndex(function(e){ return e.id === calId; });
+      if (calIdx !== -1) { emails[calIdx].source_draft_id = null; emails[calIdx].source_variant = null; }
+    });
+  }
+
+  var ids = dismissed.map(function(d){ return d.id; });
+  var res = await db.from('quill_generated_drafts').delete().in('id', ids);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+
+  // Remove from cache
+  draftsCache = draftsCache.filter(function(d){ return d.active; });
+
+  renderDrafts();
+  showToast(dismissed.length + ' draft' + (dismissed.length === 1 ? '' : 's') + ' deleted');
 };
 
 window.regenerateDraft = async function(id) {
