@@ -617,6 +617,60 @@
     .editor-commit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .editor-delete-btn { padding: 7px 12px; background: transparent; color: #a32d2d; border: 0.5px solid #f4d0d0; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
     .editor-delete-btn:hover { background: #fce4e4; }
+    .editor-export-btn { padding: 7px 12px; background: transparent; color: var(--gg-olive); border: 0.5px solid var(--gg-olive); border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-body); font-weight: 600; }
+    .editor-export-btn:hover { background: var(--gg-olive); color: #fff; }
+
+    /* Export modal */
+    .export-modal-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .export-modal-overlay.open { display: flex; }
+    .export-modal { background: #fff; border: 0.5px solid var(--q-line); border-radius: 10px; width: 100%; max-width: 860px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: calc(100vh - 80px); }
+    .export-modal-head { padding: 18px 24px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .export-modal-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); }
+    .export-modal-sub { font-size: 12px; color: var(--q-muted); margin-top: 4px; line-height: 1.5; max-width: 540px; }
+    .export-modal-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .export-modal-close { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .export-modal-close:hover { background: #fff; color: var(--gg-charcoal); }
+    .export-modal-preview { padding: 24px 32px; overflow-y: auto; flex: 1; background: #fdfcf8; }
+    .exp-meta { background: #fff; border: 0.5px solid var(--q-line); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+    .exp-meta-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .exp-subject { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin: 3px 0 10px; }
+    .exp-preview-text { font-size: 13px; color: var(--q-muted); font-style: italic; }
+    .exp-block { border-top: 0.5px solid var(--q-line); padding: 16px 0; }
+    .exp-block:first-child { border-top: none; padding-top: 0; }
+    .exp-block-head { font-size: 10px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 9px; display: flex; align-items: center; gap: 8px; }
+    .exp-align-tag { font-size: 9px; color: var(--q-muted); background: var(--gg-offwhite); padding: 2px 7px; border-radius: 4px; letter-spacing: 0.05em; font-weight: 600; }
+    .exp-field { margin-bottom: 8px; }
+    .exp-field-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .exp-field-value { font-family: var(--font-body); font-size: 13px; color: var(--gg-charcoal); line-height: 1.55; white-space: pre-wrap; }
+    .exp-field-value.headline { font-family: var(--font-head); font-size: 17px; font-weight: 600; line-height: 1.25; }
+    .exp-field-value.sub { font-size: 14px; color: var(--q-muted); font-style: italic; }
+    .exp-field-value.cta { display: inline-block; background: var(--gg-olive); color: #fff; padding: 5px 14px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+    .exp-design-desc { background: #fff8f1; border-left: 3px solid var(--gg-orange); padding: 10px 14px; border-radius: 4px; font-size: 12px; color: var(--gg-charcoal); font-style: italic; line-height: 1.55; }
+    .exp-design-desc-label { font-size: 9px; font-weight: 700; color: var(--gg-orange); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; font-style: normal; }
+    .exp-design-desc-label::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gg-orange); }
+    .exp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .exp-product-grid { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; }
+    .exp-product-item { background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; padding: 10px; }
+    .exp-product-name { font-weight: 600; font-size: 12px; margin-bottom: 3px; }
+    .exp-product-desc { font-size: 11px; color: var(--q-muted); line-height: 1.4; margin-bottom: 6px; }
+    .exp-product-cta { display: inline-block; background: var(--gg-olive); color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+    .exp-quote { border-left: 3px solid var(--gg-orange); padding-left: 14px; font-style: italic; color: var(--gg-charcoal); font-size: 14px; line-height: 1.55; }
+    .exp-divider { height: 1px; background: var(--q-line); margin: 4px 0; }
+    .exp-img-placeholder { background: #e8e4d9; border-radius: 7px; aspect-ratio: 3/2; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--q-muted); gap: 6px; margin-bottom: 10px; }
+    .exp-img-placeholder-full { aspect-ratio: 3/1; margin-bottom: 12px; }
+    .exp-img-placeholder-square { aspect-ratio: 1/1; margin-bottom: 0; }
+    .exp-img-placeholder-icon { font-size: 26px; opacity: 0.4; }
+    .exp-img-placeholder-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.6; }
+    .exp-hero-placeholder { position: relative; background: #e8e4d9; border-radius: 7px; aspect-ratio: 3/1; padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; overflow: hidden; }
+    .exp-hero-placeholder-icon { position: absolute; top: 10px; left: 10px; font-size: 18px; color: var(--q-muted); opacity: 0.4; }
+    .exp-hero-placeholder-label { position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--q-muted); opacity: 0.6; }
+    .exp-hero-overlay { display: flex; flex-direction: column; gap: 6px; }
+    .exp-hero-placeholder[data-align="left"] .exp-hero-overlay { align-items: flex-start; text-align: left; }
+    .exp-hero-placeholder[data-align="center"] .exp-hero-overlay { align-items: center; text-align: center; }
+    .exp-hero-placeholder[data-align="right"] .exp-hero-overlay { align-items: flex-end; text-align: right; }
+    .exp-hero-headline { background: rgba(255,255,255,0.65); padding: 6px 10px; border-radius: 4px; font-family: var(--font-head); font-size: 18px; font-weight: 600; line-height: 1.2; color: var(--gg-charcoal); display: inline-block; }
+    .exp-hero-sub { background: rgba(255,255,255,0.65); padding: 4px 10px; border-radius: 4px; font-size: 13px; font-style: italic; color: var(--gg-charcoal); display: inline-block; }
+    .exp-product-thumb { background: #d9d5c8; aspect-ratio: 1/1; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: var(--q-muted); }
 
     .editor-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
     @media (max-width: 900px) {
@@ -1447,6 +1501,23 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="export-modal-overlay" id="export-modal-overlay" onclick="if(event.target===this) closeExportModal()">
+  <div class="export-modal">
+    <div class="export-modal-head">
+      <div>
+        <div class="export-modal-title">Export for design</div>
+        <div class="export-modal-sub">Designer opens the HTML in their browser and copies each section straight into Figma. No platform required.</div>
+      </div>
+      <div class="export-modal-actions">
+        <button class="editor-commit-btn" onclick="copyExportToClipboard()" style="background:transparent;color:var(--gg-charcoal);border:0.5px solid var(--q-line);">Copy all to clipboard</button>
+        <button class="editor-commit-btn" onclick="downloadExportHtml()">Download .html</button>
+        <button class="export-modal-close" onclick="closeExportModal()">Close</button>
+      </div>
+    </div>
+    <div class="export-modal-preview" id="export-modal-preview"></div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script defer>
@@ -6778,6 +6849,340 @@ var BlockEditor = (function(){
   };
 })();
 
+// ── EXPORT FOR DESIGN ─────────────────────────────────────────────────────
+// Takes the current Campaign Editor row, renders it as a designer-facing
+// HTML document with image placeholders and design descriptions prominently
+// displayed. Provides preview, download, and copy-to-clipboard.
+
+var ExportForDesign = (function(){
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var BLOCK_LABELS = {
+    headline: 'Headline', subheadline: 'Subheadline', text: 'Text', cta: 'CTA button',
+    'image-text': 'Image + Text', 'image-full': 'Full-width image',
+    'image-hero': 'Hero image + Headline', 'two-col': 'Two-column text',
+    product: 'Product card (single)', 'product-row': 'Product row',
+    quote: 'Quote / Callout', divider: 'Divider'
+  };
+  var ALIGNABLE = ['headline','subheadline','text','cta','quote','image-hero'];
+
+  function renderBlock(b) {
+    var c = b && b.content ? b.content : {};
+    var align = c.align || 'left';
+    var alignTag = ALIGNABLE.indexOf(b.type) !== -1
+      ? '<span class="exp-align-tag">' + align + '-aligned</span>' : '';
+    var typeName = BLOCK_LABELS[b.type] || b.type;
+    var head = '<div class="exp-block-head">' + esc(typeName) + alignTag + '</div>';
+    var body = '';
+    switch (b.type) {
+      case 'headline':
+        body = '<div class="exp-field-value headline" style="text-align:' + align + '">' + esc(c.text || '') + '</div>';
+        break;
+      case 'subheadline':
+        body = '<div class="exp-field-value sub" style="text-align:' + align + '">' + esc(c.text || '') + '</div>';
+        break;
+      case 'text':
+        body = '<div class="exp-field-value" style="text-align:' + align + '">' + esc(c.text || '') + '</div>';
+        break;
+      case 'cta':
+        body = '<div style="text-align:' + align + '"><span class="exp-field-value cta">' + esc(c.text || '') + '</span></div>';
+        break;
+      case 'image-text':
+        var layout = c.layout || 'image-left';
+        var imgPart = '<div>'
+          + '<div class="exp-img-placeholder"><div class="exp-img-placeholder-icon">\u25a6</div><div class="exp-img-placeholder-label">Image</div></div>'
+          + '<div class="exp-design-desc">'
+          +   '<div class="exp-design-desc-label">Image description</div>'
+          +   esc(c.designDesc || '(no image description)')
+          + '</div></div>';
+        var copyPart = '<div>'
+          + '<div class="exp-field-label">Copy</div>'
+          + '<div class="exp-field-value">' + esc(c.text || '') + '</div>'
+          + '</div>';
+        body = '<div class="exp-two-col">'
+          + (layout === 'image-left' ? imgPart + copyPart : copyPart + imgPart)
+          + '</div>';
+        break;
+      case 'image-full':
+        body = '<div class="exp-img-placeholder exp-img-placeholder-full"><div class="exp-img-placeholder-icon">\u25a6</div><div class="exp-img-placeholder-label">Full-width image</div></div>'
+          + '<div class="exp-design-desc">'
+          +   '<div class="exp-design-desc-label">Image description</div>'
+          +   esc(c.designDesc || '(no image description)')
+          + '</div>';
+        break;
+      case 'image-hero':
+        body = '<div class="exp-hero-placeholder" data-align="' + align + '">'
+          +   '<div class="exp-hero-placeholder-icon">\u25a6</div>'
+          +   '<div class="exp-hero-placeholder-label">Hero image</div>'
+          +   '<div class="exp-hero-overlay">'
+          +     '<div class="exp-hero-headline">' + esc(c.headline || '(headline)') + '</div>'
+          +     '<div class="exp-hero-sub">' + esc(c.subheadline || '') + '</div>'
+          +   '</div>'
+          + '</div>'
+          + '<div class="exp-design-desc">'
+          +   '<div class="exp-design-desc-label">Image description</div>'
+          +   esc(c.designDesc || '(no image description)')
+          + '</div>';
+        break;
+      case 'two-col':
+        body = '<div class="exp-two-col">'
+          + '<div><div class="exp-field-label">Left column</div><div class="exp-field-value">' + esc(c.left || '') + '</div></div>'
+          + '<div><div class="exp-field-label">Right column</div><div class="exp-field-value">' + esc(c.right || '') + '</div></div>'
+          + '</div>';
+        break;
+      case 'product':
+        var productLayout = c.layout === 'text-left' ? 'Text left, image right' : 'Image left, text right';
+        var prodImg = '<div class="exp-img-placeholder exp-img-placeholder-square"><div class="exp-img-placeholder-icon">\u25a6</div><div class="exp-img-placeholder-label">Product image</div></div>';
+        var prodInfo = '<div>'
+          + '<div class="exp-field"><div class="exp-field-label">Product name</div><div class="exp-field-value" style="font-weight:600;">' + esc(c.productName || '') + '</div></div>'
+          + '<div class="exp-field"><div class="exp-field-label">Description</div><div class="exp-field-value">' + esc(c.description || '') + '</div></div>'
+          + '<div class="exp-field"><div class="exp-field-label">Button text</div><span class="exp-field-value cta">' + esc(c.cta || '') + '</span></div>'
+          + '</div>';
+        body = '<div class="exp-field"><div class="exp-field-label">Layout</div><div class="exp-field-value">' + productLayout + '</div></div>'
+          + '<div class="exp-two-col">'
+          + (c.layout === 'text-left' ? prodInfo + prodImg : prodImg + prodInfo)
+          + '</div>';
+        break;
+      case 'product-row':
+        var cols = c.cols || (c.items || []).length || 3;
+        var items = (c.items || []).map(function(item){
+          return '<div class="exp-product-item">'
+            + '<div class="exp-product-thumb"><div class="exp-img-placeholder-icon">\u25a6</div></div>'
+            + '<div class="exp-product-name">' + esc(item.productName || '(unnamed)') + '</div>'
+            + '<div class="exp-product-desc">' + esc(item.description || '') + '</div>'
+            + '<div class="exp-product-cta">' + esc(item.cta || '') + '</div>'
+            + '</div>';
+        }).join('');
+        body = '<div class="exp-field"><div class="exp-field-label">' + cols + '-column row</div></div>'
+          + '<div class="exp-product-grid">' + items + '</div>';
+        break;
+      case 'quote':
+        body = '<div class="exp-quote" style="text-align:' + align + '">' + esc(c.text || '') + '</div>';
+        break;
+      case 'divider':
+        body = '<div class="exp-divider"></div>';
+        break;
+      default:
+        body = '<div class="exp-field-value">' + esc(JSON.stringify(c)) + '</div>';
+    }
+    return '<div class="exp-block">' + head + body + '</div>';
+  }
+
+  function buildExportHtml(em, forDownload) {
+    var subject = em && em.subject ? em.subject : '';
+    var preview = em && em.preview ? em.preview : '';
+    var blocks = BlockEditor.normalize(em && em.blocks, em || {});
+
+    var parts = [];
+    parts.push('<div class="exp-meta">');
+    parts.push('<div class="exp-meta-label">Subject line</div>');
+    parts.push('<div class="exp-subject">' + esc(subject || '(no subject)') + '</div>');
+    parts.push('<div class="exp-meta-label">Preview text</div>');
+    parts.push('<div class="exp-preview-text">' + esc(preview || '(no preview)') + '</div>');
+    parts.push('</div>');
+    blocks.forEach(function(b){ parts.push(renderBlock(b)); });
+
+    if (forDownload) {
+      var styles = getExportStyles();
+      return '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n'
+        + '<title>' + esc(subject || 'Email export') + '</title>\n'
+        + '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+        + '<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">\n'
+        + '<style>' + styles + '</style>\n'
+        + '</head>\n<body><div class="export-preview-standalone">\n'
+        + parts.join('\n')
+        + '\n</div></body>\n</html>';
+    }
+    return parts.join('\n');
+  }
+
+  function getExportStyles() {
+    return ''
+      + 'body { font-family: "DM Sans", -apple-system, sans-serif; background: #fafaf7; color: #32312f; margin: 0; padding: 30px 20px; }\n'
+      + '.export-preview-standalone { max-width: 820px; margin: 0 auto; background: #fff; border: 0.5px solid #e8e4d9; border-radius: 10px; padding: 32px 40px; }\n'
+      + '.exp-meta { background: #f7f4ee; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; }\n'
+      + '.exp-meta-label, .exp-field-label, .exp-block-head, .exp-design-desc-label, .exp-align-tag { font-size: 10px; font-weight: 700; color: #6b6a65; text-transform: uppercase; letter-spacing: 0.08em; }\n'
+      + '.exp-subject { font-family: "Funnel Display", sans-serif; font-size: 20px; font-weight: 600; margin: 4px 0 10px; }\n'
+      + '.exp-preview-text { font-size: 13px; color: #6b6a65; font-style: italic; margin-top: 4px; }\n'
+      + '.exp-block { border-top: 0.5px solid #e8e4d9; padding: 18px 0; }\n'
+      + '.exp-block:first-child { border-top: none; padding-top: 0; }\n'
+      + '.exp-block-head { color: #43471d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }\n'
+      + '.exp-align-tag { color: #6b6a65; background: #f7f4ee; padding: 2px 7px; border-radius: 4px; font-weight: 600; }\n'
+      + '.exp-field { margin-bottom: 10px; }\n'
+      + '.exp-field-label { margin-bottom: 3px; }\n'
+      + '.exp-field-value { font-size: 14px; color: #32312f; line-height: 1.55; white-space: pre-wrap; }\n'
+      + '.exp-field-value.headline { font-family: "Funnel Display", sans-serif; font-size: 18px; font-weight: 600; line-height: 1.25; }\n'
+      + '.exp-field-value.sub { font-size: 14px; color: #6b6a65; font-style: italic; }\n'
+      + '.exp-field-value.cta { display: inline-block; background: #43471d; color: #fff; padding: 5px 14px; border-radius: 4px; font-weight: 600; font-size: 12px; }\n'
+      + '.exp-design-desc { background: #fff8f1; border-left: 3px solid #e57442; padding: 10px 14px; border-radius: 4px; font-style: italic; font-size: 13px; line-height: 1.55; }\n'
+      + '.exp-design-desc-label { color: #e57442; margin-bottom: 4px; font-style: normal; }\n'
+      + '.exp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }\n'
+      + '.exp-product-grid { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; }\n'
+      + '.exp-product-item { background: #f7f4ee; border: 0.5px solid #e8e4d9; border-radius: 6px; padding: 10px; }\n'
+      + '.exp-product-name { font-weight: 600; font-size: 13px; margin-bottom: 3px; }\n'
+      + '.exp-product-desc { font-size: 11px; color: #6b6a65; line-height: 1.4; margin-bottom: 6px; }\n'
+      + '.exp-product-cta { display: inline-block; background: #43471d; color: #fff; padding: 3px 10px; border-radius: 3px; font-size: 10px; font-weight: 600; }\n'
+      + '.exp-quote { border-left: 3px solid #e57442; padding-left: 14px; font-style: italic; font-size: 14px; line-height: 1.55; }\n'
+      + '.exp-divider { height: 1px; background: #e8e4d9; margin: 4px 0; }\n'
+      + '.exp-img-placeholder { background: #e8e4d9; border-radius: 8px; aspect-ratio: 3/2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; margin-bottom: 10px; color: #6b6a65; }\n'
+      + '.exp-img-placeholder-full { aspect-ratio: 3/1; margin-bottom: 12px; }\n'
+      + '.exp-img-placeholder-square { aspect-ratio: 1/1; margin-bottom: 0; }\n'
+      + '.exp-img-placeholder-icon { font-size: 28px; opacity: 0.4; }\n'
+      + '.exp-img-placeholder-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.6; }\n'
+      + '.exp-hero-placeholder { position: relative; background: #e8e4d9; border-radius: 8px; aspect-ratio: 3/1; padding: 28px 32px; display: flex; flex-direction: column; justify-content: center; margin-bottom: 12px; overflow: hidden; }\n'
+      + '.exp-hero-placeholder-icon { position: absolute; top: 10px; left: 10px; font-size: 20px; color: #6b6a65; opacity: 0.4; }\n'
+      + '.exp-hero-placeholder-label { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #6b6a65; opacity: 0.6; }\n'
+      + '.exp-hero-overlay { display: flex; flex-direction: column; gap: 6px; }\n'
+      + '.exp-hero-placeholder[data-align="left"] .exp-hero-overlay { align-items: flex-start; text-align: left; }\n'
+      + '.exp-hero-placeholder[data-align="center"] .exp-hero-overlay { align-items: center; text-align: center; }\n'
+      + '.exp-hero-placeholder[data-align="right"] .exp-hero-overlay { align-items: flex-end; text-align: right; }\n'
+      + '.exp-hero-headline { background: rgba(255,255,255,0.65); padding: 6px 10px; border-radius: 4px; font-family: "Funnel Display", sans-serif; font-size: 19px; font-weight: 600; line-height: 1.2; color: #32312f; display: inline-block; }\n'
+      + '.exp-hero-sub { background: rgba(255,255,255,0.65); padding: 4px 10px; border-radius: 4px; font-size: 13px; font-style: italic; color: #32312f; display: inline-block; }\n'
+      + '.exp-product-thumb { background: #d9d5c8; aspect-ratio: 1/1; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: #6b6a65; }\n'
+      + '.exp-product-thumb .exp-img-placeholder-icon { font-size: 20px; opacity: 0.5; }\n';
+  }
+
+  function buildPlainText(em) {
+    var subject = em && em.subject ? em.subject : '';
+    var preview = em && em.preview ? em.preview : '';
+    var blocks = BlockEditor.normalize(em && em.blocks, em || {});
+    var lines = [];
+    lines.push('SUBJECT: ' + (subject || '(no subject)'));
+    lines.push('PREVIEW: ' + (preview || '(no preview)'));
+    lines.push('');
+    blocks.forEach(function(b){
+      var c = b.content || {};
+      var align = c.align || 'left';
+      var alignText = ALIGNABLE.indexOf(b.type) !== -1 ? ' (' + align + '-aligned)' : '';
+      var typeName = (BLOCK_LABELS[b.type] || b.type).toUpperCase();
+      lines.push('--- ' + typeName + alignText + ' ---');
+      switch (b.type) {
+        case 'headline':
+        case 'subheadline':
+        case 'text':
+        case 'quote':
+          lines.push(c.text || '');
+          break;
+        case 'cta':
+          lines.push('Button: ' + (c.text || ''));
+          break;
+        case 'image-text':
+          lines.push('Layout: ' + (c.layout || 'image-left'));
+          lines.push('');
+          lines.push('IMAGE DESCRIPTION:');
+          lines.push(c.designDesc || '(no description)');
+          lines.push('');
+          lines.push('COPY:');
+          lines.push(c.text || '');
+          break;
+        case 'image-full':
+          lines.push('IMAGE DESCRIPTION:');
+          lines.push(c.designDesc || '(no description)');
+          break;
+        case 'image-hero':
+          lines.push('HEADLINE (overlaid): ' + (c.headline || ''));
+          lines.push('SUBHEADLINE (overlaid): ' + (c.subheadline || ''));
+          lines.push('');
+          lines.push('IMAGE DESCRIPTION:');
+          lines.push(c.designDesc || '(no description)');
+          break;
+        case 'two-col':
+          lines.push('LEFT COLUMN:');
+          lines.push(c.left || '');
+          lines.push('');
+          lines.push('RIGHT COLUMN:');
+          lines.push(c.right || '');
+          break;
+        case 'product':
+          lines.push('Layout: ' + (c.layout || 'text-right'));
+          lines.push('Product name: ' + (c.productName || ''));
+          lines.push('Description: ' + (c.description || ''));
+          lines.push('Button: ' + (c.cta || ''));
+          break;
+        case 'product-row':
+          lines.push((c.cols || (c.items || []).length) + '-column product row:');
+          (c.items || []).forEach(function(item, i){
+            lines.push('  ' + (i+1) + '. ' + (item.productName || '(unnamed)'));
+            if (item.description) lines.push('     ' + item.description);
+            if (item.cta) lines.push('     Button: ' + item.cta);
+          });
+          break;
+        case 'divider':
+          lines.push('(divider)');
+          break;
+      }
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  return {
+    buildExportHtml: buildExportHtml,
+    buildPlainText: buildPlainText
+  };
+})();
+
+// Campaign Editor export UI functions
+window.openExportModal = function() {
+  if (editorEmailId == null) { showToast('Open a calendar row first', true); return; }
+  var em = (emails || []).find(function(e){ return e.id === editorEmailId; });
+  if (!em) { showToast('Row not found', true); return; }
+  // Apply any pending edits so export reflects current state
+  var rowForExport = Object.assign({}, em, editorPending);
+  window._exportRowSnapshot = rowForExport;
+  var preview = document.getElementById('export-modal-preview');
+  if (preview) preview.innerHTML = ExportForDesign.buildExportHtml(rowForExport, false);
+  var overlay = document.getElementById('export-modal-overlay');
+  if (overlay) overlay.classList.add('open');
+};
+
+window.closeExportModal = function() {
+  var overlay = document.getElementById('export-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+};
+
+window.downloadExportHtml = function() {
+  var row = window._exportRowSnapshot;
+  if (!row) return;
+  var html = ExportForDesign.buildExportHtml(row, true);
+  var blob = new Blob([html], { type: 'text/html' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var safeSubject = (row.subject || 'email').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
+  a.href = url;
+  a.download = 'quill-email-' + safeSubject + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  showToast('Downloaded');
+};
+
+window.copyExportToClipboard = function() {
+  var row = window._exportRowSnapshot;
+  if (!row) return;
+  var html = ExportForDesign.buildExportHtml(row, false);
+  var plain = ExportForDesign.buildPlainText(row);
+  if (navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
+    try {
+      var htmlBlob = new Blob([html], { type: 'text/html' });
+      var textBlob = new Blob([plain], { type: 'text/plain' });
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })]);
+      showToast('Copied to clipboard (rich + plain)');
+      return;
+    } catch (e) { /* fall through */ }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(plain);
+    showToast('Copied to clipboard (plain text)');
+  } else {
+    showToast('Copy not supported in this browser', true);
+  }
+};
+
 // ── CAMPAIGN EDITOR ───────────────────────────────────────────────────────
 
 var editorEmailId = null;
@@ -6848,6 +7253,7 @@ function buildEditorHtml(em) {
   parts.push('  <div class="editor-head-right">');
   parts.push('    <div class="editor-save-status" id="editor-save-status"><span class="dot"></span><span class="editor-save-status-text">Saved</span></div>');
   parts.push('    <button class="editor-commit-btn" id="editor-commit-btn" onclick="editorCommit()">Save</button>');
+  parts.push('    <button class="editor-export-btn" onclick="openExportModal()">Export for design</button>');
   parts.push('    <button class="editor-delete-btn" onclick="editorDelete()">Delete</button>');
   parts.push('  </div>');
   parts.push('</div>');
