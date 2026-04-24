@@ -1455,22 +1455,33 @@
           </div>
           <div class="tip-widget" id="tip-gaps">
             <div class="tip-widget-head" onclick="toggleTipWidget('tip-gaps')">
-              <span class="tip-widget-title">How Gaps analysis works</span>
-              <span class="tip-widget-toggle" id="tip-gaps-toggle">Show</span>
+              <div class="tip-widget-title">How Gaps analysis works</div>
+              <button class="tip-widget-toggle" id="tip-gaps-toggle">Hide</button>
             </div>
-            <div class="tip-widget-body" id="tip-gaps-body" style="display:none;">
-              <p><strong>Pick a date range,</strong> then click <strong>Run gap analysis</strong>. Quill generates a point-in-time briefing with three sections:</p>
+            <div class="tip-widget-body">
+              <div class="tip-section-title">What it is</div>
+              <p>A pre-planning briefing. Run this before sitting down to plan your month or week. It shows what is missing so you can plan with the gaps in mind, not discover them after.</p>
+              <div class="tip-section-title">What the date range means</div>
+              <p>The date range is your <strong>planning window</strong>. It is the period you are about to plan or review. Gaps looks at <strong>what is currently scheduled on the calendar inside that window</strong> and flags what is missing.</p>
+              <p>If you want to plan May, set the range to May 1 to May 31. Gaps will tell you which weeks of May are empty, which buckets are under-represented, and which starred ideas you have not yet drafted for May.</p>
+              <div class="tip-section-title">Three sections in the output</div>
               <ul>
-                <li><strong>Calendar coverage.</strong> Week-by-week view of what is scheduled in the range. Flags weeks with zero sends.</li>
-                <li><strong>Bucket mix.</strong> Distribution of upcoming emails across the 5 SFH content buckets. Flags over- and under-representation.</li>
-                <li><strong>Workflow queue.</strong> Starred ideas not yet drafted, and drafts not yet applied to the calendar. Action buttons get you straight to the fix.</li>
+                <li><strong>Calendar coverage.</strong> Week by week view of what is scheduled in the range. Empty weeks flagged in orange.</li>
+                <li><strong>Bucket mix.</strong> Distribution of upcoming emails across the 5 SFH content buckets. Flags for "unused" (no sends), "light" (1 send across a 6+ email range), and "heavy" (one bucket more than half of sends).</li>
+                <li><strong>Workflow queue.</strong> Starred ideas not yet drafted, and drafts not yet applied to the calendar. These are active queue items that always show regardless of date window.</li>
               </ul>
-              <p>Re-run any time. The briefing is a snapshot, not a live dashboard.</p>
+              <div class="tip-section-title">When to run</div>
+              <ul>
+                <li><strong>Before monthly planning.</strong> Set the range to next month, see what is already committed, plan what to fill.</li>
+                <li><strong>Before a weekly review.</strong> Set the range to the next 7 to 14 days. Catch empty Fridays before they become empty Fridays.</li>
+                <li><strong>After generating ideas.</strong> See whether starred ideas have turned into drafts, and whether drafts have turned into calendar rows.</li>
+              </ul>
+              <p>Re-run any time. The briefing is a point in time snapshot, not a live dashboard.</p>
             </div>
           </div>
           <div class="gaps-controls">
             <div class="gaps-controls-left">
-              <label class="field-label" style="margin-bottom:4px;">Time window</label>
+              <label class="field-label" style="margin-bottom:4px;">Planning window</label>
               <div class="gaps-date-row">
                 <input type="date" id="gaps-start" class="field-input" style="max-width:170px;">
                 <span class="gaps-date-sep">to</span>
