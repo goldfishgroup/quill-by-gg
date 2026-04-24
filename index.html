@@ -5380,7 +5380,16 @@ window.generateDraftExtras = async function(draftId, variant) {
       }
       throw new Error('Server returned non-JSON. Status ' + res.status);
     }
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    if (!res.ok) {
+      var errMsg2 = 'HTTP ' + res.status;
+      if (data && data.error) {
+        if (typeof data.error === 'string') errMsg2 = data.error;
+        else if (data.error.message) errMsg2 = data.error.message;
+        else errMsg2 = JSON.stringify(data.error);
+      }
+      console.error('API rejected extras request', { status: res.status, data: data });
+      throw new Error(errMsg2);
+    }
     var text = '';
     if (data.content && Array.isArray(data.content)) {
       data.content.forEach(function(blk){ if (blk.type === 'text') text += blk.text; });
@@ -5789,7 +5798,16 @@ async function runDraftGeneration(opts) {
       }
       throw new Error('Server returned a non-JSON response. Status ' + res.status);
     }
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    if (!res.ok) {
+      var errMsg = 'HTTP ' + res.status;
+      if (data && data.error) {
+        if (typeof data.error === 'string') errMsg = data.error;
+        else if (data.error.message) errMsg = data.error.message;
+        else errMsg = JSON.stringify(data.error);
+      }
+      console.error('API rejected draft request', { status: res.status, data: data });
+      throw new Error(errMsg);
+    }
     var text = '';
     if (data.content && Array.isArray(data.content)) {
       data.content.forEach(function(blk){ if (blk.type === 'text') text += blk.text; });
