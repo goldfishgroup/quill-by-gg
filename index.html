@@ -489,8 +489,11 @@
     /* GAPS ANALYSIS */
     .gaps-controls { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin: 16px 0 20px; flex-wrap: wrap; }
     .gaps-controls-left { display: flex; flex-direction: column; gap: 2px; }
+    .gaps-controls-middle { display: flex; flex-direction: column; gap: 2px; }
     .gaps-date-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .gaps-date-sep { font-size: 11px; color: var(--q-muted); }
+    .gaps-cadence-row { display: flex; align-items: center; gap: 8px; }
+    .gaps-cadence-unit { font-size: 12px; color: var(--q-muted); }
     .gaps-preset-group { display: inline-flex; gap: 4px; margin-left: 4px; }
     .gaps-preset-btn { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
     .gaps-preset-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
@@ -510,8 +513,12 @@
     .gaps-week-label-date { font-size: 10px; color: var(--q-muted); }
     .gaps-week-bar-track { height: 18px; background: var(--gg-offwhite); border-radius: 4px; display: flex; gap: 2px; padding: 2px; position: relative; }
     .gaps-week-bar-cell { background: var(--gg-olive); border-radius: 2px; flex: 1; max-width: 16px; }
+    .gaps-week-bar-cell.over { background: var(--gg-orange); opacity: 0.55; }
     .gaps-week-bar-empty { font-size: 10px; color: var(--gg-orange); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; align-self: center; margin-left: 10px; }
-    .gaps-week-count { font-size: 12px; color: var(--q-muted); font-weight: 600; min-width: 80px; text-align: right; }
+    .gaps-week-count { font-size: 12px; color: var(--q-muted); font-weight: 600; min-width: 100px; text-align: right; }
+    .gaps-week-flag { display: inline-block; margin-left: 4px; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; }
+    .gaps-week-flag.under { background: #fdecd8; color: var(--gg-orange); }
+    .gaps-week-flag.over { background: #f0edd8; color: var(--gg-olive); }
 
     /* Bucket mix bars */
     .gaps-bucket-row { display: grid; grid-template-columns: 180px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 0.5px solid var(--q-line); }
@@ -1464,6 +1471,9 @@
               <div class="tip-section-title">What the date range means</div>
               <p>The date range is your <strong>planning window</strong>. It is the period you are about to plan or review. Gaps looks at <strong>what is currently scheduled on the calendar inside that window</strong> and flags what is missing.</p>
               <p>If you want to plan May, set the range to May 1 to May 31. Gaps will tell you which weeks of May are empty, which buckets are under-represented, and which starred ideas you have not yet drafted for May.</p>
+              <div class="tip-section-title">Target cadence</div>
+              <p>Campaign cadence is how many sends you want per week (SFH is 1 per week). Gaps uses this to decide what counts as a gap. A week with zero sends when the target is 1 per week is flagged as <strong>below cadence</strong>. A week with 3 when the target is 1 gets an <strong>over</strong> note. Set to 0 if you do not want cadence-based flagging.</p>
+              <p>The value is saved to Supabase, so it persists across devices and reloads. You rarely need to touch it.</p>
               <div class="tip-section-title">Three sections in the output</div>
               <ul>
                 <li><strong>Calendar coverage.</strong> Week by week view of what is scheduled in the range. Empty weeks flagged in orange.</li>
@@ -1491,6 +1501,13 @@
                   <button class="gaps-preset-btn" onclick="setGapsPreset('month')">This month</button>
                   <button class="gaps-preset-btn" onclick="setGapsPreset('nextmonth')">Next month</button>
                 </div>
+              </div>
+            </div>
+            <div class="gaps-controls-middle">
+              <label class="field-label" style="margin-bottom:4px;">Target cadence</label>
+              <div class="gaps-cadence-row">
+                <input type="number" id="gaps-cadence" class="field-input" min="0" max="14" step="1" value="1" style="max-width:60px;text-align:center;">
+                <span class="gaps-cadence-unit">per week</span>
               </div>
             </div>
             <button class="extract-btn" onclick="runGapsAnalysis()" id="gaps-run-btn">Run gap analysis</button>
@@ -6317,6 +6334,29 @@ window.generateDraftFromCalendarRow = async function(calendarId) {
 // (starred ideas not drafted, drafts not applied).
 
 var gapsPreset = '4w'; // '4w' | 'month' | 'nextmonth'
+var clientSettingsCache = null;
+
+async function loadClientSettings() {
+  if (clientSettingsCache) return clientSettingsCache;
+  var res = await db.from('quill_client_settings').select('*').eq('client', 'SFH').maybeSingle();
+  if (res.error) {
+    console.error('loadClientSettings error', res.error);
+    return { client: 'SFH', campaign_cadence_per_week: 1 };
+  }
+  clientSettingsCache = res.data || { client: 'SFH', campaign_cadence_per_week: 1 };
+  return clientSettingsCache;
+}
+
+async function saveClientCadence(cadence) {
+  var payload = { client: 'SFH', campaign_cadence_per_week: cadence, updated_at: new Date().toISOString() };
+  var res = await db.from('quill_client_settings').upsert(payload, { onConflict: 'client' }).select().single();
+  if (res.error) {
+    console.error('saveClientCadence error', res.error);
+    return false;
+  }
+  clientSettingsCache = res.data;
+  return true;
+}
 
 window.setGapsPreset = function(preset) {
   gapsPreset = preset;
@@ -6362,6 +6402,11 @@ function showGapsOnOpen() {
   if (s && e && !s.value && !e.value) {
     setGapsPreset('4w');
   }
+  // Load cadence from Supabase and set the input value
+  loadClientSettings().then(function(settings){
+    var c = document.getElementById('gaps-cadence');
+    if (c) c.value = settings.campaign_cadence_per_week || 1;
+  });
 }
 
 window.runGapsAnalysis = async function() {
@@ -6371,6 +6416,16 @@ window.runGapsAnalysis = async function() {
   var start = new Date(startStr + 'T00:00:00');
   var end = new Date(endStr + 'T23:59:59');
   if (end < start) { showToast('End date must be after start date', true); return; }
+
+  // Read cadence, validate, save if changed
+  var cadenceEl = document.getElementById('gaps-cadence');
+  var cadence = cadenceEl ? parseInt(cadenceEl.value, 10) : 1;
+  if (isNaN(cadence) || cadence < 0) cadence = 1;
+  if (cadence > 14) cadence = 14; // safety cap
+  var currentSettings = await loadClientSettings();
+  if ((currentSettings.campaign_cadence_per_week || 1) !== cadence) {
+    await saveClientCadence(cadence);
+  }
 
   var btn = document.getElementById('gaps-run-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
@@ -6391,14 +6446,14 @@ window.runGapsAnalysis = async function() {
       return d >= start && d <= end;
     });
 
-    // Build week buckets
-    var weeks = buildWeekBuckets(start, end, inWindow);
+    // Build week buckets (with cadence-aware flags)
+    var weeks = buildWeekBuckets(start, end, inWindow, cadence);
     var bucketMix = buildBucketMix(inWindow);
     var workflow = buildWorkflowGaps();
-    var summary = buildGapsSummary(weeks, bucketMix, workflow, start, end);
+    var summary = buildGapsSummary(weeks, bucketMix, workflow, start, end, cadence);
 
     renderGapsSummary(summary);
-    renderGapsSections(weeks, bucketMix, workflow);
+    renderGapsSections(weeks, bucketMix, workflow, cadence);
   } catch (err) {
     console.error('Gaps analysis error', err);
     showToast('Something went wrong running the analysis', true);
@@ -6407,12 +6462,13 @@ window.runGapsAnalysis = async function() {
   }
 };
 
-function buildWeekBuckets(start, end, rows) {
-  // Produce an array of { label, startDate, endDate, count, rows[] }
+function buildWeekBuckets(start, end, rows, cadence) {
+  // Produce an array of { label, startDate, endDate, count, rows[], flag }
   // Each week starts on Sunday (matching Klaviyo convention).
+  // flag = 'under' if count < cadence, 'over' if count > cadence, 'on' if == cadence
+  cadence = typeof cadence === 'number' ? cadence : 1;
   var weeks = [];
   var cursor = new Date(start);
-  // Align cursor back to start of week (Sunday)
   cursor.setDate(cursor.getDate() - cursor.getDay());
   while (cursor <= end) {
     var wStart = new Date(cursor);
@@ -6422,12 +6478,18 @@ function buildWeekBuckets(start, end, rows) {
       var d = new Date(r.send_date + 'T12:00:00');
       return d >= wStart && d <= wEnd;
     });
+    var flag = 'on';
+    if (cadence > 0) {
+      if (weekRows.length < cadence) flag = 'under';
+      else if (weekRows.length > cadence) flag = 'over';
+    }
     weeks.push({
       label: 'Week of ' + formatShortDate(wStart),
       startDate: wStart,
       endDate: wEnd,
       count: weekRows.length,
-      rows: weekRows
+      rows: weekRows,
+      flag: flag
     });
     cursor.setDate(cursor.getDate() + 7);
   }
@@ -6484,14 +6546,23 @@ function buildWorkflowGaps() {
   };
 }
 
-function buildGapsSummary(weeks, bucketMix, workflow, start, end) {
-  var emptyWeeks = weeks.filter(function(w){ return w.count === 0; }).length;
+function buildGapsSummary(weeks, bucketMix, workflow, start, end, cadence) {
+  cadence = typeof cadence === 'number' ? cadence : 1;
   var totalWeeks = weeks.length;
   var totalSends = bucketMix.total;
+  var targetTotal = cadence * totalWeeks;
+  var underWeeks = weeks.filter(function(w){ return w.flag === 'under'; }).length;
+  var overWeeks = weeks.filter(function(w){ return w.flag === 'over'; }).length;
+
   var parts = [];
   parts.push(formatShortDate(start) + ' to ' + formatShortDate(end) + ': <strong>' + totalSends + ' scheduled</strong> across <strong>' + totalWeeks + ' weeks</strong>.');
-  if (emptyWeeks > 0) {
-    parts.push('<strong style="color:var(--gg-orange);">' + emptyWeeks + ' week' + (emptyWeeks === 1 ? '' : 's') + ' with no sends.</strong>');
+  if (cadence > 0) {
+    parts.push('Target cadence: <strong>' + cadence + ' per week</strong> (' + targetTotal + ' across window).');
+    if (underWeeks > 0) {
+      parts.push('<strong style="color:var(--gg-orange);">' + underWeeks + ' week' + (underWeeks === 1 ? '' : 's') + ' below cadence.</strong>');
+    } else if (totalSends >= targetTotal) {
+      parts.push('Cadence on track.');
+    }
   }
   var heavy = bucketMix.buckets.filter(function(b){ return b.flag === 'heavy'; });
   var unused = bucketMix.buckets.filter(function(b){ return b.flag === 'unused'; });
@@ -6520,14 +6591,15 @@ function renderGapsSummary(html) {
   el.style.display = html ? 'block' : 'none';
 }
 
-function renderGapsSections(weeks, bucketMix, workflow) {
+function renderGapsSections(weeks, bucketMix, workflow, cadence) {
+  cadence = typeof cadence === 'number' ? cadence : 1;
   var body = document.getElementById('gaps-body');
   if (!body) return;
   var parts = [];
 
   // Calendar coverage
   parts.push('<div class="gaps-section">');
-  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Calendar coverage</div><div class="gaps-section-note">Week by week. Empty weeks flagged.</div></div>');
+  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Calendar coverage</div><div class="gaps-section-note">Target: ' + cadence + ' per week.</div></div>');
   parts.push('<div class="gaps-section-body">');
   if (!weeks.length) {
     parts.push('<div class="gaps-workflow-empty">No weeks in range.</div>');
@@ -6537,12 +6609,22 @@ function renderGapsSections(weeks, bucketMix, workflow) {
       parts.push('<div><div class="gaps-week-label">' + w.label + '</div><div class="gaps-week-label-date">' + formatShortDate(w.startDate) + ' to ' + formatShortDate(w.endDate) + '</div></div>');
       if (w.count === 0) {
         parts.push('<div class="gaps-week-bar-track"></div>');
-        parts.push('<div class="gaps-week-count"><span class="gaps-week-bar-empty">No sends</span></div>');
+        var emptyLabel = cadence > 0 ? 'Below cadence' : 'No sends';
+        parts.push('<div class="gaps-week-count"><span class="gaps-week-bar-empty">' + emptyLabel + '</span></div>');
       } else {
         var cells = '';
-        for (var i = 0; i < w.count; i++) cells += '<div class="gaps-week-bar-cell"></div>';
+        for (var i = 0; i < w.count; i++) {
+          var cellClass = 'gaps-week-bar-cell';
+          if (cadence > 0 && i >= cadence) cellClass += ' over';
+          cells += '<div class="' + cellClass + '"></div>';
+        }
         parts.push('<div class="gaps-week-bar-track">' + cells + '</div>');
-        parts.push('<div class="gaps-week-count">' + w.count + ' scheduled</div>');
+        var countLabel = w.count + ' scheduled';
+        if (cadence > 0) {
+          if (w.flag === 'under') countLabel += ' <span class="gaps-week-flag under">-' + (cadence - w.count) + '</span>';
+          else if (w.flag === 'over') countLabel += ' <span class="gaps-week-flag over">+' + (w.count - cadence) + '</span>';
+        }
+        parts.push('<div class="gaps-week-count">' + countLabel + '</div>');
       }
       parts.push('</div>');
     });
