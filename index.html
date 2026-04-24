@@ -5810,6 +5810,16 @@ async function buildDraftContext(source, strategy, extraDirection) {
   var bucket = bucketName ? (bucketsCache || []).find(function(b){ return b.name === bucketName; }) : null;
   var topSubjects = getTopWinningSubjects();
   var isConcept = source && source.source_type === 'concept';
+
+  // Pull starred patterns (fallback to top 8 active if none starred).
+  // These are the learned rules from Klaviyo campaign performance. Feeding
+  // them to the draft generator means drafts respect hard-won knowledge
+  // about what SFH audiences respond to.
+  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
+  var patterns = (patternsRes.data || []);
+  var starredPatterns = patterns.filter(function(p){ return p.starred; });
+  var patternsForPrompt = starredPatterns.length ? starredPatterns : patterns.slice(0, 8);
+
   return {
     source: source,
     isConcept: isConcept,
@@ -5819,6 +5829,8 @@ async function buildDraftContext(source, strategy, extraDirection) {
     voice: voiceCache || {},
     products: productsCache || [],
     topSubjects: topSubjects,
+    patterns: patternsForPrompt,
+    starredPatternsCount: starredPatterns.length,
     strategy: strategy,
     extraDirection: extraDirection || ''
   };
@@ -5891,6 +5903,24 @@ function formatDraftPromptContext(ctx) {
   if (v.differentiation) lines.push('Differentiation: ' + v.differentiation);
   if (v.tone_nuances) lines.push('Tone nuances: ' + v.tone_nuances);
   lines.push('');
+
+  // Learned patterns from Klaviyo performance. Respect these when drafting.
+  if (ctx.patterns && ctx.patterns.length) {
+    var ptnHeader = ctx.starredPatternsCount
+      ? '=== STARRED PATTERNS (user-validated rules from historical SFH performance \u2014 respect these) ==='
+      : '=== LEARNED PATTERNS (top 8 extracted from SFH performance \u2014 use as guidance) ===';
+    lines.push(ptnHeader);
+    ctx.patterns.forEach(function(p){
+      var line = '- ' + (p.rule || p.title || 'Pattern');
+      if (p.category) line += ' [' + p.category + ']';
+      if (p.evidence) line += '. Evidence: ' + p.evidence;
+      if (p.confidence) line += ' (confidence: ' + p.confidence + ')';
+      lines.push(line);
+    });
+    lines.push('');
+    lines.push('How to apply patterns: let them shape structural decisions (subject format, intro style, CTA framing) and angle choices. Do not quote them back. Do not mention them. Just write a draft that honors them.');
+    lines.push('');
+  }
 
   if (ctx.products && ctx.products.length) {
     var inStock = ctx.products.filter(function(p){ return !p.sold_out; });
