@@ -447,6 +447,8 @@
     .idea-action-btn.promote { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
     .idea-action-btn.promote:hover { opacity: 0.9; background: var(--gg-olive); color: #fff; }
     .idea-action-btn.promoted { background: var(--gg-offwhite); color: var(--gg-olive); cursor: default; }
+    .idea-action-btn.delete { flex: 0 0 auto; padding: 6px 10px; color: #a32d2d; border-color: #f0d6d6; }
+    .idea-action-btn.delete:hover { background: #fce4e4; color: #8a1e1e; border-color: #e8b8b8; }
     .idea-meta-footer { font-size: 10px; color: var(--q-muted); display: flex; gap: 10px; justify-content: space-between; }
     .fact-check-notice { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--q-muted); padding: 6px 10px; background: #fef6e4; border: 0.5px solid #f4d58d; border-radius: 6px; margin-top: 4px; line-height: 1.4; font-style: italic; }
     .fact-check-notice .fact-check-icon { color: #b4711a; font-weight: 700; font-style: normal; font-size: 11px; flex-shrink: 0; }
@@ -1729,8 +1731,9 @@ async function loadEmails() {
   var result = await db.from('quill_calendar').select('*').order('send_date', { ascending: true });
   if (result.error) {
     setSyncStatus('error', 'Load failed');
-    showToast('Could not load from Supabase. Check anon key.', true);
-    console.error('loadEmails error', result.error);
+    var msg = result.error.message || result.error.hint || result.error.details || JSON.stringify(result.error);
+    console.error('loadEmails error:', msg, result.error);
+    showToast('Could not load calendar: ' + msg, true);
     return;
   }
   emails = result.data || [];
@@ -4564,6 +4567,20 @@ function renderIdeas() {
     grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">No ideas in this view.</div>';
     return;
   }
+
+  // Bulk delete bar (only on Dismissed tab, when there are cards)
+  if (ideasView === 'dismissed' && filtered.length > 0) {
+    var bulkBar = document.createElement('div');
+    bulkBar.className = 'draft-bulk-delete-bar';
+    bulkBar.style.gridColumn = '1/-1';
+    var bulkBtn = document.createElement('button');
+    bulkBtn.className = 'draft-bulk-delete-btn';
+    bulkBtn.textContent = 'Delete all dismissed (' + filtered.length + ')';
+    bulkBtn.onclick = function(){ deleteAllDismissedIdeas(); };
+    bulkBar.appendChild(bulkBtn);
+    grid.appendChild(bulkBar);
+  }
+
   filtered.forEach(function(idea){ grid.appendChild(buildIdeaCard(idea)); });
 }
 
@@ -4693,16 +4710,28 @@ function buildIdeaCard(idea) {
     dismissBtn.className = 'idea-action-btn';
     dismissBtn.textContent = 'Dismiss';
     dismissBtn.onclick = function(){ dismissIdea(idea.id); };
+    var deleteBtn = document.createElement('button');
+    deleteBtn.className = 'idea-action-btn delete';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.title = 'Permanently delete (cannot be undone)';
+    deleteBtn.onclick = function(){ deleteIdea(idea.id); };
     actions.appendChild(starBtn);
     actions.appendChild(draftBtn);
     actions.appendChild(promoteBtn);
     actions.appendChild(dismissBtn);
+    actions.appendChild(deleteBtn);
   } else {
     var restoreBtn = document.createElement('button');
     restoreBtn.className = 'idea-action-btn';
     restoreBtn.textContent = 'Restore';
     restoreBtn.onclick = function(){ restoreIdea(idea.id); };
+    var delDismissedBtn = document.createElement('button');
+    delDismissedBtn.className = 'idea-action-btn delete';
+    delDismissedBtn.textContent = 'Delete';
+    delDismissedBtn.title = 'Permanently delete (cannot be undone)';
+    delDismissedBtn.onclick = function(){ deleteIdea(idea.id); };
     actions.appendChild(restoreBtn);
+    actions.appendChild(delDismissedBtn);
   }
   card.appendChild(actions);
 
@@ -4758,6 +4787,58 @@ window.restoreIdea = async function(id) {
   if (idea) { idea.active = true; idea.dismissed_at = null; }
   renderIdeas();
   showToast('Idea restored');
+};
+
+// Hard delete. Asks for confirmation, removes the row from Supabase,
+// removes from local cache, re-renders. Also detaches any draft that
+// was referencing this idea (null out source_idea_id).
+window.deleteIdea = async function(id) {
+  var idea = ideasCache.find(function(x){ return x.id === id; });
+  if (!idea) return;
+  var hook = idea.hook || '(untitled)';
+  if (!confirm('Delete this idea permanently?\n\n"' + hook.slice(0, 100) + '"\n\nThis cannot be undone.')) return;
+
+  // Detach any drafts that link back to this idea
+  var linkedDrafts = (draftsCache || []).filter(function(d){ return d.source_idea_id === id; });
+  if (linkedDrafts.length) {
+    await db.from('quill_generated_drafts').update({ source_idea_id: null }).eq('source_idea_id', id);
+    linkedDrafts.forEach(function(d){ d.source_idea_id = null; });
+  }
+
+  var res = await db.from('quill_ideas').delete().eq('id', id);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+
+  // Remove from cache
+  var idx = ideasCache.findIndex(function(x){ return x.id === id; });
+  if (idx !== -1) ideasCache.splice(idx, 1);
+
+  renderIdeas();
+  showToast('Idea deleted');
+};
+
+// Bulk delete all dismissed ideas. Shown only in the Dismissed tab.
+window.deleteAllDismissedIdeas = async function() {
+  var dismissed = (ideasCache || []).filter(function(i){ return !i.active; });
+  if (!dismissed.length) { showToast('No dismissed ideas to delete'); return; }
+  var msg = 'Permanently delete ' + dismissed.length + ' dismissed idea' + (dismissed.length === 1 ? '' : 's') + '?\n\nThis cannot be undone.';
+  if (!confirm(msg)) return;
+
+  var ids = dismissed.map(function(i){ return i.id; });
+
+  // Detach any drafts linking to these ideas
+  await db.from('quill_generated_drafts').update({ source_idea_id: null }).in('source_idea_id', ids);
+  (draftsCache || []).forEach(function(d){
+    if (d.source_idea_id && ids.indexOf(d.source_idea_id) !== -1) d.source_idea_id = null;
+  });
+
+  var res = await db.from('quill_ideas').delete().in('id', ids);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+
+  // Remove from cache
+  ideasCache = ideasCache.filter(function(i){ return i.active; });
+
+  renderIdeas();
+  showToast(dismissed.length + ' idea' + (dismissed.length === 1 ? '' : 's') + ' deleted');
 };
 
 // Promote an idea to the calendar (Waiting Bay, draft status).
