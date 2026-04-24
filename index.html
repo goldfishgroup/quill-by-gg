@@ -293,6 +293,8 @@
     .patterns-filter-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; }
     .patterns-filter-btn { padding: 6px 12px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
     .patterns-filter-btn.active { background: var(--gg-olive); color: #fff; }
+    .draft-count-badge { display: inline-block; margin-left: 4px; font-size: 10px; font-weight: 600; color: inherit; opacity: 0.7; min-width: 10px; text-align: center; }
+    .draft-count-badge:empty { display: none; }
     .extract-btn { padding: 8px 16px; background: var(--gg-orange); color: #fff; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .extract-btn:hover { opacity: 0.9; }
     .extract-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -720,6 +722,8 @@
     .draft-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
     .draft-card.starred { border-color: var(--gg-orange); border-width: 1px; }
     .draft-card.dismissed { opacity: 0.5; }
+    .draft-card.promoted { background: var(--gg-offwhite); }
+    .draft-card.promoted .draft-card-head { border-bottom-color: var(--gg-line); }
     .draft-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; border-bottom: 0.5px solid var(--q-line); padding-bottom: 12px; }
     .draft-card-head-meta { display: flex; flex-direction: column; gap: 4px; }
     .draft-card-bucket { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -1306,9 +1310,10 @@
             </div>
             <div class="patterns-head-right">
               <div class="patterns-filter-toggle">
-                <button class="patterns-filter-btn active" onclick="setDraftView('active')" id="dv-active">Active</button>
-                <button class="patterns-filter-btn" onclick="setDraftView('starred')" id="dv-starred">Starred</button>
-                <button class="patterns-filter-btn" onclick="setDraftView('dismissed')" id="dv-dismissed">Dismissed</button>
+                <button class="patterns-filter-btn active" onclick="setDraftView('active')" id="dv-active">In progress <span class="draft-count-badge" id="dv-count-active"></span></button>
+                <button class="patterns-filter-btn" onclick="setDraftView('starred')" id="dv-starred">Starred <span class="draft-count-badge" id="dv-count-starred"></span></button>
+                <button class="patterns-filter-btn" onclick="setDraftView('applied')" id="dv-applied">Applied <span class="draft-count-badge" id="dv-count-applied"></span></button>
+                <button class="patterns-filter-btn" onclick="setDraftView('dismissed')" id="dv-dismissed">Dismissed <span class="draft-count-badge" id="dv-count-dismissed"></span></button>
               </div>
             </div>
           </div>
@@ -4930,7 +4935,7 @@ var draftSelectedIdeaId = null;
 
 window.setDraftView = function(view) {
   draftsView = view;
-  ['active','starred','dismissed'].forEach(function(v){
+  ['active','starred','applied','dismissed'].forEach(function(v){
     var el = document.getElementById('dv-' + v);
     if (el) el.classList.toggle('active', v === view);
   });
@@ -5060,20 +5065,49 @@ function renderDrafts() {
     grid.innerHTML = '<div class="empty-hint"><strong>No drafts yet.</strong><br>Pick a starred idea above and click Generate draft.</div>';
     return;
   }
+  // Compute counts for all views so we can show them in the nav
+  var activeDrafts = draftsCache.filter(function(d){ return d.active && !d.promoted_to_calendar_id; });
+  var starredDrafts = draftsCache.filter(function(d){ return d.active && d.starred && !d.promoted_to_calendar_id; });
+  var appliedDrafts = draftsCache.filter(function(d){ return d.active && d.promoted_to_calendar_id; });
+  var dismissedDrafts = draftsCache.filter(function(d){ return !d.active; });
+
+  // Update count badges if present
+  ['active','starred','applied','dismissed'].forEach(function(v){
+    var el = document.getElementById('dv-count-' + v);
+    if (el) {
+      var count = 0;
+      if (v === 'active') count = activeDrafts.length;
+      else if (v === 'starred') count = starredDrafts.length;
+      else if (v === 'applied') count = appliedDrafts.length;
+      else if (v === 'dismissed') count = dismissedDrafts.length;
+      el.textContent = count > 0 ? count : '';
+    }
+  });
+
   var filtered;
   if (draftsView === 'dismissed') {
-    filtered = draftsCache.filter(function(d){ return !d.active; });
+    filtered = dismissedDrafts;
   } else if (draftsView === 'starred') {
-    filtered = draftsCache.filter(function(d){ return d.active && d.starred; });
+    filtered = starredDrafts.slice();
+    filtered.sort(function(a, b){ return new Date(b.created_at) - new Date(a.created_at); });
+  } else if (draftsView === 'applied') {
+    filtered = appliedDrafts.slice();
+    filtered.sort(function(a, b){ return new Date(b.created_at) - new Date(a.created_at); });
   } else {
-    filtered = draftsCache.filter(function(d){ return d.active; });
+    // Default "active" view: in-progress only (not applied, not dismissed)
+    filtered = activeDrafts.slice();
     filtered.sort(function(a, b){
       if (a.starred !== b.starred) return a.starred ? -1 : 1;
       return new Date(b.created_at) - new Date(a.created_at);
     });
   }
   if (!filtered.length) {
-    grid.innerHTML = '<div class="empty-hint">No drafts in this view.</div>';
+    var hint = '';
+    if (draftsView === 'active') hint = 'No drafts in progress. Generate a new one above, or check the Applied tab for drafts already on the calendar.';
+    else if (draftsView === 'starred') hint = 'No starred drafts yet. Click Star on a draft to keep it here.';
+    else if (draftsView === 'applied') hint = 'No drafts applied to the calendar yet.';
+    else hint = 'No dismissed drafts.';
+    grid.innerHTML = '<div class="empty-hint">' + hint + '</div>';
     return;
   }
   filtered.forEach(function(d){ grid.appendChild(buildDraftCard(d)); });
@@ -5081,7 +5115,8 @@ function renderDrafts() {
 
 function buildDraftCard(d) {
   var card = document.createElement('div');
-  card.className = 'draft-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed');
+  var promoted = d.active && !!d.promoted_to_calendar_id;
+  card.className = 'draft-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed') + (promoted ? ' promoted' : '');
 
   // Head
   var head = document.createElement('div');
