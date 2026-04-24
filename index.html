@@ -724,6 +724,31 @@
     .draft-card.dismissed { opacity: 0.5; }
     .draft-card.promoted { background: var(--gg-offwhite); }
     .draft-card.promoted .draft-card-head { border-bottom-color: var(--gg-line); }
+
+    /* Collapsed state */
+    .draft-card.collapsed { padding: 12px 16px; }
+    .draft-card.collapsed .draft-card-head { border-bottom: none; padding-bottom: 0; }
+    .draft-card.collapsed .draft-variants,
+    .draft-card.collapsed .draft-preferred-row,
+    .draft-card.collapsed .draft-actions,
+    .draft-card.collapsed .fact-check-notice,
+    .draft-card.collapsed .draft-meta-footer { display: none; }
+    .draft-card.collapsed .draft-card-head-meta { gap: 3px; }
+    .draft-card-summary { display: none; flex: 1; min-width: 0; align-items: center; gap: 10px; font-size: 12px; }
+    .draft-card.collapsed .draft-card-summary { display: flex; }
+    .draft-card-summary-subject { flex: 1; min-width: 0; font-weight: 600; color: var(--gg-charcoal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .draft-card-summary-variant { font-size: 10px; padding: 2px 7px; border-radius: 3px; background: var(--gg-olive); color: #fff; font-weight: 600; letter-spacing: 0.03em; flex-shrink: 0; }
+    .draft-card-summary-state { font-size: 10px; padding: 2px 7px; border-radius: 3px; border: 0.5px solid var(--q-line); color: var(--q-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+    .draft-card-summary-state.applied { background: var(--gg-offwhite); color: var(--gg-olive); border-color: var(--gg-olive); }
+    .draft-card-summary-state.starred { background: #fff4ea; color: var(--gg-orange); border-color: var(--gg-orange); }
+
+    .draft-collapse-btn { background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: var(--font-body); flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; }
+    .draft-collapse-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .draft-collapse-btn svg { width: 10px; height: 10px; }
+
+    .draft-list-actions { display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 10px; font-size: 11px; }
+    .draft-list-action-link { background: transparent; border: none; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); font-size: 11px; padding: 0; text-decoration: underline; }
+    .draft-list-action-link:hover { color: var(--gg-olive); }
     .draft-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; border-bottom: 0.5px solid var(--q-line); padding-bottom: 12px; }
     .draft-card-head-meta { display: flex; flex-direction: column; gap: 4px; }
     .draft-card-bucket { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -4933,6 +4958,44 @@ var draftsLoadedAt = 0;
 var draftStrategy = 'different_angle';
 var draftSelectedIdeaId = null;
 
+// Collapsed state persisted in localStorage per draft id
+function isDraftCollapsed(draftId) {
+  try {
+    var raw = localStorage.getItem('quill_collapsed_drafts');
+    if (!raw) return false;
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) && arr.indexOf(String(draftId)) !== -1;
+  } catch (e) { return false; }
+}
+
+function setDraftCollapsed(draftId, collapsed) {
+  try {
+    var raw = localStorage.getItem('quill_collapsed_drafts');
+    var arr = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(arr)) arr = [];
+    var key = String(draftId);
+    var idx = arr.indexOf(key);
+    if (collapsed && idx === -1) arr.push(key);
+    else if (!collapsed && idx !== -1) arr.splice(idx, 1);
+    localStorage.setItem('quill_collapsed_drafts', JSON.stringify(arr));
+  } catch (e) { /* ignore */ }
+}
+
+window.toggleDraftCollapsed = function(draftId) {
+  var collapsed = isDraftCollapsed(draftId);
+  setDraftCollapsed(draftId, !collapsed);
+  renderDrafts();
+};
+
+window.collapseAllDrafts = function(collapse) {
+  if (!draftsCache) return;
+  try {
+    var arr = collapse ? draftsCache.map(function(d){ return String(d.id); }) : [];
+    localStorage.setItem('quill_collapsed_drafts', JSON.stringify(arr));
+  } catch (e) {}
+  renderDrafts();
+};
+
 window.setDraftView = function(view) {
   draftsView = view;
   ['active','starred','applied','dismissed'].forEach(function(v){
@@ -5110,13 +5173,32 @@ function renderDrafts() {
     grid.innerHTML = '<div class="empty-hint">' + hint + '</div>';
     return;
   }
+
+  // Collapse all / Expand all helper bar (only if more than 2 drafts)
+  if (filtered.length > 2) {
+    var actionsBar = document.createElement('div');
+    actionsBar.className = 'draft-list-actions';
+    var collapseAllBtn = document.createElement('button');
+    collapseAllBtn.className = 'draft-list-action-link';
+    collapseAllBtn.textContent = 'Collapse all';
+    collapseAllBtn.onclick = function(){ collapseAllDrafts(true); };
+    var expandAllBtn = document.createElement('button');
+    expandAllBtn.className = 'draft-list-action-link';
+    expandAllBtn.textContent = 'Expand all';
+    expandAllBtn.onclick = function(){ collapseAllDrafts(false); };
+    actionsBar.appendChild(collapseAllBtn);
+    actionsBar.appendChild(expandAllBtn);
+    grid.appendChild(actionsBar);
+  }
+
   filtered.forEach(function(d){ grid.appendChild(buildDraftCard(d)); });
 }
 
 function buildDraftCard(d) {
   var card = document.createElement('div');
   var promoted = d.active && !!d.promoted_to_calendar_id;
-  card.className = 'draft-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed') + (promoted ? ' promoted' : '');
+  var collapsed = isDraftCollapsed(d.id);
+  card.className = 'draft-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed') + (promoted ? ' promoted' : '') + (collapsed ? ' collapsed' : '');
 
   // Head
   var head = document.createElement('div');
@@ -5138,6 +5220,33 @@ function buildDraftCard(d) {
     bucketRow.appendChild(strat);
   }
   headMeta.appendChild(bucketRow);
+
+  // Collapsed summary row (only visible when collapsed)
+  var summary = document.createElement('div');
+  summary.className = 'draft-card-summary';
+  var pref = d.preferred || 'a';
+  var summarySubject = document.createElement('div');
+  summarySubject.className = 'draft-card-summary-subject';
+  summarySubject.textContent = d['subject_' + pref] || '(no subject)';
+  summary.appendChild(summarySubject);
+  var summaryVariant = document.createElement('span');
+  summaryVariant.className = 'draft-card-summary-variant';
+  summaryVariant.textContent = pref.toUpperCase();
+  summary.appendChild(summaryVariant);
+  if (d.starred) {
+    var sStar = document.createElement('span');
+    sStar.className = 'draft-card-summary-state starred';
+    sStar.textContent = 'Starred';
+    summary.appendChild(sStar);
+  }
+  if (promoted) {
+    var sApplied = document.createElement('span');
+    sApplied.className = 'draft-card-summary-state applied';
+    sApplied.textContent = d.source_calendar_id ? 'Applied to row' : 'In calendar';
+    summary.appendChild(sApplied);
+  }
+  headMeta.appendChild(summary);
+
   if (d.source_idea_id) {
     var srcIdea = (ideasCache || []).find(function(i){ return i.id === d.source_idea_id; });
     var source = document.createElement('div');
@@ -5156,6 +5265,17 @@ function buildDraftCard(d) {
     headMeta.appendChild(calSource);
   }
   head.appendChild(headMeta);
+
+  // Collapse toggle button (right side of head)
+  var collapseBtn = document.createElement('button');
+  collapseBtn.className = 'draft-collapse-btn';
+  collapseBtn.title = collapsed ? 'Expand' : 'Collapse';
+  collapseBtn.innerHTML = collapsed
+    ? '<svg viewBox="0 0 10 10"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : '<svg viewBox="0 0 10 10"><path d="M2 6 L5 3 L8 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  collapseBtn.onclick = function(e){ e.stopPropagation(); toggleDraftCollapsed(d.id); };
+  head.appendChild(collapseBtn);
+
   card.appendChild(head);
 
   // Variants (A and B side-by-side)
