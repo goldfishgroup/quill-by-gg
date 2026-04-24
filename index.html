@@ -6193,7 +6193,7 @@ window.generateDraftFromCalendarRow = async function(calendarId) {
   var stubExtra = { value: '' };
   var result = await runDraftGeneration({
     source: concept,
-    strategy: 'different_angle',
+    strategy: conceptDraftStrategy || 'different_angle',
     extraEl: stubExtra,
     btn: btn,
     status: statusEl,
@@ -7399,6 +7399,23 @@ var editorPending = {};        // { field: value } - pending unsaved changes
 var editorSaveTimer = null;
 var editorSaveStatus = 'saved'; // 'saved' | 'saving' | 'dirty' | 'error'
 var editorOtherVariantOpen = false;
+var conceptDraftStrategy = 'different_angle'; // strategy for the concept-to-draft flow
+
+window.setConceptStrategy = function(strategy) {
+  conceptDraftStrategy = strategy;
+  var diffBtn = document.getElementById('concept-strat-different_angle');
+  var tonalBtn = document.getElementById('concept-strat-tonal_variant');
+  if (diffBtn) diffBtn.classList.toggle('active', strategy === 'different_angle');
+  if (tonalBtn) tonalBtn.classList.toggle('active', strategy === 'tonal_variant');
+  var hint = document.getElementById('concept-strategy-hint');
+  if (hint) {
+    if (strategy === 'tonal_variant') {
+      hint.textContent = 'Variant A is the main take. Variant B is the same angle executed with a different tone. Better for testing voice or emphasis.';
+    } else {
+      hint.textContent = 'A and B explore different angles of the same idea. Better for testing which hook framing resonates.';
+    }
+  }
+};
 
 // Called from Board card clicks, Calendar clicks, etc.
 window.openCampaignEditor = function(emailId) {
@@ -7424,6 +7441,8 @@ function renderCampaignEditor() {
   }
   editorEmailId = targetId;
   window._editorPendingEmailId = null;
+  // Reset concept-to-draft strategy to the default for this row
+  conceptDraftStrategy = 'different_angle';
 
   var em = emails.find(function(x){ return x.id === editorEmailId; });
   if (!em) {
@@ -7568,6 +7587,14 @@ function buildEditorHtml(em) {
     parts.push('      <div class="editor-source-box" style="border-left-color: var(--gg-orange);">');
     parts.push('        <div class="editor-source-box-label" style="color: var(--gg-orange);">No draft yet</div>');
     parts.push('        This row has a concept in place. Generate a full Ines-structured draft from whatever direction is written here.');
+    parts.push('      </div>');
+    parts.push('      <div class="concept-strategy-toggle" style="margin-top:10px;">');
+    parts.push('        <label class="editor-field-label" style="margin-bottom:4px;">Variant strategy</label>');
+    parts.push('        <div class="patterns-filter-toggle" style="display:inline-flex;">');
+    parts.push('          <button class="patterns-filter-btn active" id="concept-strat-different_angle" onclick="setConceptStrategy(\u0027different_angle\u0027)">Different angles</button>');
+    parts.push('          <button class="patterns-filter-btn" id="concept-strat-tonal_variant" onclick="setConceptStrategy(\u0027tonal_variant\u0027)">Tonal variant</button>');
+    parts.push('        </div>');
+    parts.push('        <div class="concept-strategy-hint" id="concept-strategy-hint" style="font-size:11px;color:var(--q-muted);margin-top:6px;line-height:1.4;">A and B explore different angles of the same idea. Better for testing which hook framing resonates.</div>');
     parts.push('      </div>');
     parts.push('      <button class="editor-source-toggle" id="editor-gen-from-concept-btn" onclick="generateDraftFromCalendarRow(' + em.id + ')" style="margin-top:10px;">Generate draft from this concept</button>');
     parts.push('      <div class="extract-status" id="editor-gen-from-concept-status" style="display:none; margin-top:8px;"></div>');
