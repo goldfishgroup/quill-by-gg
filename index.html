@@ -486,6 +486,53 @@
       .board-columns { grid-template-columns: 1fr; }
     }
 
+    /* GAPS ANALYSIS */
+    .gaps-controls { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin: 16px 0 20px; flex-wrap: wrap; }
+    .gaps-controls-left { display: flex; flex-direction: column; gap: 2px; }
+    .gaps-date-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .gaps-date-sep { font-size: 11px; color: var(--q-muted); }
+    .gaps-preset-group { display: inline-flex; gap: 4px; margin-left: 4px; }
+    .gaps-preset-btn { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .gaps-preset-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .gaps-preset-btn.active { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    .gaps-summary { background: var(--gg-offwhite); border-left: 3px solid var(--gg-olive); padding: 12px 16px; border-radius: 6px; font-size: 13px; color: var(--gg-charcoal); line-height: 1.55; margin-bottom: 18px; }
+    .gaps-summary strong { font-weight: 600; }
+    .gaps-section { background: #fff; border: 0.5px solid var(--q-line); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+    .gaps-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 12px; }
+    .gaps-section-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); }
+    .gaps-section-note { font-size: 11px; color: var(--q-muted); }
+    .gaps-section-body { font-size: 13px; color: var(--gg-charcoal); }
+
+    /* Calendar coverage weekly bars */
+    .gaps-week-row { display: grid; grid-template-columns: 190px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 0.5px solid var(--q-line); }
+    .gaps-week-row:first-child { border-top: none; }
+    .gaps-week-label { font-size: 12px; color: var(--gg-charcoal); }
+    .gaps-week-label-date { font-size: 10px; color: var(--q-muted); }
+    .gaps-week-bar-track { height: 18px; background: var(--gg-offwhite); border-radius: 4px; display: flex; gap: 2px; padding: 2px; position: relative; }
+    .gaps-week-bar-cell { background: var(--gg-olive); border-radius: 2px; flex: 1; max-width: 16px; }
+    .gaps-week-bar-empty { font-size: 10px; color: var(--gg-orange); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; align-self: center; margin-left: 10px; }
+    .gaps-week-count { font-size: 12px; color: var(--q-muted); font-weight: 600; min-width: 80px; text-align: right; }
+
+    /* Bucket mix bars */
+    .gaps-bucket-row { display: grid; grid-template-columns: 180px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 0.5px solid var(--q-line); }
+    .gaps-bucket-row:first-child { border-top: none; }
+    .gaps-bucket-label { font-size: 12px; font-weight: 600; color: var(--gg-charcoal); }
+    .gaps-bucket-bar-track { height: 8px; background: var(--gg-offwhite); border-radius: 4px; overflow: hidden; }
+    .gaps-bucket-bar-fill { height: 100%; background: var(--gg-olive); border-radius: 4px; }
+    .gaps-bucket-bar-fill.low { background: var(--gg-orange); }
+    .gaps-bucket-count { font-size: 12px; color: var(--q-muted); min-width: 80px; text-align: right; }
+    .gaps-bucket-flag { font-size: 10px; color: var(--gg-orange); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
+
+    /* Workflow list */
+    .gaps-workflow-empty { font-size: 12px; color: var(--q-muted); font-style: italic; padding: 8px 0; }
+    .gaps-workflow-item { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 0.5px solid var(--q-line); }
+    .gaps-workflow-item:first-child { border-top: none; }
+    .gaps-workflow-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .gaps-workflow-title { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .gaps-workflow-sub { font-size: 11px; color: var(--q-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+    .gaps-workflow-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .gaps-workflow-btn:hover { background: var(--gg-olive); color: #fff; }
+
     /* BLOCK EDITOR (lifted from prototype, adapted for Quill context) */
     .block-list { display: flex; flex-direction: column; gap: 0; }
     .bl-add-row { position: relative; height: 10px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s, height 0.15s; }
@@ -1400,11 +1447,45 @@
           <div id="draft-grid"></div>
         </div>
         <div class="studio-section" id="studio-gaps">
-          <div class="placeholder-card">
-            <h2>Gaps</h2>
-            <p>Analyze your calendar for coverage gaps, missing content buckets, and send frequency issues.</p>
-            <div class="session-note">Session 3</div>
+          <div class="patterns-head">
+            <div>
+              <h2 style="margin-bottom:4px;">Gaps analysis</h2>
+              <div class="patterns-sub">Pre-planning briefing. Run this before planning a month or a week to see what is missing: calendar coverage, bucket mix, starred-but-undrafted ideas, and drafts still waiting to land on the calendar.</div>
+            </div>
           </div>
+          <div class="tip-widget" id="tip-gaps">
+            <div class="tip-widget-head" onclick="toggleTipWidget('tip-gaps')">
+              <span class="tip-widget-title">How Gaps analysis works</span>
+              <span class="tip-widget-toggle" id="tip-gaps-toggle">Show</span>
+            </div>
+            <div class="tip-widget-body" id="tip-gaps-body" style="display:none;">
+              <p><strong>Pick a date range,</strong> then click <strong>Run gap analysis</strong>. Quill generates a point-in-time briefing with three sections:</p>
+              <ul>
+                <li><strong>Calendar coverage.</strong> Week-by-week view of what is scheduled in the range. Flags weeks with zero sends.</li>
+                <li><strong>Bucket mix.</strong> Distribution of upcoming emails across the 5 SFH content buckets. Flags over- and under-representation.</li>
+                <li><strong>Workflow queue.</strong> Starred ideas not yet drafted, and drafts not yet applied to the calendar. Action buttons get you straight to the fix.</li>
+              </ul>
+              <p>Re-run any time. The briefing is a snapshot, not a live dashboard.</p>
+            </div>
+          </div>
+          <div class="gaps-controls">
+            <div class="gaps-controls-left">
+              <label class="field-label" style="margin-bottom:4px;">Time window</label>
+              <div class="gaps-date-row">
+                <input type="date" id="gaps-start" class="field-input" style="max-width:170px;">
+                <span class="gaps-date-sep">to</span>
+                <input type="date" id="gaps-end" class="field-input" style="max-width:170px;">
+                <div class="gaps-preset-group">
+                  <button class="gaps-preset-btn" onclick="setGapsPreset('4w')">Next 4 weeks</button>
+                  <button class="gaps-preset-btn" onclick="setGapsPreset('month')">This month</button>
+                  <button class="gaps-preset-btn" onclick="setGapsPreset('nextmonth')">Next month</button>
+                </div>
+              </div>
+            </div>
+            <button class="extract-btn" onclick="runGapsAnalysis()" id="gaps-run-btn">Run gap analysis</button>
+          </div>
+          <div id="gaps-summary" class="gaps-summary" style="display:none;"></div>
+          <div id="gaps-body"></div>
         </div>
         <div class="studio-section" id="studio-refs">
           <div class="placeholder-card">
@@ -2427,6 +2508,7 @@ window.setStudioSection = function(section) {
   if (section === 'products') showProductsOnOpen();
   if (section === 'ideas') showIdeasOnOpen();
   if (section === 'draft') showDraftOnOpen();
+  if (section === 'gaps') showGapsOnOpen();
 };
 
 window.setTimeRange = function(val) {
@@ -5219,6 +5301,7 @@ function buildDraftCard(d) {
   var promoted = d.active && !!d.promoted_to_calendar_id;
   var collapsed = isDraftCollapsed(d.id);
   card.className = 'draft-card' + (d.starred ? ' starred' : '') + (d.active ? '' : ' dismissed') + (promoted ? ' promoted' : '') + (collapsed ? ' collapsed' : '');
+  card.dataset.draftId = d.id;
 
   // Head
   var head = document.createElement('div');
@@ -6214,6 +6297,345 @@ window.generateDraftFromCalendarRow = async function(calendarId) {
       });
     }
   }
+};
+
+// ── GAPS ANALYSIS ─────────────────────────────────────────────────────────
+// Pre-planning briefing tool. User picks a time window, clicks Run, and
+// gets a point-in-time snapshot of: calendar coverage (week by week),
+// bucket mix (distribution of upcoming emails), and workflow queue
+// (starred ideas not drafted, drafts not applied).
+
+var gapsPreset = '4w'; // '4w' | 'month' | 'nextmonth'
+
+window.setGapsPreset = function(preset) {
+  gapsPreset = preset;
+  var now = new Date();
+  var start, end;
+  if (preset === '4w') {
+    start = new Date(now);
+    end = new Date(now);
+    end.setDate(end.getDate() + 28);
+  } else if (preset === 'month') {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else if (preset === 'nextmonth') {
+    start = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    end = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+  } else {
+    return;
+  }
+  document.getElementById('gaps-start').value = isoDate(start);
+  document.getElementById('gaps-end').value = isoDate(end);
+  // Visual state
+  ['4w','month','nextmonth'].forEach(function(p){
+    var btns = document.querySelectorAll('.gaps-preset-btn');
+    btns.forEach(function(b){
+      if (b.textContent.indexOf(p === '4w' ? 'Next 4 weeks' : (p === 'month' ? 'This month' : 'Next month')) !== -1) {
+        b.classList.toggle('active', p === preset);
+      }
+    });
+  });
+};
+
+function isoDate(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var da = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + da;
+}
+
+function showGapsOnOpen() {
+  // First-time set the 4-week default if no dates set yet
+  var s = document.getElementById('gaps-start');
+  var e = document.getElementById('gaps-end');
+  if (s && e && !s.value && !e.value) {
+    setGapsPreset('4w');
+  }
+}
+
+window.runGapsAnalysis = async function() {
+  var startStr = document.getElementById('gaps-start').value;
+  var endStr = document.getElementById('gaps-end').value;
+  if (!startStr || !endStr) { showToast('Pick a start and end date', true); return; }
+  var start = new Date(startStr + 'T00:00:00');
+  var end = new Date(endStr + 'T23:59:59');
+  if (end < start) { showToast('End date must be after start date', true); return; }
+
+  var btn = document.getElementById('gaps-run-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
+
+  try {
+    // Ensure we have the data we need
+    if (!emails || !emails.length) {
+      try { await loadEmails(); } catch (err) { /* soft fail */ }
+    }
+    if (!bucketsCache) await loadBuckets(true);
+    if (!draftsCache) await loadDrafts(true);
+    if (!ideasCache) await loadIdeas(true);
+
+    // Filter calendar rows to the window
+    var inWindow = (emails || []).filter(function(em){
+      if (!em.send_date) return false;
+      var d = new Date(em.send_date + 'T12:00:00');
+      return d >= start && d <= end;
+    });
+
+    // Build week buckets
+    var weeks = buildWeekBuckets(start, end, inWindow);
+    var bucketMix = buildBucketMix(inWindow);
+    var workflow = buildWorkflowGaps();
+    var summary = buildGapsSummary(weeks, bucketMix, workflow, start, end);
+
+    renderGapsSummary(summary);
+    renderGapsSections(weeks, bucketMix, workflow);
+  } catch (err) {
+    console.error('Gaps analysis error', err);
+    showToast('Something went wrong running the analysis', true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Re-run gap analysis'; }
+  }
+};
+
+function buildWeekBuckets(start, end, rows) {
+  // Produce an array of { label, startDate, endDate, count, rows[] }
+  // Each week starts on Sunday (matching Klaviyo convention).
+  var weeks = [];
+  var cursor = new Date(start);
+  // Align cursor back to start of week (Sunday)
+  cursor.setDate(cursor.getDate() - cursor.getDay());
+  while (cursor <= end) {
+    var wStart = new Date(cursor);
+    var wEnd = new Date(cursor);
+    wEnd.setDate(wEnd.getDate() + 6);
+    var weekRows = rows.filter(function(r){
+      var d = new Date(r.send_date + 'T12:00:00');
+      return d >= wStart && d <= wEnd;
+    });
+    weeks.push({
+      label: 'Week of ' + formatShortDate(wStart),
+      startDate: wStart,
+      endDate: wEnd,
+      count: weekRows.length,
+      rows: weekRows
+    });
+    cursor.setDate(cursor.getDate() + 7);
+  }
+  return weeks;
+}
+
+function formatShortDate(d) {
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function buildBucketMix(rows) {
+  var bucketsList = (bucketsCache || []).map(function(b){ return b.name; });
+  // Also include any bucket values that appear in rows but not in bucketsCache
+  rows.forEach(function(r){
+    if (r.bucket && bucketsList.indexOf(r.bucket) === -1) bucketsList.push(r.bucket);
+  });
+  var unbucketed = rows.filter(function(r){ return !r.bucket; }).length;
+  var counts = bucketsList.map(function(name){
+    var c = rows.filter(function(r){ return r.bucket === name; }).length;
+    return { name: name, count: c };
+  });
+  var max = Math.max(1, counts.reduce(function(m, x){ return Math.max(m, x.count); }, 0));
+  // Flag under-represented buckets: if any bucket has 0 in a range where at
+  // least 3 emails are scheduled, it is a gap.
+  var total = rows.length;
+  counts.forEach(function(c){
+    c.ratio = c.count / max;
+    if (total >= 3 && c.count === 0) c.flag = 'unused';
+    else if (total >= 6 && c.count === 1) c.flag = 'light';
+    // Overused: a single bucket that accounts for more than 50% of total sends
+    if (total >= 4 && c.count / total > 0.5) c.flag = 'heavy';
+  });
+  return { buckets: counts, total: total, unbucketed: unbucketed };
+}
+
+function buildWorkflowGaps() {
+  // Starred ideas not yet drafted
+  var starredIdeas = (ideasCache || []).filter(function(i){ return i.active && i.starred; });
+  var draftsByIdea = {};
+  (draftsCache || []).filter(function(d){ return d.active; }).forEach(function(d){
+    if (d.source_idea_id) draftsByIdea[d.source_idea_id] = true;
+  });
+  var ideasNotDrafted = starredIdeas.filter(function(i){ return !draftsByIdea[i.id]; });
+
+  // Drafts not yet applied to calendar
+  var unappliedDrafts = (draftsCache || []).filter(function(d){
+    return d.active && !d.promoted_to_calendar_id;
+  });
+
+  return {
+    ideasNotDrafted: ideasNotDrafted,
+    unappliedDrafts: unappliedDrafts
+  };
+}
+
+function buildGapsSummary(weeks, bucketMix, workflow, start, end) {
+  var emptyWeeks = weeks.filter(function(w){ return w.count === 0; }).length;
+  var totalWeeks = weeks.length;
+  var totalSends = bucketMix.total;
+  var parts = [];
+  parts.push(formatShortDate(start) + ' to ' + formatShortDate(end) + ': <strong>' + totalSends + ' scheduled</strong> across <strong>' + totalWeeks + ' weeks</strong>.');
+  if (emptyWeeks > 0) {
+    parts.push('<strong style="color:var(--gg-orange);">' + emptyWeeks + ' week' + (emptyWeeks === 1 ? '' : 's') + ' with no sends.</strong>');
+  }
+  var heavy = bucketMix.buckets.filter(function(b){ return b.flag === 'heavy'; });
+  var unused = bucketMix.buckets.filter(function(b){ return b.flag === 'unused'; });
+  if (heavy.length) {
+    parts.push(heavy[0].name + ' accounts for more than half of sends.');
+  }
+  if (unused.length && totalSends >= 3) {
+    var list = unused.map(function(b){ return b.name; }).slice(0, 2);
+    parts.push('Unused: ' + list.join(', ') + '.');
+  }
+  var ideasCount = workflow.ideasNotDrafted.length;
+  var draftsCount = workflow.unappliedDrafts.length;
+  if (ideasCount || draftsCount) {
+    var bits = [];
+    if (ideasCount) bits.push(ideasCount + ' starred idea' + (ideasCount === 1 ? '' : 's') + ' not drafted');
+    if (draftsCount) bits.push(draftsCount + ' draft' + (draftsCount === 1 ? '' : 's') + ' not applied');
+    parts.push('Queue: ' + bits.join(', ') + '.');
+  }
+  return parts.join(' ');
+}
+
+function renderGapsSummary(html) {
+  var el = document.getElementById('gaps-summary');
+  if (!el) return;
+  el.innerHTML = html;
+  el.style.display = html ? 'block' : 'none';
+}
+
+function renderGapsSections(weeks, bucketMix, workflow) {
+  var body = document.getElementById('gaps-body');
+  if (!body) return;
+  var parts = [];
+
+  // Calendar coverage
+  parts.push('<div class="gaps-section">');
+  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Calendar coverage</div><div class="gaps-section-note">Week by week. Empty weeks flagged.</div></div>');
+  parts.push('<div class="gaps-section-body">');
+  if (!weeks.length) {
+    parts.push('<div class="gaps-workflow-empty">No weeks in range.</div>');
+  } else {
+    weeks.forEach(function(w){
+      parts.push('<div class="gaps-week-row">');
+      parts.push('<div><div class="gaps-week-label">' + w.label + '</div><div class="gaps-week-label-date">' + formatShortDate(w.startDate) + ' to ' + formatShortDate(w.endDate) + '</div></div>');
+      if (w.count === 0) {
+        parts.push('<div class="gaps-week-bar-track"></div>');
+        parts.push('<div class="gaps-week-count"><span class="gaps-week-bar-empty">No sends</span></div>');
+      } else {
+        var cells = '';
+        for (var i = 0; i < w.count; i++) cells += '<div class="gaps-week-bar-cell"></div>';
+        parts.push('<div class="gaps-week-bar-track">' + cells + '</div>');
+        parts.push('<div class="gaps-week-count">' + w.count + ' scheduled</div>');
+      }
+      parts.push('</div>');
+    });
+  }
+  parts.push('</div></div>');
+
+  // Bucket mix
+  parts.push('<div class="gaps-section">');
+  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Bucket mix</div><div class="gaps-section-note">Distribution of upcoming emails across content buckets.</div></div>');
+  parts.push('<div class="gaps-section-body">');
+  if (bucketMix.total === 0) {
+    parts.push('<div class="gaps-workflow-empty">No scheduled emails in range.</div>');
+  } else {
+    bucketMix.buckets.forEach(function(b){
+      var flagText = '';
+      var fillClass = '';
+      if (b.flag === 'unused') { flagText = '<span class="gaps-bucket-flag">Unused</span>'; fillClass = ' low'; }
+      else if (b.flag === 'light') { flagText = '<span class="gaps-bucket-flag">Light</span>'; fillClass = ' low'; }
+      else if (b.flag === 'heavy') { flagText = '<span class="gaps-bucket-flag">Heavy</span>'; }
+      var pct = Math.round(b.ratio * 100);
+      parts.push('<div class="gaps-bucket-row">');
+      parts.push('<div class="gaps-bucket-label">' + escapeHtml(b.name) + flagText + '</div>');
+      parts.push('<div class="gaps-bucket-bar-track"><div class="gaps-bucket-bar-fill' + fillClass + '" style="width:' + pct + '%"></div></div>');
+      parts.push('<div class="gaps-bucket-count">' + b.count + ' email' + (b.count === 1 ? '' : 's') + '</div>');
+      parts.push('</div>');
+    });
+    if (bucketMix.unbucketed > 0) {
+      parts.push('<div class="gaps-bucket-row">');
+      parts.push('<div class="gaps-bucket-label" style="color:var(--q-muted);font-style:italic;">(No bucket assigned)</div>');
+      parts.push('<div></div>');
+      parts.push('<div class="gaps-bucket-count">' + bucketMix.unbucketed + ' email' + (bucketMix.unbucketed === 1 ? '' : 's') + '</div>');
+      parts.push('</div>');
+    }
+  }
+  parts.push('</div></div>');
+
+  // Workflow queue
+  parts.push('<div class="gaps-section">');
+  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Workflow queue</div><div class="gaps-section-note">Starred ideas waiting to be drafted + drafts waiting to be applied.</div></div>');
+  parts.push('<div class="gaps-section-body">');
+  // Starred ideas not drafted
+  parts.push('<div style="font-size:11px;font-weight:700;color:var(--q-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Starred ideas not drafted (' + workflow.ideasNotDrafted.length + ')</div>');
+  if (workflow.ideasNotDrafted.length === 0) {
+    parts.push('<div class="gaps-workflow-empty">None. You are on top of your starred ideas.</div>');
+  } else {
+    workflow.ideasNotDrafted.forEach(function(i){
+      parts.push('<div class="gaps-workflow-item">');
+      parts.push('<div class="gaps-workflow-meta">');
+      parts.push('<div class="gaps-workflow-title">' + escapeHtml(i.hook || '(no hook)') + '</div>');
+      parts.push('<div class="gaps-workflow-sub">' + (i.bucket ? '<span>' + escapeHtml(i.bucket) + '</span>' : '') + '<span>Starred</span></div>');
+      parts.push('</div>');
+      parts.push('<button class="gaps-workflow-btn" onclick="gapsJumpToDraftGenerator(' + i.id + ')">Draft this</button>');
+      parts.push('</div>');
+    });
+  }
+  // Drafts not applied
+  parts.push('<div style="font-size:11px;font-weight:700;color:var(--q-muted);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 6px;">Drafts not applied (' + workflow.unappliedDrafts.length + ')</div>');
+  if (workflow.unappliedDrafts.length === 0) {
+    parts.push('<div class="gaps-workflow-empty">None. Every draft has been applied or dismissed.</div>');
+  } else {
+    workflow.unappliedDrafts.forEach(function(d){
+      var pref = d.preferred || 'a';
+      var subj = d['subject_' + pref] || '(untitled)';
+      parts.push('<div class="gaps-workflow-item">');
+      parts.push('<div class="gaps-workflow-meta">');
+      parts.push('<div class="gaps-workflow-title">' + escapeHtml(subj) + '</div>');
+      parts.push('<div class="gaps-workflow-sub">');
+      if (d.bucket) parts.push('<span>' + escapeHtml(d.bucket) + '</span>');
+      parts.push('<span>Variant ' + pref.toUpperCase() + '</span>');
+      if (d.starred) parts.push('<span>Starred</span>');
+      parts.push('</div>');
+      parts.push('</div>');
+      parts.push('<button class="gaps-workflow-btn" onclick="gapsJumpToDraft(' + d.id + ')">Open draft</button>');
+      parts.push('</div>');
+    });
+  }
+  parts.push('</div></div>');
+
+  body.innerHTML = parts.join('');
+}
+
+window.gapsJumpToDraftGenerator = function(ideaId) {
+  draftSelectedIdeaId = ideaId;
+  setStudioSection('draft');
+  setTimeout(function(){
+    var sel = document.getElementById('draft-idea-select');
+    if (sel) {
+      sel.value = String(ideaId);
+      if (typeof renderDraftSourceDetail === 'function') renderDraftSourceDetail();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 80);
+};
+
+window.gapsJumpToDraft = function(draftId) {
+  setStudioSection('draft');
+  setTimeout(function(){
+    var el = document.querySelector('.draft-card[data-draft-id="' + draftId + '"]');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+    }
+  }, 120);
 };
 
 // ── CAMPAIGN BOARD ────────────────────────────────────────────────────────
