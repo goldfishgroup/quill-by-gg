@@ -695,6 +695,16 @@
     .draft-action-btn.promote:hover { opacity: 0.9; color: #fff; background: var(--gg-olive); }
     .draft-action-btn.promoted { background: var(--gg-offwhite); color: var(--gg-olive); cursor: default; }
     .draft-meta-footer { display: flex; justify-content: space-between; font-size: 10px; color: var(--q-muted); padding-top: 6px; }
+    .draft-extras-wrap { margin-top: 12px; padding-top: 12px; border-top: 0.5px dashed var(--q-line); display: flex; flex-direction: column; gap: 7px; }
+    .draft-extras-label { font-size: 10px; font-weight: 700; color: var(--gg-orange); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 5px; }
+    .draft-extras-label::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--gg-orange); }
+    .draft-extra-card { background: #fff8f1; border: 0.5px solid #f4d5b8; border-radius: 5px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .draft-extra-type { font-size: 9px; font-weight: 700; color: var(--gg-orange); text-transform: uppercase; letter-spacing: 0.08em; }
+    .draft-extra-content { font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; }
+    .draft-extra-rationale { font-size: 10px; color: var(--q-muted); font-style: italic; line-height: 1.4; padding-top: 3px; border-top: 0.5px solid #f4e4d0; }
+    .draft-extras-btn { align-self: flex-start; padding: 5px 10px; border: 0.5px solid var(--q-line); background: #fff; color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .draft-extras-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); border-color: var(--gg-orange); }
+    .draft-extras-btn:disabled { opacity: 0.5; cursor: default; }
     @media (max-width: 900px) {
       .draft-variants { grid-template-columns: 1fr; }
     }
@@ -5161,6 +5171,63 @@ function buildDraftVariant(d, variant) {
   addField('Product section', d['product_section_' + variant], 'product-section');
   addField('Final CTA', d['final_cta_' + variant], 'final-cta cta');
 
+  // Extras section (optional, opt-in via Generate extras button)
+  var extrasField = 'extras_' + variant;
+  var extras = d[extrasField];
+  if (typeof extras === 'string') { try { extras = JSON.parse(extras); } catch (e) { extras = null; } }
+
+  var extrasWrap = document.createElement('div');
+  extrasWrap.className = 'draft-extras-wrap';
+
+  if (Array.isArray(extras) && extras.length > 0) {
+    var extrasLabel = document.createElement('div');
+    extrasLabel.className = 'draft-extras-label';
+    extrasLabel.textContent = 'Extras (' + extras.length + ')';
+    extrasWrap.appendChild(extrasLabel);
+    extras.forEach(function(ex){
+      var xc = document.createElement('div');
+      xc.className = 'draft-extra-card';
+      var xType = document.createElement('div');
+      xType.className = 'draft-extra-type';
+      xType.textContent = (ex.type || 'extra').replace(/_/g, ' ');
+      xc.appendChild(xType);
+      var xContent = document.createElement('div');
+      xContent.className = 'draft-extra-content';
+      if (ex.type === 'faq_pair' && ex.content && typeof ex.content === 'object') {
+        xContent.innerHTML = '<strong>Q:</strong> ' + escapeHtml(ex.content.question || '') + '<br><strong>A:</strong> ' + escapeHtml(ex.content.answer || '');
+      } else {
+        xContent.textContent = typeof ex.content === 'string' ? ex.content : JSON.stringify(ex.content || '');
+      }
+      xc.appendChild(xContent);
+      if (ex.rationale) {
+        var xr = document.createElement('div');
+        xr.className = 'draft-extra-rationale';
+        xr.textContent = ex.rationale;
+        xc.appendChild(xr);
+      }
+      extrasWrap.appendChild(xc);
+    });
+  }
+
+  // Generate extras button (always show if draft is active)
+  if (d.active) {
+    var genBtn = document.createElement('button');
+    genBtn.className = 'draft-extras-btn';
+    genBtn.id = 'draft-extras-btn-' + d.id + '-' + variant;
+    genBtn.textContent = Array.isArray(extras) && extras.length > 0 ? 'Regenerate extras' : 'Generate extras';
+    genBtn.onclick = function(){ generateDraftExtras(d.id, variant); };
+    extrasWrap.appendChild(genBtn);
+
+    var genStatus = document.createElement('div');
+    genStatus.className = 'extract-status';
+    genStatus.id = 'draft-extras-status-' + d.id + '-' + variant;
+    genStatus.style.display = 'none';
+    genStatus.style.marginTop = '6px';
+    extrasWrap.appendChild(genStatus);
+  }
+
+  v.appendChild(extrasWrap);
+
   return v;
 }
 
@@ -5218,6 +5285,130 @@ window.regenerateDraft = async function(id) {
   showToast('Loaded idea into form \u2014 click Generate draft');
 };
 
+// Generate extra supplementary content for one variant of an existing draft.
+// Opt-in: copywriter clicks button per-variant when they want more material.
+window.generateDraftExtras = async function(draftId, variant) {
+  var d = draftsCache.find(function(x){ return x.id === draftId; });
+  if (!d) return;
+  var field = 'extras_' + variant;
+  var btnId = 'draft-extras-btn-' + draftId + '-' + variant;
+  var statusId = 'draft-extras-status-' + draftId + '-' + variant;
+  var btn = document.getElementById(btnId);
+  var status = document.getElementById(statusId);
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+  if (status) { status.className = 'extract-status progress'; status.textContent = 'Asking Claude for extras...'; status.style.display = 'block'; }
+
+  try {
+    if (!voiceCache) await loadVoiceBrief(true);
+    if (!productsCache) await loadProducts(true);
+
+    // Build context using this variants existing content so extras feel aligned
+    var variantLabel = variant.toUpperCase();
+    var variantContent = [
+      'Subject: ' + (d['subject_' + variant] || ''),
+      'Preview: ' + (d['preview_' + variant] || ''),
+      'Headline: ' + (d['headline_' + variant] || ''),
+      'Subheadline: ' + (d['subheadline_' + variant] || ''),
+      'Body: ' + (d['body_' + variant] || ''),
+      'Bridge: ' + (d['bridge_' + variant] || ''),
+      'Product section: ' + (d['product_section_' + variant] || ''),
+      'Final CTA: ' + (d['final_cta_' + variant] || '')
+    ].join('\n');
+
+    var productsShort = (productsCache || []).filter(function(p){ return p.active !== false && !p.sold_out; }).map(function(p){
+      return '- ' + p.name + ': ' + (p.short_description || '');
+    }).join('\n');
+
+    var voiceShort = '';
+    if (voiceCache) {
+      voiceShort = [
+        voiceCache.voice_adjectives ? 'Voice: ' + (Array.isArray(voiceCache.voice_adjectives) ? voiceCache.voice_adjectives.join(', ') : voiceCache.voice_adjectives) : '',
+        voiceCache.banned_words ? 'Banned words: ' + (Array.isArray(voiceCache.banned_words) ? voiceCache.banned_words.join(', ') : voiceCache.banned_words) : '',
+        voiceCache.banned_claims ? 'Banned claim types: ' + voiceCache.banned_claims : ''
+      ].filter(Boolean).join('\n');
+    }
+
+    var systemPrompt = 'You are Quill, Goldfish Groups senior email copywriter for SFH. Generate supplementary content pieces to complement an existing draft. These are OPTIONAL extras the copywriter may choose to include in the final email. They must fit the draft\u0027s angle and voice exactly, and never contradict the existing content.';
+
+    var userPrompt = 'EXISTING DRAFT (variant ' + variantLabel + '):\n' + variantContent + '\n\n'
+      + 'VOICE CONSTRAINTS:\n' + voiceShort + '\n\n'
+      + 'AVAILABLE PRODUCTS (for secondary_product type only):\n' + productsShort + '\n\n'
+      + 'YOUR TASK:\n'
+      + 'Generate 3 to 5 supplementary content pieces this draft could use if the copywriter wants more meat. Each piece stands alone, could be inserted anywhere reasonable in the email, and would add value without repeating what is already there.\n\n'
+      + 'TYPES AVAILABLE (pick what fits best, do not force variety):\n'
+      + '- extra_body: an additional body paragraph expanding on a tangential angle (1-3 sentences)\n'
+      + '- callout: a short sharp statement worth pulling into a visual callout (10-20 words)\n'
+      + '- secondary_product: name + short rationale for a second product that pairs with the primary pitch. Use ONLY products from the list above.\n'
+      + '- social_proof: a customer-style testimonial or a believable line of perceived feedback (1-2 sentences)\n'
+      + '- faq_pair: a question someone might have after reading the draft, plus a tight answer (both under 25 words)\n'
+      + '- quote: a short aphoristic line worth highlighting (10-20 words)\n'
+      + '- stat: a notable framing number. Only use if it can be grounded. Never invent percentages or study results.\n'
+      + '- testimonial_style: a longer story-form testimonial (2-3 sentences)\n\n'
+      + 'REQUIREMENTS:\n'
+      + '- Match the existing draft\u0027s voice. Same calmness, same directness.\n'
+      + '- No em dashes, no hyperbolic language.\n'
+      + '- Use proper apostrophes (here\u0027s, don\u0027t).\n'
+      + '- Do NOT invent biochemical mechanisms, absorption claims, pair-interaction claims, or specific study citations.\n'
+      + '- For secondary_product, pick something that genuinely complements the primary pitch. Do not force a sale.\n'
+      + '- Each extra includes a short rationale (one line) explaining why you picked this angle for this draft.\n\n'
+      + 'RETURN A SINGLE JSON OBJECT:\n'
+      + '{\n'
+      + '  "extras": [\n'
+      + '    { "type": "extra_body", "content": "...", "rationale": "..." },\n'
+      + '    { "type": "callout", "content": "...", "rationale": "..." },\n'
+      + '    { "type": "faq_pair", "content": { "question": "...", "answer": "..." }, "rationale": "..." }\n'
+      + '  ]\n'
+      + '}\n\n'
+      + 'Return ONLY the JSON object. Start with { and end with }.';
+
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var rawText = await res.text();
+    var data;
+    try { data = JSON.parse(rawText); } catch (e) {
+      if (res.status === 504 || rawText.indexOf('<!DOCTYPE') === 0 || rawText.indexOf('<html') === 0) {
+        throw new Error('The AI request timed out. Try again.');
+      }
+      throw new Error('Server returned non-JSON. Status ' + res.status);
+    }
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(blk){ if (blk.type === 'text') text += blk.text; });
+    }
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    var first = text.indexOf('{');
+    var last = text.lastIndexOf('}');
+    if (first === -1 || last === -1) throw new Error('No JSON object in response');
+    var parsed = JSON.parse(text.substring(first, last + 1));
+    if (!parsed.extras || !Array.isArray(parsed.extras)) throw new Error('Response missing extras array');
+
+    var updatePayload = {};
+    updatePayload[field] = parsed.extras;
+    var upd = await db.from('quill_generated_drafts').update(updatePayload).eq('id', draftId).select().single();
+    if (upd.error) throw new Error('Save failed: ' + upd.error.message);
+
+    // Update cache
+    d[field] = parsed.extras;
+
+    renderDrafts();
+    showToast('Extras generated for variant ' + variantLabel);
+  } catch (err) {
+    console.error('Extras generation error', err);
+    if (status) { status.className = 'extract-status error'; status.textContent = 'Something went wrong. ' + (err.message || err); }
+    if (btn) { btn.disabled = false; btn.textContent = 'Generate extras'; }
+  }
+};
+
 window.promoteDraftToCalendar = async function(id) {
   var d = draftsCache.find(function(x){ return x.id === id; });
   if (!d) return;
@@ -5234,6 +5425,14 @@ window.promoteDraftToCalendar = async function(id) {
     final_cta: d['final_cta_' + pref] || ''
   };
 
+  // Build blocks array: core from fixed fields + extras appended as blocks
+  var coreBlocks = BlockEditor.fromFixedFields(variantData);
+  var extras = d['extras_' + pref];
+  if (typeof extras === 'string') { try { extras = JSON.parse(extras); } catch (e) { extras = null; } }
+  var extraBlocks = Array.isArray(extras) ? extrasToBlocks(extras) : [];
+  var fullBlocks = coreBlocks.concat(extraBlocks);
+  variantData.blocks = fullBlocks;
+
   // If draft came from an existing calendar row, update that row in place.
   if (d.source_calendar_id) {
     var updatePayload = Object.assign({}, variantData, {
@@ -5247,13 +5446,11 @@ window.promoteDraftToCalendar = async function(id) {
     });
     var upd = await db.from('quill_calendar').update(updatePayload).eq('id', d.source_calendar_id).select().single();
     if (upd.error) { showToast('Could not update calendar row: ' + upd.error.message, true); return; }
-    // Update in-memory cache
     var idx = emails.findIndex(function(e){ return e.id === d.source_calendar_id; });
     if (idx !== -1) emails[idx] = upd.data;
     var pUpd = await db.from('quill_generated_drafts').update({ promoted_to_calendar_id: d.source_calendar_id }).eq('id', id);
     if (!pUpd.error) d.promoted_to_calendar_id = d.source_calendar_id;
     renderDrafts();
-    // If Calendar or Board rendered, refresh them
     if (typeof renderCalendar === 'function') try { renderCalendar(); } catch(e){}
     if (typeof renderCampaignBoard === 'function') try { renderCampaignBoard(); } catch(e){}
     showToast('Draft applied to calendar row');
@@ -5279,6 +5476,54 @@ window.promoteDraftToCalendar = async function(id) {
   renderDrafts();
   showToast('Added to Waiting Bay');
 };
+
+// Map extras array into an array of BlockEditor block objects.
+// Extras become additional blocks appended after the core content.
+function extrasToBlocks(extras) {
+  if (!Array.isArray(extras)) return [];
+  var out = [];
+  var idc = Date.now();
+  var nid = function(){ return 'bx' + (idc++); };
+  extras.forEach(function(ex){
+    if (!ex) return;
+    var t = ex.type;
+    var c = ex.content;
+    switch (t) {
+      case 'extra_body':
+      case 'social_proof':
+        out.push({ id: nid(), type: 'text', content: { text: typeof c === 'string' ? c : String(c || ''), align: 'left' } });
+        break;
+      case 'callout':
+      case 'quote':
+      case 'testimonial_style':
+        out.push({ id: nid(), type: 'quote', content: { text: typeof c === 'string' ? c : String(c || ''), align: 'left' } });
+        break;
+      case 'stat':
+        out.push({ id: nid(), type: 'headline', content: { text: typeof c === 'string' ? c : String(c || ''), align: 'center' } });
+        break;
+      case 'faq_pair':
+        if (c && typeof c === 'object') {
+          var txt = 'Q: ' + (c.question || '') + '\n\nA: ' + (c.answer || '');
+          out.push({ id: nid(), type: 'text', content: { text: txt, align: 'left' } });
+        }
+        break;
+      case 'secondary_product':
+        // Expecting content to be a string like "Product Name \u2014 rationale"
+        // Split if possible, else put the whole thing in productName
+        var s = typeof c === 'string' ? c : String(c || '');
+        var split = s.split(/:|,/);
+        var pname = split[0] || s;
+        var pdesc = split.length > 1 ? split.slice(1).join(',').trim() : '';
+        out.push({ id: nid(), type: 'product', content: { productName: pname.trim(), description: pdesc, cta: 'Shop', layout: 'text-right' } });
+        break;
+      default:
+        // Unknown type: fall back to a text block
+        var fallbackText = typeof c === 'string' ? c : JSON.stringify(c || '');
+        out.push({ id: nid(), type: 'text', content: { text: fallbackText, align: 'left' } });
+    }
+  });
+  return out;
+}
 
 // Build a compact "top winning subjects" list from insights data for voice reference
 function getTopWinningSubjects() {
