@@ -178,6 +178,8 @@
     .field-input, .field-select, .field-textarea { width: 100%; padding: 9px 11px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
     .field-input:focus, .field-select:focus, .field-textarea:focus { outline: none; border-color: var(--gg-olive); }
     .field-textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    .field-textarea.concept { min-height: 140px; border-color: var(--gg-olive); background: #fdfcf8; }
+    .field-textarea.concept:focus { border-color: var(--gg-olive); background: #fff; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* TOAST */
@@ -1516,8 +1518,16 @@
         <input type="text" id="f-segment" class="field-input" placeholder="e.g. All subscribers, Lapsed, New buyers">
       </div>
       <div>
-        <label class="field-label">Notes</label>
-        <textarea id="f-notes" class="field-textarea" placeholder="Angle, hook direction, reference emails, etc."></textarea>
+        <label class="field-label">Concept / Angle</label>
+        <textarea id="f-notes" class="field-textarea concept" placeholder="The most important field for drafting. What is this email about? What is the core angle, hook direction, or story? The more specific here, the better the draft Quill can generate."></textarea>
+      </div>
+      <div>
+        <label class="field-label">Products to feature (optional)</label>
+        <input type="text" id="f-products-to-feature" class="field-input" placeholder="e.g. PURE Whey, Creatine Monohydrate, Magnesium Glycinate">
+      </div>
+      <div>
+        <label class="field-label">Discount / Promo (optional)</label>
+        <input type="text" id="f-discount-promo" class="field-input" placeholder="e.g. 15% off with code SPRING15, BOGO on protein, free shipping over $75">
       </div>
     </div>
     <div class="modal-foot">
@@ -1954,6 +1964,10 @@ window.openEditModal = function(id) {
   document.getElementById('f-type').value = em.email_type || 'Campaign';
   document.getElementById('f-segment').value = em.segment || '';
   document.getElementById('f-notes').value = em.notes || '';
+  var pf = document.getElementById('f-products-to-feature');
+  if (pf) pf.value = em.products_to_feature || '';
+  var dp = document.getElementById('f-discount-promo');
+  if (dp) dp.value = em.discount_promo || '';
   document.getElementById('modalOverlay').classList.add('open');
 };
 
@@ -1989,6 +2003,10 @@ function clearModalFields() {
   document.getElementById('f-type').value = 'Campaign';
   document.getElementById('f-segment').value = '';
   document.getElementById('f-notes').value = '';
+  var pf = document.getElementById('f-products-to-feature');
+  if (pf) pf.value = '';
+  var dp = document.getElementById('f-discount-promo');
+  if (dp) dp.value = '';
 }
 
 window.saveFromModal = async function() {
@@ -2002,7 +2020,9 @@ window.saveFromModal = async function() {
     bucket: document.getElementById('f-bucket').value,
     email_type: document.getElementById('f-type').value,
     segment: document.getElementById('f-segment').value.trim(),
-    notes: document.getElementById('f-notes').value.trim()
+    notes: document.getElementById('f-notes').value.trim(),
+    products_to_feature: (document.getElementById('f-products-to-feature') || {}).value ? document.getElementById('f-products-to-feature').value.trim() : null,
+    discount_promo: (document.getElementById('f-discount-promo') || {}).value ? document.getElementById('f-discount-promo').value.trim() : null
   };
   if (editingId) payload.id = editingId;
   var saved = await upsertEmail(payload);
@@ -5819,7 +5839,9 @@ function formatDraftPromptContext(ctx) {
     if (concept.bridge) lines.push('Existing bridge direction: ' + concept.bridge);
     if (concept.product_section) lines.push('Existing product section direction: ' + concept.product_section);
     if (concept.final_cta) lines.push('Existing final CTA direction: ' + concept.final_cta);
-    if (concept.notes) lines.push('Strategist notes (may contain angle, core idea, direction): ' + concept.notes);
+    if (concept.notes) lines.push('CONCEPT / ANGLE (primary strategist direction for this email): ' + concept.notes);
+    if (concept.products_to_feature) lines.push('PRODUCTS TO FEATURE (lead or highlight these in the draft): ' + concept.products_to_feature);
+    if (concept.discount_promo) lines.push('DISCOUNT / PROMO to weave in naturally (do not force, but work it in where it fits): ' + concept.discount_promo);
     if (concept.send_date) lines.push('Scheduled for: ' + concept.send_date);
     if (concept.segment) lines.push('Target segment: ' + concept.segment);
     lines.push('');
@@ -6131,6 +6153,8 @@ window.generateDraftFromCalendarRow = async function(calendarId) {
     product_section: em.product_section || '',
     final_cta: em.final_cta || '',
     notes: em.notes || '',
+    products_to_feature: em.products_to_feature || '',
+    discount_promo: em.discount_promo || '',
     send_date: em.send_date || '',
     segment: em.segment || ''
   };
@@ -8021,8 +8045,12 @@ function restoreCalendarModal() {
     + '</div>'
     + '<div><label class="field-label">Segment</label>'
     + '<input type="text" id="f-segment" class="field-input" placeholder="e.g. All subscribers, Lapsed, New buyers"></div>'
-    + '<div><label class="field-label">Notes</label>'
-    + '<textarea id="f-notes" class="field-textarea" placeholder="Angle, hook direction, reference emails, etc."></textarea></div>';
+    + '<div><label class="field-label">Concept / Angle</label>'
+    + '<textarea id="f-notes" class="field-textarea concept" placeholder="The most important field for drafting. What is this email about? What is the core angle, hook direction, or story? The more specific here, the better the draft Quill can generate."></textarea></div>'
+    + '<div><label class="field-label">Products to feature (optional)</label>'
+    + '<input type="text" id="f-products-to-feature" class="field-input" placeholder="e.g. PURE Whey, Creatine Monohydrate, Magnesium Glycinate"></div>'
+    + '<div><label class="field-label">Discount / Promo (optional)</label>'
+    + '<input type="text" id="f-discount-promo" class="field-input" placeholder="e.g. 15% off with code SPRING15, BOGO on protein, free shipping over $75"></div>';
   var footSave = document.querySelector('#modalOverlay .primary-btn');
   footSave.textContent = 'Save';
   footSave.onclick = window.saveFromModal;
