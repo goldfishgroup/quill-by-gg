@@ -364,6 +364,50 @@
     .flow-status-manual { background: #fdecd8; color: #8c3d0d; }
     .flow-status-mixed { background: #f0eee6; color: var(--q-muted); }
     .flow-status-draft { background: #f0eee6; color: var(--q-muted); }
+
+    /* FLOW MESSAGES BROWSER */
+    .flow-browser-section { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--q-line); }
+    .flow-browser-head { margin-bottom: 14px; }
+    .flow-browser-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .flow-browser-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
+    .flow-browser-controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .flow-browser-search { flex: 1; min-width: 240px; padding: 8px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; background: #fff; font-size: 13px; color: var(--gg-charcoal); font-family: var(--font-body); }
+    .flow-browser-search:focus { outline: none; border-color: var(--gg-olive); }
+    .flow-browser-filter { padding: 8px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; background: #fff; font-size: 12px; color: var(--gg-charcoal); font-family: var(--font-body); cursor: pointer; }
+    .flow-browser-grid { display: flex; flex-direction: column; gap: 6px; }
+    .flow-msg-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; background: #fff; border: 0.5px solid var(--q-line); border-radius: 7px; transition: all 0.12s; }
+    .flow-msg-row:hover { border-color: var(--gg-olive); background: var(--gg-offwhite); }
+    .flow-msg-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .flow-msg-flow-name { font-size: 10px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.07em; }
+    .flow-msg-subject { font-size: 13px; font-weight: 500; color: var(--gg-charcoal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .flow-msg-stats { font-size: 11px; color: var(--q-muted); display: flex; gap: 10px; }
+    .flow-msg-stat-pill { display: inline-flex; gap: 4px; }
+    .flow-msg-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .flow-msg-improved-pill { font-size: 9px; font-weight: 700; color: var(--gg-olive); background: #f0edd8; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .flow-msg-improve-btn { padding: 6px 12px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-msg-improve-btn:hover { background: #2f3214; }
+    .flow-browser-empty { font-size: 12px; color: var(--q-muted); font-style: italic; padding: 16px 0; }
+
+    /* Flow improvement modal */
+    .flow-improve-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .flow-improve-overlay.open { display: flex; }
+    .flow-improve-modal { background: #fff; border: 0.5px solid var(--q-line); border-radius: 10px; width: 100%; max-width: 620px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: calc(100vh - 80px); }
+    .flow-improve-head { padding: 18px 22px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); }
+    .flow-improve-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .flow-improve-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; }
+    .flow-improve-msg-preview { background: #f7f4ee; border-left: 2px solid var(--q-muted); padding: 10px 14px; margin-top: 12px; border-radius: 4px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; }
+    .flow-improve-msg-preview-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .flow-improve-msg-preview-subject { font-weight: 600; margin-bottom: 4px; }
+    .flow-improve-body { padding: 18px 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+    .flow-improve-foot { padding: 14px 22px; border-top: 0.5px solid var(--q-line); display: flex; justify-content: flex-end; gap: 8px; }
+    .flow-improve-cancel { padding: 8px 14px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 6px; font-size: 12px; cursor: pointer; font-family: var(--font-body); }
+    .flow-improve-cancel:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .flow-improve-submit { padding: 8px 16px; background: var(--gg-olive); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .flow-improve-submit:hover { background: #2f3214; }
+    .flow-improve-submit:disabled { opacity: 0.5; cursor: default; }
+    .flow-improve-diag-context { background: #fff8f1; border-left: 2px solid var(--gg-orange); padding: 10px 14px; border-radius: 4px; }
+    .flow-improve-diag-context-label { font-size: 9px; font-weight: 700; color: var(--gg-orange); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .flow-improve-diag-context-text { font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; }
     .flow-status-cross { background: var(--gg-offwhite); color: var(--gg-olive); }
     .flow-revisit-pill { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: lowercase; background: #fff1e6; color: var(--gg-orange); border: 0.5px dashed var(--gg-orange); cursor: help; }
 
@@ -920,7 +964,7 @@
       <span class="filter-label">Status</span>
       <button class="filter-chip active" onclick="toggleFilter(this,'all')">All</button>
       <button class="filter-chip" onclick="toggleFilter(this,'draft')">Draft</button>
-      <button class="filter-chip" onclick="toggleFilter(this,'approved')">Approved</button>
+      <button class="filter-chip" onclick="toggleFilter(this,'approved')">In Progress</button>
       <button class="filter-chip" onclick="toggleFilter(this,'sent-to-design')">Sent to Design</button>
       <button class="filter-chip" onclick="toggleFilter(this,'scheduled')">Scheduled</button>
     </div>
@@ -973,7 +1017,7 @@
         </div>
         <div class="board-col" data-status="approved">
           <div class="board-col-head">
-            <div class="board-col-name">Approved</div>
+            <div class="board-col-name">In Progress</div>
             <div class="board-col-count" id="board-count-approved">0</div>
           </div>
           <div class="board-col-body" data-status="approved" id="board-col-approved"></div>
@@ -1255,6 +1299,24 @@
           </div>
           <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
           <div class="pattern-grid" id="diag-grid"></div>
+
+          <div class="flow-browser-section">
+            <div class="flow-browser-head">
+              <div class="flow-browser-title">Flow messages</div>
+              <div class="flow-browser-sub">Pick any active flow message to draft an improvement. Use this when a strategist or client has flagged a flow for revamp outside of diagnostic findings.</div>
+            </div>
+            <div class="flow-browser-controls">
+              <input type="text" id="flow-browser-search" class="flow-browser-search" placeholder="Search by flow name, subject, or content..." oninput="renderFlowBrowser()">
+              <select id="flow-browser-filter-flow" class="flow-browser-filter" onchange="renderFlowBrowser()">
+                <option value="">All flows</option>
+              </select>
+              <select id="flow-browser-filter-status" class="flow-browser-filter" onchange="renderFlowBrowser()">
+                <option value="live">Live only</option>
+                <option value="all">All statuses</option>
+              </select>
+            </div>
+            <div class="flow-browser-grid" id="flow-browser-grid"></div>
+          </div>
         </div>
 
         <div class="studio-section" id="studio-buckets">
@@ -1614,7 +1676,7 @@
           <label class="field-label">Status</label>
           <select id="f-status" class="field-select">
             <option value="draft">Draft</option>
-            <option value="approved">Approved</option>
+            <option value="approved">In Progress</option>
             <option value="sent-to-design">Sent to Design</option>
             <option value="scheduled">Scheduled</option>
           </select>
@@ -1684,6 +1746,31 @@
       </div>
     </div>
     <div class="export-modal-preview" id="export-modal-preview"></div>
+  </div>
+</div>
+
+<div class="flow-improve-overlay" id="flow-improve-overlay" onclick="if(event.target===this) closeFlowImprove()">
+  <div class="flow-improve-modal">
+    <div class="flow-improve-head">
+      <div class="flow-improve-title">Draft an improvement</div>
+      <div class="flow-improve-sub">Quill will produce A/B variants. A is a conservative improvement, B is an aggressive reframe.</div>
+      <div id="flow-improve-msg-preview"></div>
+      <div id="flow-improve-diag-attached" style="display:none;"></div>
+    </div>
+    <div class="flow-improve-body">
+      <div>
+        <label class="field-label">Strategic angle <span style="color:var(--gg-orange);font-weight:600;">required</span></label>
+        <textarea id="flow-improve-angle" class="field-textarea concept" placeholder="Why are you improving this? What is the goal of the rewrite? Be specific. e.g. Current messaging is too discount-focused. Want to lead with social proof and reduce urgency language. Test softer CTAs."></textarea>
+      </div>
+      <div>
+        <label class="field-label">Products to feature (optional)</label>
+        <input type="text" id="flow-improve-products" class="field-input" placeholder="e.g. PURE Whey, Creatine Monohydrate, Magnesium Glycinate">
+      </div>
+    </div>
+    <div class="flow-improve-foot">
+      <button class="flow-improve-cancel" onclick="closeFlowImprove()">Cancel</button>
+      <button class="flow-improve-submit" id="flow-improve-submit-btn" onclick="submitFlowImprovement()">Generate improvement</button>
+    </div>
   </div>
 </div>
 
@@ -1929,12 +2016,13 @@ function renderListView() {
     var row = document.createElement('div');
     row.className = 'list-row';
     var status = e.status || 'draft';
+    var statusLabel = status === 'approved' ? 'In Progress' : status.replace('-',' ');
     row.innerHTML = '<span style="font-size:12px;color:var(--q-muted)">' + (e.send_date || '') + '</span>'
       + '<span style="font-weight:500">' + (e.subject || 'Untitled') + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.segment || '') + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.bucket || '') + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.email_type || '') + '</span>'
-      + '<span><span class="status-badge sb-' + status + '"><span class="status-dot"></span>' + status.replace('-',' ') + '</span></span>';
+      + '<span><span class="status-badge sb-' + status + '"><span class="status-dot"></span>' + statusLabel + '</span></span>';
     (function(id){
       row.addEventListener('click', function(){ openEditModal(id); });
     })(e.id);
@@ -3741,6 +3829,9 @@ async function loadFlowDiagnostics(force) {
 async function showFlowDiagnosticsOnOpen() {
   await loadFlowDiagnostics(false);
   renderFlowDiagnostics();
+  // Also load the flow message browser for the panel below diagnostics
+  await loadFlowBrowserData();
+  renderFlowBrowser();
 }
 
 function renderFlowDiagnostics() {
@@ -3901,11 +3992,17 @@ function buildDiagnosticCard(d) {
     starBtn.className = 'pattern-action-btn' + (d.starred ? ' starred' : '');
     starBtn.textContent = d.starred ? 'Starred' : 'Star';
     starBtn.onclick = function(){ toggleDiagnosticStar(d.id); };
+    var improveBtn = document.createElement('button');
+    improveBtn.className = 'pattern-action-btn';
+    improveBtn.textContent = 'Draft an improvement';
+    improveBtn.title = 'Pick a flow message to improve, with this diagnostic attached as context';
+    improveBtn.onclick = function(){ deeplinkToFlowImprove(d.id); };
     var dismissBtn = document.createElement('button');
     dismissBtn.className = 'pattern-action-btn';
     dismissBtn.textContent = 'Dismiss';
     dismissBtn.onclick = function(){ dismissDiagnostic(d.id); };
     actions.appendChild(starBtn);
+    actions.appendChild(improveBtn);
     actions.appendChild(dismissBtn);
   } else {
     var restoreBtn = document.createElement('button');
@@ -4245,6 +4342,312 @@ window.extractFlowDiagnostics = async function() {
     btn.disabled = false;
     btn.textContent = prevLabel;
   }
+};
+
+// ── FLOW MESSAGE BROWSER + IMPROVEMENT DRAFTING ───────────────────────────
+// Lets a user pick any flow message to improve, even when there is no
+// diagnostic flagging it. Use case: strategist or client requests a flow
+// revamp outside of the usual diagnostic-driven workflow (e.g., "abandoned
+// cart full revamp").
+
+var flowMessagesCache = null;
+var flowMessagesLoadedAt = 0;
+var flowImprovePending = null; // { flowMessage, attachedDiagnostic } during modal use
+
+async function loadFlowBrowserData() {
+  if (flowMessagesCache && (Date.now() - flowMessagesLoadedAt) < 60000) return;
+  // Pull active flow messages with the fields the browser needs.
+  // We only show consumer-facing flows (skip B2B / wholesale).
+  var res = await db.from('quill_flow_messages')
+    .select('id,flow_name,subject,body,status,delivered,opened,clicked,revenue,audience_type,last_improved_at,last_improved_from_draft_id')
+    .order('flow_name', { ascending: true })
+    .limit(2000);
+  if (res.error) {
+    console.error('loadFlowBrowserData error', res.error.message || res.error);
+    return;
+  }
+  flowMessagesCache = (res.data || []).filter(function(m){
+    return (m.audience_type || 'consumer') === 'consumer';
+  });
+  flowMessagesLoadedAt = Date.now();
+
+  // Populate the flow filter dropdown with unique flow names
+  var sel = document.getElementById('flow-browser-filter-flow');
+  if (sel) {
+    var existing = sel.value;
+    var names = {};
+    flowMessagesCache.forEach(function(m){ if (m.flow_name) names[m.flow_name] = true; });
+    var sortedNames = Object.keys(names).sort();
+    sel.innerHTML = '<option value="">All flows</option>'
+      + sortedNames.map(function(n){ return '<option value="' + escapeHtml(n) + '">' + escapeHtml(n) + '</option>'; }).join('');
+    if (existing) sel.value = existing;
+  }
+}
+
+window.renderFlowBrowser = function() {
+  var grid = document.getElementById('flow-browser-grid');
+  if (!grid) return;
+  if (!flowMessagesCache) {
+    grid.innerHTML = '<div class="flow-browser-empty">Loading flow messages...</div>';
+    return;
+  }
+  var search = (document.getElementById('flow-browser-search') || {}).value || '';
+  var flowFilter = (document.getElementById('flow-browser-filter-flow') || {}).value || '';
+  var statusFilter = (document.getElementById('flow-browser-filter-status') || {}).value || 'live';
+  var q = search.trim().toLowerCase();
+
+  var rows = flowMessagesCache.filter(function(m){
+    if (flowFilter && m.flow_name !== flowFilter) return false;
+    if (statusFilter === 'live' && (m.status || '').toLowerCase() !== 'live') return false;
+    if (q) {
+      var hay = ((m.flow_name || '') + ' ' + (m.subject || '') + ' ' + (m.body || '')).toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+
+  // Order: most recently improved first within each flow, then by deliveries desc
+  rows.sort(function(a, b){
+    if ((a.flow_name || '') !== (b.flow_name || '')) {
+      return (a.flow_name || '').localeCompare(b.flow_name || '');
+    }
+    return Number(b.delivered || 0) - Number(a.delivered || 0);
+  });
+
+  if (!rows.length) {
+    grid.innerHTML = '<div class="flow-browser-empty">No flow messages match these filters. Try clearing the search or switching to All statuses.</div>';
+    return;
+  }
+
+  // Cap at 50 visible rows for performance
+  var capped = rows.slice(0, 50);
+  var html = capped.map(function(m){
+    var openRate = m.delivered ? Math.round((Number(m.opened || 0) / Number(m.delivered)) * 1000) / 10 : null;
+    var clickRate = m.delivered ? Math.round((Number(m.clicked || 0) / Number(m.delivered)) * 1000) / 10 : null;
+    var statsBits = [];
+    if (m.delivered) statsBits.push(Number(m.delivered).toLocaleString() + ' delivered');
+    if (openRate !== null) statsBits.push(openRate + '% open');
+    if (clickRate !== null) statsBits.push(clickRate + '% click');
+    var improvedPill = m.last_improved_at
+      ? '<span class="flow-msg-improved-pill" title="Last improved ' + new Date(m.last_improved_at).toLocaleDateString() + '">Improved</span>'
+      : '';
+    return '<div class="flow-msg-row">'
+      + '<div class="flow-msg-meta">'
+      +   '<div class="flow-msg-flow-name">' + escapeHtml(m.flow_name || 'Unnamed flow') + '</div>'
+      +   '<div class="flow-msg-subject">' + escapeHtml(m.subject || '(no subject)') + '</div>'
+      +   '<div class="flow-msg-stats">' + statsBits.map(function(s){ return '<span class="flow-msg-stat-pill">' + s + '</span>'; }).join('') + '</div>'
+      + '</div>'
+      + '<div class="flow-msg-actions">' + improvedPill
+      +   '<button class="flow-msg-improve-btn" onclick="openFlowImprove(' + m.id + ')">Draft improvement</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  if (rows.length > 50) {
+    html += '<div class="flow-browser-empty">Showing top 50 of ' + rows.length + '. Use search or filters to narrow.</div>';
+  }
+  grid.innerHTML = html;
+};
+
+window.openFlowImprove = function(flowMessageId, attachedDiagnosticId) {
+  if (!flowMessagesCache) { showToast('Flow messages not loaded yet', true); return; }
+  var msg = flowMessagesCache.find(function(m){ return m.id === flowMessageId; });
+  if (!msg) { showToast('Flow message not found', true); return; }
+
+  flowImprovePending = { flowMessage: msg, attachedDiagnostic: null };
+
+  // If a diagnostic was passed in, look it up and attach
+  var diagBox = document.getElementById('flow-improve-diag-attached');
+  diagBox.style.display = 'none';
+  diagBox.innerHTML = '';
+  var angleEl = document.getElementById('flow-improve-angle');
+  angleEl.value = '';
+  if (attachedDiagnosticId && diagnosticsCache) {
+    var diag = diagnosticsCache.find(function(d){ return d.id === attachedDiagnosticId; });
+    if (diag) {
+      flowImprovePending.attachedDiagnostic = diag;
+      var diagText = (diag.diagnosis || '');
+      if (diag.recommendation) diagText += '\n\nRecommendation: ' + diag.recommendation;
+      diagBox.style.display = 'block';
+      diagBox.innerHTML = '<div class="flow-improve-diag-context">'
+        + '<div class="flow-improve-diag-context-label">Diagnostic context (will be sent to Quill)</div>'
+        + '<div class="flow-improve-diag-context-text">' + escapeHtml(diagText) + '</div>'
+        + '</div>';
+      // Pre-fill the angle textarea with the recommendation as a starting point
+      angleEl.value = diag.recommendation || diag.diagnosis || '';
+    }
+  }
+
+  // Show a preview of the message being improved
+  var prev = document.getElementById('flow-improve-msg-preview');
+  prev.innerHTML = '<div class="flow-improve-msg-preview">'
+    + '<div class="flow-improve-msg-preview-label">' + escapeHtml(msg.flow_name || 'Flow message') + '</div>'
+    + '<div class="flow-improve-msg-preview-subject">' + escapeHtml(msg.subject || '(no subject)') + '</div>'
+    + '<div>' + escapeHtml((msg.body || '').slice(0, 400)) + ((msg.body || '').length > 400 ? '...' : '') + '</div>'
+    + '</div>';
+
+  document.getElementById('flow-improve-products').value = '';
+  document.getElementById('flow-improve-overlay').classList.add('open');
+};
+
+window.closeFlowImprove = function() {
+  document.getElementById('flow-improve-overlay').classList.remove('open');
+  flowImprovePending = null;
+};
+
+window.submitFlowImprovement = async function() {
+  if (!flowImprovePending) return;
+  var msg = flowImprovePending.flowMessage;
+  var diag = flowImprovePending.attachedDiagnostic;
+  var angle = (document.getElementById('flow-improve-angle').value || '').trim();
+  var products = (document.getElementById('flow-improve-products').value || '').trim();
+
+  if (!angle) {
+    showToast('Strategic angle is required', true);
+    return;
+  }
+
+  var btn = document.getElementById('flow-improve-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Working...'; }
+
+  try {
+    // Wrap as a "flow_message" source for the Draft generator
+    var source = {
+      source_type: 'flow_message',
+      flow_message_id: msg.id,
+      flow_name: msg.flow_name,
+      original_subject: msg.subject,
+      original_body: msg.body,
+      improvement_angle: angle,
+      products_to_feature: products,
+      diagnostic_diagnosis: diag ? diag.diagnosis : null,
+      diagnostic_recommendation: diag ? diag.recommendation : null,
+      diagnostic_severity: diag ? diag.severity : null
+    };
+
+    // Stub extraEl since this flow does not use the regular Draft Studio inputs
+    var stubExtra = { value: angle };
+    closeFlowImprove();
+    showToast('Generating improvement... opening Draft Studio');
+
+    // Switch to Draft section so the user sees progress
+    setStudioSection('draft');
+
+    // Find the draft generator status element
+    var draftStatus = document.getElementById('draft-status');
+    var draftBtn = document.getElementById('draft-generate-btn');
+
+    var result = await runDraftGeneration({
+      source: source,
+      strategy: 'different_angle',
+      extraEl: stubExtra,
+      btn: draftBtn,
+      status: draftStatus,
+      sourceIdeaId: null,
+      sourceCalendarId: null,
+      sourceFlowMessageId: msg.id,
+      flowImprovementAngle: angle,
+      flowImprovementProducts: products
+    });
+
+    // Result handling: runDraftGeneration manages renderDrafts itself
+    if (result && result.id) {
+      showToast('Improvement draft generated for "' + (msg.subject || msg.flow_name) + '"');
+    }
+  } catch (err) {
+    console.error('Flow improvement generation error', err);
+    showToast('Could not generate improvement: ' + (err.message || err), true);
+    if (btn) { btn.disabled = false; btn.textContent = 'Generate improvement'; }
+  }
+};
+
+// Deeplink from a diagnostic card. Scroll to the flow browser, pre-filter
+// by the diagnostic's flow_name, and store the diagnostic id so the next
+// openFlowImprove call attaches it as context. The user picks the specific
+// message to improve from the filtered browser.
+window.deeplinkToFlowImprove = async function(diagId) {
+  var diag = (diagnosticsCache || []).find(function(d){ return d.id === diagId; });
+  if (!diag) return;
+  await loadFlowBrowserData();
+
+  // Pre-filter the browser to the diagnostic's flow if available
+  if (diag.flow_name) {
+    var sel = document.getElementById('flow-browser-filter-flow');
+    if (sel) sel.value = diag.flow_name;
+  }
+  var search = document.getElementById('flow-browser-search');
+  if (search) search.value = '';
+  renderFlowBrowser();
+
+  // Store the diagnostic id so any subsequent openFlowImprove call from the
+  // browser attaches this diagnostic as context
+  window._pendingDiagnosticForImprove = diagId;
+
+  // Override openFlowImprove temporarily for the next click in this flow:
+  // we wrap it so the diagnostic is auto-attached
+  if (!window._originalOpenFlowImprove) {
+    window._originalOpenFlowImprove = window.openFlowImprove;
+  }
+  window.openFlowImprove = function(flowMessageId) {
+    var diagToAttach = window._pendingDiagnosticForImprove;
+    window._pendingDiagnosticForImprove = null;
+    // Restore original after one use
+    window.openFlowImprove = window._originalOpenFlowImprove;
+    return window._originalOpenFlowImprove(flowMessageId, diagToAttach);
+  };
+
+  // Scroll the flow browser into view
+  setTimeout(function(){
+    var section = document.querySelector('.flow-browser-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+  showToast('Pick a flow message to improve. The diagnostic context will be attached.');
+};
+
+// Apply an improvement draft back to the flow message it was generated from.
+// Writes the chosen variant content (subject + body via projection) to
+// quill_flow_messages and stamps last_improved_at.
+window.applyDraftToFlowMessage = async function(draftId) {
+  var d = (draftsCache || []).find(function(x){ return x.id === draftId; });
+  if (!d || !d.source_flow_message_id) return;
+  if (!confirm('Apply this draft to the flow message?\n\nThis writes the chosen variant content to the flow message in Supabase and marks it as improved. The original Klaviyo message is not touched. You will still need to copy the new content into Klaviyo manually.')) return;
+
+  var pref = d.preferred || 'a';
+  var subject = d['subject_' + pref] || '';
+  // For flows, body is the most useful single field. We concat headline + body
+  // + bridge + product_section + final_cta as a reasonable approximation.
+  var bodyParts = [
+    d['headline_' + pref],
+    d['subheadline_' + pref],
+    d['body_' + pref],
+    d['bridge_' + pref],
+    d['product_section_' + pref],
+    d['final_cta_' + pref]
+  ].filter(Boolean);
+  var body = bodyParts.join('\n\n');
+
+  var upd = await db.from('quill_flow_messages').update({
+    subject: subject,
+    body: body,
+    last_improved_at: new Date().toISOString(),
+    last_improved_from_draft_id: draftId
+  }).eq('id', d.source_flow_message_id).select().single();
+
+  if (upd.error) { showToast('Could not update flow message: ' + upd.error.message, true); return; }
+
+  // Mark draft as promoted (using promoted_to_calendar_id is wrong here, so
+  // we set a flag on the draft cache only). The applied state for flow drafts
+  // is signaled by source_flow_message_id + the flow message having
+  // last_improved_from_draft_id matching this draft id.
+  // Refresh caches
+  if (flowMessagesCache) {
+    var idx = flowMessagesCache.findIndex(function(m){ return m.id === d.source_flow_message_id; });
+    if (idx !== -1) flowMessagesCache[idx] = upd.data;
+  }
+
+  renderDrafts();
+  renderFlowBrowser();
+  showToast('Flow message improved. Copy new content into Klaviyo to go live.');
 };
 
 // ── PRODUCTS ─────────────────────────────────────────────────────────────
@@ -5505,6 +5908,16 @@ function buildDraftCard(d) {
     calSource.textContent = 'For calendar row: ' + (srcEm ? '"' + (srcEm.subject || 'untitled') + '"' + (srcEm.send_date ? ' (' + srcEm.send_date + ')' : '') : '#' + d.source_calendar_id);
     headMeta.appendChild(calSource);
   }
+  if (d.source_flow_message_id) {
+    var srcFlow = (flowMessagesCache || []).find(function(m){ return m.id === d.source_flow_message_id; });
+    var flowSource = document.createElement('div');
+    flowSource.className = 'draft-card-source';
+    flowSource.style.color = 'var(--gg-olive)';
+    flowSource.style.fontStyle = 'normal';
+    flowSource.style.fontWeight = '600';
+    flowSource.textContent = 'Flow improvement: ' + (srcFlow ? (srcFlow.flow_name || 'Unnamed') + ', "' + (srcFlow.subject || 'untitled').slice(0, 60) + '"' : '#' + d.source_flow_message_id);
+    headMeta.appendChild(flowSource);
+  }
   head.appendChild(headMeta);
 
   // Collapse toggle button (right side of head)
@@ -5548,7 +5961,20 @@ function buildDraftCard(d) {
     starBtn.textContent = d.starred ? 'Starred' : 'Star';
     starBtn.onclick = function(){ toggleDraftStar(d.id); };
     var promoteBtn = document.createElement('button');
-    if (d.promoted_to_calendar_id) {
+    if (d.source_flow_message_id) {
+      // Flow improvement draft. Check if it has been applied to the flow message.
+      var srcFlowMsg = (flowMessagesCache || []).find(function(m){ return m.id === d.source_flow_message_id; });
+      var isAppliedToFlow = srcFlowMsg && srcFlowMsg.last_improved_from_draft_id === d.id;
+      if (isAppliedToFlow) {
+        promoteBtn.className = 'draft-action-btn promoted';
+        promoteBtn.textContent = 'Applied to flow';
+        promoteBtn.disabled = true;
+      } else {
+        promoteBtn.className = 'draft-action-btn promote';
+        promoteBtn.textContent = 'Apply to flow message';
+        promoteBtn.onclick = function(){ applyDraftToFlowMessage(d.id); };
+      }
+    } else if (d.promoted_to_calendar_id) {
       promoteBtn.className = 'draft-action-btn promoted';
       promoteBtn.textContent = d.source_calendar_id ? 'Applied to row' : 'In calendar';
       promoteBtn.disabled = true;
@@ -6092,17 +6518,17 @@ async function buildDraftContext(source, strategy, extraDirection) {
   if (!bucketsCache) await loadBuckets(true);
   if (!productsCache) await loadProducts(true);
   if (!insightsData.campaigns) await loadInsightsIfNeeded();
-  // Source can be either a starred Idea row or a Calendar row (concept in place)
-  // We keep both fields so formatDraftPromptContext can render the appropriate framing.
+  // Source can be:
+  //   - a starred Idea row (campaign source)
+  //   - a Calendar row with concept in place (campaign source, source_type === 'concept')
+  //   - a Flow message wrapper (flow improvement source, source_type === 'flow_message')
   var bucketName = source && source.bucket ? source.bucket : null;
   var bucket = bucketName ? (bucketsCache || []).find(function(b){ return b.name === bucketName; }) : null;
   var topSubjects = getTopWinningSubjects();
   var isConcept = source && source.source_type === 'concept';
+  var isFlowImprovement = source && source.source_type === 'flow_message';
 
   // Pull starred patterns (fallback to top 8 active if none starred).
-  // These are the learned rules from Klaviyo campaign performance. Feeding
-  // them to the draft generator means drafts respect hard-won knowledge
-  // about what SFH audiences respond to.
   var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
   var patterns = (patternsRes.data || []);
   var starredPatterns = patterns.filter(function(p){ return p.starred; });
@@ -6111,8 +6537,10 @@ async function buildDraftContext(source, strategy, extraDirection) {
   return {
     source: source,
     isConcept: isConcept,
-    idea: isConcept ? null : source,
+    isFlowImprovement: isFlowImprovement,
+    idea: (isConcept || isFlowImprovement) ? null : source,
     concept: isConcept ? source : null,
+    flowImprovement: isFlowImprovement ? source : null,
     bucket: bucket,
     voice: voiceCache || {},
     products: productsCache || [],
@@ -6126,7 +6554,42 @@ async function buildDraftContext(source, strategy, extraDirection) {
 
 function formatDraftPromptContext(ctx) {
   var lines = [];
-  if (ctx.isConcept) {
+  if (ctx.isFlowImprovement) {
+    var fi = ctx.flowImprovement || {};
+    lines.push('=== SOURCE: EXISTING FLOW MESSAGE (rewrite, not generate from scratch) ===');
+    lines.push('This is a REWRITE of an existing live flow message. Your job is to produce two improvement variants of the existing copy. Variant A is a CONSERVATIVE improvement (preserves the structure, sharpens the language, fixes obvious issues). Variant B is an AGGRESSIVE reframe (same goal, but a different angle or hook to test against the original).');
+    lines.push('');
+    lines.push('FLOW: ' + (fi.flow_name || 'Unnamed flow'));
+    lines.push('');
+    lines.push('ORIGINAL SUBJECT: "' + (fi.original_subject || '(no subject)') + '"');
+    lines.push('');
+    lines.push('ORIGINAL BODY:');
+    lines.push(String(fi.original_body || '(empty)').slice(0, 3000));
+    lines.push('');
+    lines.push('STRATEGIC ANGLE FOR THIS REWRITE (the reason for the improvement):');
+    lines.push(fi.improvement_angle || '(none provided)');
+    lines.push('');
+    if (fi.products_to_feature) {
+      lines.push('PRODUCTS TO FEATURE (lead or highlight these): ' + fi.products_to_feature);
+      lines.push('');
+    }
+    if (fi.diagnostic_diagnosis) {
+      lines.push('DIAGNOSTIC FINDING (from Quills earlier flow analysis):');
+      lines.push(fi.diagnostic_diagnosis);
+      if (fi.diagnostic_recommendation) {
+        lines.push('Recommendation: ' + fi.diagnostic_recommendation);
+      }
+      if (fi.diagnostic_severity) lines.push('Severity: ' + fi.diagnostic_severity);
+      lines.push('');
+    }
+    lines.push('CRITICAL CONSTRAINTS FOR FLOW REWRITES:');
+    lines.push('- Preserve the messages strategic role in the sequence. If it is a welcome message, it stays welcoming. If it is a recovery message, it stays recovery-focused. Do not change the purpose.');
+    lines.push('- Voice register for flows is more personal and conversational than campaigns. The reader has triggered this message through their own action (signup, cart abandonment, purchase). Speak to that moment.');
+    lines.push('- No Klaviyo merge tags, no first-name placeholders, no "Hi {{ first_name }}" syntax. Just plain copy.');
+    lines.push('- Variant A and Variant B should be GENUINELY different in approach. A conservative variant that is just a paraphrase of the original is a waste. Make A a real improvement; make B a real reframe worth testing.');
+    lines.push('- Output the same Ines field structure as a campaign draft (subject, preview, headline, subheadline, first_cta, body, bridge, product_section, final_cta) even though flows are usually shorter. Leave fields empty if they do not apply to this message type.');
+    lines.push('');
+  } else if (ctx.isConcept) {
     var concept = ctx.concept || {};
     lines.push('=== SOURCE: CALENDAR CONCEPT (strategist has already committed this to the calendar for a specific send date) ===');
     lines.push('The strategist has already placed this email on the calendar. Your job is to flesh it out into a full production-ready draft that respects whatever direction is already present. Do NOT re-scope the concept; do NOT reframe the intent. Expand faithfully.');
@@ -6283,6 +6746,9 @@ async function runDraftGeneration(opts) {
   var strategy = opts.strategy;
   var sourceIdeaId = opts.sourceIdeaId || null;
   var sourceCalendarId = opts.sourceCalendarId || null;
+  var sourceFlowMessageId = opts.sourceFlowMessageId || null;
+  var flowImprovementAngle = opts.flowImprovementAngle || null;
+  var flowImprovementProducts = opts.flowImprovementProducts || null;
 
   btn.disabled = true;
   var prevLabel = btn.textContent;
@@ -6397,6 +6863,9 @@ async function runDraftGeneration(opts) {
     var row = {
       source_idea_id: sourceIdeaId,
       source_calendar_id: sourceCalendarId,
+      source_flow_message_id: sourceFlowMessageId,
+      flow_improvement_angle: flowImprovementAngle ? flowImprovementAngle.slice(0, 2000) : null,
+      flow_improvement_products: flowImprovementProducts ? flowImprovementProducts.slice(0, 500) : null,
       bucket: source.bucket || null,
       variant_strategy: strategy,
       extra_direction: extraDirection ? extraDirection.slice(0, 1000) : null,
@@ -8225,7 +8694,7 @@ function buildEditorHtml(em) {
   parts.push('        <label class="editor-field-label">Status</label>');
   parts.push('        <select class="editor-input" data-field="status">');
   parts.push('          <option value="draft"' + (em.status === 'draft' ? ' selected' : '') + '>Draft</option>');
-  parts.push('          <option value="approved"' + (em.status === 'approved' ? ' selected' : '') + '>Approved</option>');
+  parts.push('          <option value="approved"' + (em.status === 'approved' ? ' selected' : '') + '>In Progress</option>');
   parts.push('          <option value="sent-to-design"' + (em.status === 'sent-to-design' ? ' selected' : '') + '>Sent to Design</option>');
   parts.push('          <option value="scheduled"' + (em.status === 'scheduled' ? ' selected' : '') + '>Scheduled</option>');
   parts.push('        </select>');
@@ -8776,7 +9245,7 @@ function restoreCalendarModal() {
     + '<div class="field-row">'
     + '<div><label class="field-label">Send date</label><input type="date" id="f-date" class="field-input"></div>'
     + '<div><label class="field-label">Status</label><select id="f-status" class="field-select">'
-    + '<option value="draft">Draft</option><option value="approved">Approved</option>'
+    + '<option value="draft">Draft</option><option value="approved">In Progress</option>'
     + '<option value="sent-to-design">Sent to Design</option><option value="scheduled">Scheduled</option></select></div>'
     + '</div>'
     + '<div class="field-row">'
