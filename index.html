@@ -785,9 +785,57 @@
     .exp-product-thumb { background: #d9d5c8; aspect-ratio: 1/1; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: var(--q-muted); }
 
     .editor-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+    .editor-grid.has-talkback { grid-template-columns: 1fr 300px 380px; }
+    @media (max-width: 1100px) {
+      .editor-grid.has-talkback { grid-template-columns: 1fr 320px; }
+      .editor-grid.has-talkback .editor-talkback { display: none; }
+    }
     @media (max-width: 900px) {
       .editor-grid { grid-template-columns: 1fr; }
     }
+
+    /* TALK-BACK PANEL */
+    .editor-talkback { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); display: flex; flex-direction: column; position: sticky; top: 80px; height: calc(100vh - 110px); max-height: 720px; overflow: hidden; }
+    .talkback-head { padding: 12px 14px; border-bottom: 0.5px solid var(--q-line); background: var(--gg-offwhite); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .talkback-title { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 7px; }
+    .talkback-title-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gg-orange); }
+    .talkback-close { background: transparent; border: none; color: var(--q-muted); cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 16px; line-height: 1; }
+    .talkback-close:hover { background: #efece5; color: var(--gg-charcoal); }
+    .talkback-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; }
+    .talkback-empty { color: var(--q-muted); font-size: 12px; line-height: 1.55; padding: 8px 4px; }
+    .talkback-empty-suggestions { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+    .talkback-empty-suggestion { background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; padding: 8px 10px; font-size: 11.5px; color: var(--gg-charcoal); cursor: pointer; text-align: left; font-family: var(--font-body); }
+    .talkback-empty-suggestion:hover { background: #f0edd8; border-color: var(--gg-olive); }
+    .talkback-msg { display: flex; flex-direction: column; gap: 4px; max-width: 100%; }
+    .talkback-msg.user { align-items: flex-end; }
+    .talkback-msg-bubble { padding: 8px 11px; border-radius: 9px; line-height: 1.5; word-wrap: break-word; max-width: 95%; }
+    .talkback-msg.user .talkback-msg-bubble { background: var(--gg-olive); color: #fff; }
+    .talkback-msg.assistant .talkback-msg-bubble { background: #f7f4ee; color: var(--gg-charcoal); border: 0.5px solid var(--q-line); }
+    .talkback-msg-bubble p { margin: 0 0 6px 0; }
+    .talkback-msg-bubble p:last-child { margin-bottom: 0; }
+    .talkback-source-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; align-self: flex-start; margin-top: 2px; }
+    .talkback-source-grounded { background: #e4eedc; color: #2e5e2e; }
+    .talkback-source-general { background: #fdecd8; color: #8c3d0d; }
+    .talkback-source-outside { background: #f4d9d9; color: #8a1e1e; }
+    .talkback-extra-card { background: #fff; border: 1px solid var(--gg-olive); border-radius: 7px; padding: 10px 12px; margin-top: 6px; }
+    .talkback-extra-type { font-size: 9px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .talkback-extra-content { font-size: 12px; color: var(--gg-charcoal); line-height: 1.5; margin-bottom: 8px; white-space: pre-wrap; }
+    .talkback-extra-actions { display: flex; gap: 6px; }
+    .talkback-extra-btn { font-size: 10px; padding: 4px 8px; border-radius: 4px; border: 0.5px solid var(--q-line); background: #fff; color: var(--gg-charcoal); cursor: pointer; font-family: var(--font-body); font-weight: 600; }
+    .talkback-extra-btn.primary { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    .talkback-extra-btn.primary:hover { background: #2f3214; }
+    .talkback-extra-btn:hover { background: var(--gg-offwhite); }
+    .talkback-input-wrap { padding: 10px 12px; border-top: 0.5px solid var(--q-line); background: #fff; }
+    .talkback-input { width: 100%; min-height: 56px; max-height: 140px; resize: vertical; padding: 8px 10px; border: 0.5px solid var(--q-line); border-radius: 6px; background: #fff; font-size: 12.5px; color: var(--gg-charcoal); font-family: var(--font-body); line-height: 1.5; }
+    .talkback-input:focus { outline: none; border-color: var(--gg-olive); }
+    .talkback-input-row { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+    .talkback-send { padding: 6px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .talkback-send:hover { background: #2f3214; }
+    .talkback-send:disabled { opacity: 0.5; cursor: default; }
+    .talkback-thinking { font-size: 11px; color: var(--q-muted); font-style: italic; padding: 6px 0; }
+    .talkback-toggle-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); display: inline-flex; align-items: center; gap: 6px; }
+    .talkback-toggle-btn:hover { background: var(--gg-olive); color: #fff; }
+    .talkback-toggle-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gg-orange); }
 
     .editor-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px; }
     .editor-card-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 10px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 14px; }
@@ -8791,7 +8839,29 @@ function buildEditorHtml(em) {
   }
   parts.push('    </div>');
 
+  // Talk-Back toggle button at the bottom of the meta column
+  parts.push('    <div style="margin-top:6px;">');
+  parts.push('      <button class="talkback-toggle-btn" id="talkback-toggle-btn" onclick="toggleTalkback()"><span class="dot"></span>Talk to Quill about this email</button>');
+  parts.push('    </div>');
+
   parts.push('  </div>');  // meta
+
+  // TALK-BACK PANEL (third column, rendered conditionally)
+  parts.push('  <div class="editor-talkback" id="editor-talkback" style="display:none;">');
+  parts.push('    <div class="talkback-head">');
+  parts.push('      <div class="talkback-title"><span class="talkback-title-dot"></span>Quill</div>');
+  parts.push('      <button class="talkback-close" onclick="toggleTalkback()" title="Close">\u00D7</button>');
+  parts.push('    </div>');
+  parts.push('    <div class="talkback-body" id="talkback-body"></div>');
+  parts.push('    <div class="talkback-input-wrap">');
+  parts.push('      <textarea class="talkback-input" id="talkback-input" placeholder="Ask Quill about this email, or request extras like a Q&A or Pro Tip..."></textarea>');
+  parts.push('      <div class="talkback-input-row">');
+  parts.push('        <div style="font-size:10px; color:var(--q-muted); flex:1;">Anchored to this email. Voice + products + patterns loaded.</div>');
+  parts.push('        <button class="talkback-send" id="talkback-send" onclick="sendTalkback()">Send</button>');
+  parts.push('      </div>');
+  parts.push('    </div>');
+  parts.push('  </div>');
+
   parts.push('</div>');  // grid
 
   return parts.join('\n');
@@ -9055,6 +9125,454 @@ window.editorToggleOtherVariant = async function() {
     if (t === 'editor') renderCampaignEditor();
   };
 })();
+
+// ── TALK-BACK CHAT ─────────────────────────────────────────────────────────
+// Anchored conversational support inside the Campaign Editor. The user can
+// request supplementary content (Q&A, Pro Tip, social proof, stats, callouts,
+// alt hooks) and ask voice/claim/pattern questions about the email being
+// edited. Each generated extra has Add-as-block + Copy actions. Conversations
+// persist per calendar row in quill_chats.
+
+var talkbackOpen = false;
+var talkbackMessages = []; // [{ id, role, content, source_tag, generated_extra }]
+var talkbackSending = false;
+
+window.toggleTalkback = function() {
+  talkbackOpen = !talkbackOpen;
+  var panel = document.getElementById('editor-talkback');
+  var grid = document.querySelector('#editor-content .editor-grid');
+  if (!panel || !grid) return;
+  if (talkbackOpen) {
+    panel.style.display = 'flex';
+    grid.classList.add('has-talkback');
+    loadTalkbackHistory();
+  } else {
+    panel.style.display = 'none';
+    grid.classList.remove('has-talkback');
+  }
+};
+
+async function loadTalkbackHistory() {
+  if (!editorEmailId) return;
+  var body = document.getElementById('talkback-body');
+  if (!body) return;
+  body.innerHTML = '<div class="talkback-empty">Loading...</div>';
+  var res = await db.from('quill_chats').select('*').eq('calendar_id', editorEmailId).order('created_at', { ascending: true }).limit(200);
+  if (res.error) {
+    body.innerHTML = '<div class="talkback-empty" style="color:var(--gg-orange);">Could not load chat history. ' + escapeHtml(res.error.message || 'Run Session 5.2 migration if you have not yet.') + '</div>';
+    return;
+  }
+  talkbackMessages = res.data || [];
+  renderTalkback();
+}
+
+function renderTalkback() {
+  var body = document.getElementById('talkback-body');
+  if (!body) return;
+  if (!talkbackMessages.length) {
+    body.innerHTML = '<div class="talkback-empty">'
+      + '<strong>Talk to Quill about this email.</strong><br>'
+      + 'Quill knows your voice, products, starred patterns, and the email you have open. Try asking for an extra, or ask a question about voice or claims.'
+      + '<div class="talkback-empty-suggestions">'
+      +   '<button class="talkback-empty-suggestion" onclick="talkbackSuggest(\u0027Generate a Q&A pair that fits this email\u0027)">Generate a Q&A pair</button>'
+      +   '<button class="talkback-empty-suggestion" onclick="talkbackSuggest(\u0027Write a Pro Tip for this email\u0027)">Write a Pro Tip</button>'
+      +   '<button class="talkback-empty-suggestion" onclick="talkbackSuggest(\u0027Suggest a piece of social proof for this email\u0027)">Suggest social proof</button>'
+      +   '<button class="talkback-empty-suggestion" onclick="talkbackSuggest(\u0027Are there any claims in this email that feel too strong for our voice?\u0027)">Voice check the claims</button>'
+      +   '<button class="talkback-empty-suggestion" onclick="talkbackSuggest(\u0027Does this email echo any of our starred patterns?\u0027)">Pattern check</button>'
+      + '</div>'
+      + '</div>';
+    return;
+  }
+  body.innerHTML = '';
+  talkbackMessages.forEach(function(m){ body.appendChild(buildTalkbackMessageEl(m)); });
+  // Scroll to bottom
+  body.scrollTop = body.scrollHeight;
+}
+
+function buildTalkbackMessageEl(m) {
+  var wrap = document.createElement('div');
+  wrap.className = 'talkback-msg ' + (m.role || 'assistant');
+  var bubble = document.createElement('div');
+  bubble.className = 'talkback-msg-bubble';
+  // Render content with line breaks preserved
+  var paragraphs = String(m.content || '').split(/\n\n+/);
+  paragraphs.forEach(function(p){
+    var pEl = document.createElement('p');
+    pEl.textContent = p;
+    bubble.appendChild(pEl);
+  });
+  wrap.appendChild(bubble);
+
+  // Source tag (assistant only)
+  if (m.role === 'assistant' && m.source_tag) {
+    var tag = document.createElement('span');
+    tag.className = 'talkback-source-tag talkback-source-' + (m.source_tag === 'grounded' ? 'grounded' : (m.source_tag === 'general' ? 'general' : 'outside'));
+    tag.textContent = m.source_tag === 'grounded' ? 'Grounded in SFH data'
+      : m.source_tag === 'general' ? 'General knowledge'
+      : 'Outside Quill scope';
+    wrap.appendChild(tag);
+  }
+
+  // Generated extra card (assistant only)
+  if (m.role === 'assistant' && m.generated_extra) {
+    var extra = m.generated_extra;
+    if (typeof extra === 'string') { try { extra = JSON.parse(extra); } catch(e) { extra = null; } }
+    if (extra && extra.type && extra.content) {
+      var card = document.createElement('div');
+      card.className = 'talkback-extra-card';
+      var typeEl = document.createElement('div');
+      typeEl.className = 'talkback-extra-type';
+      typeEl.textContent = (extra.type || '').replace(/_/g, ' ');
+      card.appendChild(typeEl);
+      var contentEl = document.createElement('div');
+      contentEl.className = 'talkback-extra-content';
+      contentEl.textContent = extra.content;
+      card.appendChild(contentEl);
+      var actions = document.createElement('div');
+      actions.className = 'talkback-extra-actions';
+      var addBtn = document.createElement('button');
+      addBtn.className = 'talkback-extra-btn primary';
+      addBtn.textContent = 'Add as block';
+      addBtn.onclick = function(){ addExtraAsBlock(extra); };
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'talkback-extra-btn';
+      copyBtn.textContent = 'Copy';
+      copyBtn.onclick = function(){ copyExtraToClipboard(extra, copyBtn); };
+      actions.appendChild(addBtn);
+      actions.appendChild(copyBtn);
+      card.appendChild(actions);
+      wrap.appendChild(card);
+    }
+  }
+
+  return wrap;
+}
+
+window.talkbackSuggest = function(text) {
+  var input = document.getElementById('talkback-input');
+  if (input) { input.value = text; input.focus(); }
+};
+
+window.sendTalkback = async function() {
+  if (talkbackSending) return;
+  var input = document.getElementById('talkback-input');
+  var sendBtn = document.getElementById('talkback-send');
+  if (!input || !editorEmailId) return;
+  var text = (input.value || '').trim();
+  if (!text) return;
+
+  talkbackSending = true;
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending...'; }
+  input.value = '';
+
+  // Optimistically add user message to UI
+  var userMsg = { role: 'user', content: text, calendar_id: editorEmailId };
+  talkbackMessages.push(userMsg);
+  renderTalkback();
+
+  // Persist user message to Supabase
+  var userIns = await db.from('quill_chats').insert({
+    calendar_id: editorEmailId,
+    role: 'user',
+    content: text
+  }).select().single();
+  if (userIns.error) {
+    showToast('Could not save message: ' + userIns.error.message, true);
+    talkbackSending = false;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send'; }
+    return;
+  }
+  // Replace optimistic message with persisted one
+  talkbackMessages[talkbackMessages.length - 1] = userIns.data;
+
+  // Add thinking indicator
+  var thinkingEl = document.createElement('div');
+  thinkingEl.className = 'talkback-thinking';
+  thinkingEl.id = 'talkback-thinking';
+  thinkingEl.textContent = 'Quill is thinking...';
+  document.getElementById('talkback-body').appendChild(thinkingEl);
+
+  try {
+    var assistantMsg = await runTalkbackTurn(text);
+    // Persist assistant message
+    var ains = await db.from('quill_chats').insert({
+      calendar_id: editorEmailId,
+      role: 'assistant',
+      content: assistantMsg.content,
+      source_tag: assistantMsg.source_tag || null,
+      generated_extra: assistantMsg.generated_extra || null
+    }).select().single();
+    if (ains.error) throw new Error('Could not save reply: ' + ains.error.message);
+    talkbackMessages.push(ains.data);
+  } catch (err) {
+    console.error('Talkback turn error', err);
+    talkbackMessages.push({
+      role: 'assistant',
+      content: 'Something went wrong: ' + (err.message || err) + '. Try again, or rephrase.',
+      source_tag: null
+    });
+  } finally {
+    var t = document.getElementById('talkback-thinking');
+    if (t) t.remove();
+    renderTalkback();
+    talkbackSending = false;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send'; }
+  }
+};
+
+async function runTalkbackTurn(userText) {
+  // Build context: current email, voice, products, starred patterns, history
+  var em = (emails || []).find(function(x){ return x.id === editorEmailId; });
+  if (!em) throw new Error('Email not loaded');
+
+  if (!voiceCache) await loadVoiceBrief(true);
+  if (!productsCache) await loadProducts(true);
+
+  // Pull starred patterns (fallback to top 8 active)
+  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
+  var patterns = (patternsRes.data || []);
+  var starred = patterns.filter(function(p){ return p.starred; });
+  var patternsForPrompt = starred.length ? starred : patterns.slice(0, 8);
+
+  // Build conversation history (last 12 messages, oldest first)
+  var history = talkbackMessages.slice(-13, -1).map(function(m){
+    return { role: m.role, content: m.content };
+  });
+
+  // System prompt
+  var sys = buildTalkbackSystemPrompt(em, voiceCache || {}, productsCache || [], patternsForPrompt);
+
+  // Compose final user message
+  var messages = history.concat([{ role: 'user', content: userText }]);
+
+  var resp = await callClaudeForTalkback(sys, messages);
+  return resp;
+}
+
+function buildTalkbackSystemPrompt(em, voice, products, patterns) {
+  var lines = [];
+  lines.push('You are Quill, an AI agent for SFH email marketing. You are helping the user refine an email that is open in the Campaign Editor.');
+  lines.push('');
+  lines.push('YOUR LANE (very important):');
+  lines.push('Quill is for patterns, diagnostics, and perfecting copy. You can help with:');
+  lines.push('- Generating supplementary copy pieces for this email (Q&A, Pro Tip, social proof, stats, callouts, alt hooks, testimonial-style content)');
+  lines.push('- Voice and claim questions about this email (is this on-brand, is this claim too strong, does this echo our patterns)');
+  lines.push('- Iterative refinement of pieces you have generated in this conversation');
+  lines.push('');
+  lines.push('You will NOT:');
+  lines.push('- Answer general research questions (e.g., "what does omega-3 do?"). Tag those as outside_scope and redirect.');
+  lines.push('- Provide strategy consulting, marketing advice, or open brainstorming with no artifact tie.');
+  lines.push('- Edit the email directly. The user makes edits in the block editor. You generate or advise.');
+  lines.push('');
+  lines.push('SOURCE TAGGING:');
+  lines.push('Every assistant response must include a source_tag in the JSON output:');
+  lines.push('- "grounded": answer comes from SFH curated data (voice brief, products, patterns, the email itself).');
+  lines.push('- "general": answer uses general knowledge, no specific SFH source. User should treat as hypothesis.');
+  lines.push('- "outside_scope": question is outside Quills purpose. Redirect.');
+  lines.push('');
+  lines.push('OUTPUT FORMAT:');
+  lines.push('Always respond with valid JSON in this exact shape:');
+  lines.push('{"content": "your reply text", "source_tag": "grounded|general|outside_scope", "generated_extra": null OR {"type": "<type>", "content": "<the generated content>"}}');
+  lines.push('');
+  lines.push('When the user asks for a piece of supplementary content (Q&A, Pro Tip, etc.), put a brief framing note in "content" and the actual generated piece in "generated_extra". Valid extra types: q_and_a, pro_tip, social_proof, stat, callout, alt_hook, testimonial_style, faq_pair, secondary_product, extra_body.');
+  lines.push('');
+  lines.push('When the user asks a question (voice, claim, pattern), put the answer in "content" and leave "generated_extra" as null.');
+  lines.push('');
+  lines.push('When the question is outside scope, set source_tag to "outside_scope", set "content" to a brief redirect like "That is outside what Quill is built for. Try claude.ai for general questions, or rephrase as something specific to this email.", and leave "generated_extra" as null.');
+  lines.push('');
+  lines.push('VOICE CONSTRAINTS (apply to ALL generated content):');
+  var adjs = parseJsonField(voice.voice_adjectives);
+  if (adjs.length) lines.push('Voice adjectives: ' + adjs.join(', '));
+  var bannedW = parseJsonField(voice.banned_words);
+  if (bannedW.length) lines.push('NEVER USE these words: ' + bannedW.join(', '));
+  var bannedC = parseJsonField(voice.banned_claims);
+  if (bannedC.length) lines.push('NEVER MAKE these claim types: ' + bannedC.join(', '));
+  lines.push('NEVER use em dashes. Use commas, periods, or parentheses instead.');
+  lines.push('NEVER use hyperbolic words: critical, massive, exceptional, remarkable, phenomenal, concerning, severe, alarming, plummeting.');
+  lines.push('American English. Apostrophes use ASCII single quotes.');
+  if (voice.pov) lines.push('POV: ' + voice.pov);
+  if (voice.formality) lines.push('Formality: ' + voice.formality);
+  lines.push('');
+
+  // Email context
+  lines.push('=== EMAIL CURRENTLY OPEN IN EDITOR ===');
+  if (em.subject) lines.push('Subject: "' + em.subject + '"');
+  if (em.preview) lines.push('Preview: "' + em.preview + '"');
+  if (em.bucket) lines.push('Bucket: ' + em.bucket);
+  if (em.segment) lines.push('Segment: ' + em.segment);
+  if (em.send_date) lines.push('Send date: ' + em.send_date);
+  // Reconstruct body from blocks if available, else use legacy fields
+  var bodyText = '';
+  if (em.blocks) {
+    var blocks = em.blocks;
+    if (typeof blocks === 'string') { try { blocks = JSON.parse(blocks); } catch(e) { blocks = []; } }
+    if (Array.isArray(blocks)) {
+      bodyText = blocks.map(function(bk){ return (bk.type || '') + ': ' + (bk.content || ''); }).join('\n\n');
+    }
+  }
+  if (!bodyText) {
+    var legacy = [em.headline, em.subheadline, em.body, em.bridge, em.product_section, em.final_cta].filter(Boolean).join('\n\n');
+    bodyText = legacy;
+  }
+  if (bodyText) {
+    lines.push('Email content:');
+    lines.push(bodyText.slice(0, 4000));
+  }
+  if (em.notes) lines.push('Strategist notes: ' + em.notes);
+  if (em.products_to_feature) lines.push('Products being featured: ' + em.products_to_feature);
+  lines.push('');
+
+  // Products (compact)
+  if (products && products.length) {
+    lines.push('=== SFH PRODUCT CATALOG (compact) ===');
+    products.slice(0, 20).forEach(function(p){
+      var line = '- ' + (p.name || '') + (p.sold_out ? ' [SOLD OUT]' : '');
+      if (p.signature_claims) {
+        var sc = parseJsonField(p.signature_claims);
+        if (sc.length) line += ' | claims: ' + sc.slice(0, 3).join('; ');
+      }
+      lines.push(line);
+    });
+    lines.push('');
+  }
+
+  // Starred patterns (compact)
+  if (patterns && patterns.length) {
+    lines.push('=== STARRED LEARNED PATTERNS ===');
+    patterns.slice(0, 8).forEach(function(p){
+      lines.push('- ' + (p.title || '') + ': ' + (p.description || '').slice(0, 200));
+    });
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+async function callClaudeForTalkback(systemPrompt, messages) {
+  var res = await fetch('/api/diagnose', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      messages: messages,
+      max_tokens: 1500
+    })
+  });
+  var rawText = await res.text();
+  if (res.status === 504 || rawText.indexOf('<!DOCTYPE') === 0 || rawText.indexOf('<html') === 0) {
+    throw new Error('Server timed out. Try again.');
+  }
+  var data;
+  try { data = JSON.parse(rawText); } catch (e) { throw new Error('Bad response: ' + rawText.slice(0, 200)); }
+  if (data.error) throw new Error(data.error);
+  var contentBlock = (data.content || []).find(function(b){ return b.type === 'text'; });
+  if (!contentBlock) throw new Error('No content in response');
+  var raw = contentBlock.text || '';
+
+  // Try to extract JSON
+  var jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    // Fallback: treat as plain text
+    return { content: raw, source_tag: 'general', generated_extra: null };
+  }
+  var parsed;
+  try { parsed = JSON.parse(jsonMatch[0]); } catch (e) {
+    // Repair: try removing trailing commas
+    var repaired = jsonMatch[0].replace(/,\s*([}\]])/g, '$1');
+    try { parsed = JSON.parse(repaired); } catch (e2) {
+      return { content: raw, source_tag: 'general', generated_extra: null };
+    }
+  }
+  return {
+    content: parsed.content || raw,
+    source_tag: parsed.source_tag || 'general',
+    generated_extra: parsed.generated_extra || null
+  };
+}
+
+// Add a generated extra as a new block at the end of the email's block editor.
+// Maps extra types onto the BlockEditor's actual block types. The BlockEditor
+// has no public appendBlock API, so we mutate em.blocks directly and re-mount.
+window.addExtraAsBlock = function(extra) {
+  if (!extra || !extra.content) return;
+  var em = emails.find(function(x){ return x.id === editorEmailId; });
+  if (!em) { showToast('Email not loaded', true); return; }
+
+  // Map extra type to a real BlockEditor block type with the right content shape.
+  var blockType = 'text';
+  var content;
+  var t = (extra.type || '').toLowerCase();
+
+  if (t === 'q_and_a' || t === 'faq_pair') {
+    blockType = 'text';
+    content = { text: extra.content, align: 'left' };
+  } else if (t === 'pro_tip' || t === 'callout' || t === 'stat') {
+    blockType = 'quote';
+    content = { text: extra.content, align: 'left' };
+  } else if (t === 'social_proof' || t === 'testimonial_style') {
+    blockType = 'quote';
+    content = { text: extra.content, align: 'left' };
+  } else if (t === 'alt_hook') {
+    blockType = 'headline';
+    content = { text: extra.content, align: 'left' };
+  } else {
+    // Default: paragraph-style text block
+    blockType = 'text';
+    content = { text: extra.content, align: 'left' };
+  }
+
+  // Read current blocks (normalize as the editor does)
+  var blocks = BlockEditor.normalize(em.blocks, em);
+  // Append new block. Use a high-resolution id to avoid collision with the
+  // BlockEditor's internal id counter.
+  var newBlock = { id: 'tb' + Date.now(), type: blockType, content: content };
+  blocks.push(newBlock);
+
+  // Persist immediately. Push to pending and flush.
+  em.blocks = blocks;
+  editorPending.blocks = blocks;
+
+  // Re-mount the block editor with the new block list
+  if (typeof mountBlockEditorForRow === 'function') {
+    mountBlockEditorForRow(em);
+  }
+
+  // Save
+  if (typeof flushEditorSave === 'function') flushEditorSave();
+  showToast('Block added to email');
+};
+
+window.copyExtraToClipboard = function(extra, btn) {
+  if (!extra || !extra.content) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(extra.content).then(function(){
+      var orig = btn ? btn.textContent : null;
+      if (btn) { btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = orig; }, 1500); }
+      showToast('Copied to clipboard');
+    }).catch(function(){ showToast('Could not copy', true); });
+  } else {
+    // Fallback for older browsers
+    var ta = document.createElement('textarea');
+    ta.value = extra.content;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Copied to clipboard'); }
+    catch (e) { showToast('Could not copy', true); }
+    document.body.removeChild(ta);
+  }
+};
+
+// Hook keyboard shortcut: Cmd/Ctrl+Enter sends the message
+document.addEventListener('keydown', function(e){
+  if (!talkbackOpen) return;
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    var input = document.getElementById('talkback-input');
+    if (input && document.activeElement === input) {
+      e.preventDefault();
+      sendTalkback();
+    }
+  }
+});
 
 
 function initTipWidgets() {
