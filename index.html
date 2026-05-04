@@ -366,10 +366,16 @@
     .flow-status-draft { background: #f0eee6; color: var(--q-muted); }
 
     /* FLOW MESSAGES BROWSER */
-    .flow-browser-section { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--q-line); }
+    .flow-browser-section { margin-top: 18px; }
     .flow-browser-head { margin-bottom: 14px; }
     .flow-browser-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-browser-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
+
+    /* FLOW DIAGNOSTICS SECTION (below the browser) */
+    .flow-diagnostics-section { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--q-line); }
+    .flow-diagnostics-head { margin-bottom: 14px; }
+    .flow-diagnostics-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .flow-diagnostics-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
     .flow-browser-controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
     .flow-browser-search { flex: 1; min-width: 240px; padding: 8px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; background: #fff; font-size: 13px; color: var(--gg-charcoal); font-family: var(--font-body); }
     .flow-browser-search:focus { outline: none; border-color: var(--gg-olive); }
@@ -1297,16 +1303,13 @@
               </ul>
             </div>
           </div>
-          <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
-          <div class="pattern-grid" id="diag-grid"></div>
-
           <div class="flow-browser-section">
             <div class="flow-browser-head">
               <div class="flow-browser-title">Flow messages</div>
               <div class="flow-browser-sub">Pick any active flow message to draft an improvement. Use this when a strategist or client has flagged a flow for revamp outside of diagnostic findings.</div>
             </div>
             <div class="flow-browser-controls">
-              <input type="text" id="flow-browser-search" class="flow-browser-search" placeholder="Search by flow name, subject, or content..." oninput="renderFlowBrowser()">
+              <input type="text" id="flow-browser-search" class="flow-browser-search" placeholder="Search by flow name or subject..." oninput="renderFlowBrowser()">
               <select id="flow-browser-filter-flow" class="flow-browser-filter" onchange="renderFlowBrowser()">
                 <option value="">All flows</option>
               </select>
@@ -1316,6 +1319,15 @@
               </select>
             </div>
             <div class="flow-browser-grid" id="flow-browser-grid"></div>
+          </div>
+
+          <div class="flow-diagnostics-section">
+            <div class="flow-diagnostics-head">
+              <div class="flow-diagnostics-title">Diagnostic findings</div>
+              <div class="flow-diagnostics-sub">Quill-generated analysis of flow performance. Star findings to feed them into Ideas. Click "Draft an improvement" to address one directly.</div>
+            </div>
+            <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
+            <div class="pattern-grid" id="diag-grid"></div>
           </div>
         </div>
 
@@ -1758,6 +1770,11 @@
       <div id="flow-improve-diag-attached" style="display:none;"></div>
     </div>
     <div class="flow-improve-body">
+      <div>
+        <label class="field-label">Existing message body <span style="color:var(--gg-orange);font-weight:600;">required</span></label>
+        <div style="font-size: 11px; color: var(--q-muted); margin-bottom: 6px; line-height: 1.4;">Klaviyo flow exports do not include email body content. Paste the existing copy from Klaviyo here so Quill has the actual message to improve.</div>
+        <textarea id="flow-improve-existing-body" class="field-textarea" style="min-height:140px;" placeholder="Paste the full email body from Klaviyo here. Subject, headlines, body copy, CTAs, everything you want Quill to consider when improving."></textarea>
+      </div>
       <div>
         <label class="field-label">Strategic angle <span style="color:var(--gg-orange);font-weight:600;">required</span></label>
         <textarea id="flow-improve-angle" class="field-textarea concept" placeholder="Why are you improving this? What is the goal of the rewrite? Be specific. e.g. Current messaging is too discount-focused. Want to lead with social proof and reduce urgency language. Test softer CTAs."></textarea>
@@ -4358,12 +4375,19 @@ async function loadFlowBrowserData() {
   if (flowMessagesCache && (Date.now() - flowMessagesLoadedAt) < 60000) return;
   // Pull active flow messages with the fields the browser needs.
   // We only show consumer-facing flows (skip B2B / wholesale).
+  // Note: Klaviyo flow exports do NOT include email body content. The body
+  // field on quill_flow_messages stays null. Users paste the existing copy
+  // into the improve modal manually when generating an improvement.
   var res = await db.from('quill_flow_messages')
-    .select('id,flow_name,subject,body,status,delivered,opened,clicked,revenue,audience_type,last_improved_at,last_improved_from_draft_id')
+    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,revenue,audience_type,last_improved_at,last_improved_from_draft_id')
     .order('flow_name', { ascending: true })
     .limit(2000);
   if (res.error) {
     console.error('loadFlowBrowserData error', res.error.message || res.error);
+    var grid = document.getElementById('flow-browser-grid');
+    if (grid) {
+      grid.innerHTML = '<div class="flow-browser-empty" style="color:var(--gg-orange);">Could not load flow messages: ' + escapeHtml(res.error.message || 'unknown error') + '. If you have not run the Session 5.1 migration yet, run it now.</div>';
+    }
     return;
   }
   flowMessagesCache = (res.data || []).filter(function(m){
@@ -4422,8 +4446,8 @@ window.renderFlowBrowser = function() {
   // Cap at 50 visible rows for performance
   var capped = rows.slice(0, 50);
   var html = capped.map(function(m){
-    var openRate = m.delivered ? Math.round((Number(m.opened || 0) / Number(m.delivered)) * 1000) / 10 : null;
-    var clickRate = m.delivered ? Math.round((Number(m.clicked || 0) / Number(m.delivered)) * 1000) / 10 : null;
+    var openRate = m.delivered ? Math.round((Number(m.unique_opens || 0) / Number(m.delivered)) * 1000) / 10 : null;
+    var clickRate = m.delivered ? Math.round((Number(m.unique_clicks || 0) / Number(m.delivered)) * 1000) / 10 : null;
     var statsBits = [];
     if (m.delivered) statsBits.push(Number(m.delivered).toLocaleString() + ' delivered');
     if (openRate !== null) statsBits.push(openRate + '% open');
@@ -4434,7 +4458,7 @@ window.renderFlowBrowser = function() {
     return '<div class="flow-msg-row">'
       + '<div class="flow-msg-meta">'
       +   '<div class="flow-msg-flow-name">' + escapeHtml(m.flow_name || 'Unnamed flow') + '</div>'
-      +   '<div class="flow-msg-subject">' + escapeHtml(m.subject || '(no subject)') + '</div>'
+      +   '<div class="flow-msg-subject">' + escapeHtml(m.subject || m.message_name || '(no subject)') + '</div>'
       +   '<div class="flow-msg-stats">' + statsBits.map(function(s){ return '<span class="flow-msg-stat-pill">' + s + '</span>'; }).join('') + '</div>'
       + '</div>'
       + '<div class="flow-msg-actions">' + improvedPill
@@ -4478,15 +4502,15 @@ window.openFlowImprove = function(flowMessageId, attachedDiagnosticId) {
     }
   }
 
-  // Show a preview of the message being improved
+  // Show a preview header of the message being improved
   var prev = document.getElementById('flow-improve-msg-preview');
   prev.innerHTML = '<div class="flow-improve-msg-preview">'
     + '<div class="flow-improve-msg-preview-label">' + escapeHtml(msg.flow_name || 'Flow message') + '</div>'
-    + '<div class="flow-improve-msg-preview-subject">' + escapeHtml(msg.subject || '(no subject)') + '</div>'
-    + '<div>' + escapeHtml((msg.body || '').slice(0, 400)) + ((msg.body || '').length > 400 ? '...' : '') + '</div>'
+    + '<div class="flow-improve-msg-preview-subject">' + escapeHtml(msg.subject || msg.message_name || '(no subject)') + '</div>'
     + '</div>';
 
   document.getElementById('flow-improve-products').value = '';
+  document.getElementById('flow-improve-existing-body').value = '';
   document.getElementById('flow-improve-overlay').classList.add('open');
 };
 
@@ -4499,9 +4523,14 @@ window.submitFlowImprovement = async function() {
   if (!flowImprovePending) return;
   var msg = flowImprovePending.flowMessage;
   var diag = flowImprovePending.attachedDiagnostic;
+  var existingBody = (document.getElementById('flow-improve-existing-body').value || '').trim();
   var angle = (document.getElementById('flow-improve-angle').value || '').trim();
   var products = (document.getElementById('flow-improve-products').value || '').trim();
 
+  if (!existingBody) {
+    showToast('Paste the existing message body from Klaviyo first', true);
+    return;
+  }
   if (!angle) {
     showToast('Strategic angle is required', true);
     return;
@@ -4517,7 +4546,7 @@ window.submitFlowImprovement = async function() {
       flow_message_id: msg.id,
       flow_name: msg.flow_name,
       original_subject: msg.subject,
-      original_body: msg.body,
+      original_body: existingBody,
       improvement_angle: angle,
       products_to_feature: products,
       diagnostic_diagnosis: diag ? diag.diagnosis : null,
