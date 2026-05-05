@@ -583,6 +583,9 @@
     .gaps-bucket-bar-fill.low { background: var(--gg-orange); }
     .gaps-bucket-count { font-size: 12px; color: var(--q-muted); min-width: 80px; text-align: right; }
     .gaps-bucket-flag { font-size: 10px; color: var(--gg-orange); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
+    .gaps-bucket-flag.historical-neglected { color: #8c3d0d; background: #fdecd8; padding: 1px 6px; border-radius: 3px; }
+    .gaps-bucket-flag.historical-warn { color: #8a1e1e; background: #f4d9d9; padding: 1px 6px; border-radius: 3px; }
+    .gaps-bucket-flag.historical-info { color: var(--gg-olive); background: #f0edd8; padding: 1px 6px; border-radius: 3px; }
 
     /* Workflow list */
     .gaps-workflow-empty { font-size: 12px; color: var(--q-muted); font-style: italic; padding: 8px 0; }
@@ -593,6 +596,8 @@
     .gaps-workflow-sub { font-size: 11px; color: var(--q-muted); display: flex; gap: 8px; flex-wrap: wrap; }
     .gaps-workflow-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .gaps-workflow-btn:hover { background: var(--gg-olive); color: #fff; }
+    .gaps-action-btn { padding: 4px 10px; background: var(--gg-olive); color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; letter-spacing: 0.02em; }
+    .gaps-action-btn:hover { background: #2f3214; }
 
     /* BLOCK EDITOR (lifted from prototype, adapted for Quill context) */
     .block-list { display: flex; flex-direction: column; gap: 0; }
@@ -1642,6 +1647,13 @@
                   <button class="gaps-preset-btn" onclick="setGapsPreset('month')">This month</button>
                   <button class="gaps-preset-btn" onclick="setGapsPreset('nextmonth')">Next month</button>
                 </div>
+              </div>
+            </div>
+            <div class="gaps-controls-middle">
+              <label class="field-label" style="margin-bottom:4px;">Look back</label>
+              <div class="gaps-cadence-row">
+                <input type="number" id="gaps-lookback-months" class="field-input" min="1" max="12" step="1" value="3" style="max-width:60px;text-align:center;">
+                <span class="gaps-cadence-unit">months</span>
               </div>
             </div>
             <div class="gaps-controls-middle">
@@ -7150,6 +7162,12 @@ window.runGapsAnalysis = async function() {
     await saveClientCadence(cadence);
   }
 
+  // Read look-back period (default 3 months)
+  var lookbackEl = document.getElementById('gaps-lookback-months');
+  var lookbackMonths = lookbackEl ? parseInt(lookbackEl.value, 10) : 3;
+  if (isNaN(lookbackMonths) || lookbackMonths < 1) lookbackMonths = 3;
+  if (lookbackMonths > 12) lookbackMonths = 12;
+
   var btn = document.getElementById('gaps-run-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Analyzing...'; }
 
@@ -7162,16 +7180,20 @@ window.runGapsAnalysis = async function() {
     if (!draftsCache) await loadDrafts(true);
     if (!ideasCache) await loadIdeas(true);
 
-    // Filter calendar rows to the window
+    // Filter calendar rows to the planning window
     var inWindow = (emails || []).filter(function(em){
       if (!em.send_date) return false;
       var d = new Date(em.send_date + 'T12:00:00');
       return d >= start && d <= end;
     });
 
+    // Compute historical context (past N months) and integrate into bucket mix
+    var historical = await buildHistoricalContext(lookbackMonths);
+
     // Build week buckets (with cadence-aware flags)
     var weeks = buildWeekBuckets(start, end, inWindow, cadence);
     var bucketMix = buildBucketMix(inWindow);
+    bucketMix = applyHistoricalContextToBucketMix(bucketMix, historical);
     var workflow = buildWorkflowGaps();
     var summary = buildGapsSummary(weeks, bucketMix, workflow, start, end, cadence);
 
@@ -7241,12 +7263,120 @@ function buildBucketMix(rows) {
   var total = rows.length;
   counts.forEach(function(c){
     c.ratio = c.count / max;
+    c.share = total > 0 ? (c.count / total) : 0;
     if (total >= 3 && c.count === 0) c.flag = 'unused';
     else if (total >= 6 && c.count === 1) c.flag = 'light';
     // Overused: a single bucket that accounts for more than 50% of total sends
     if (total >= 4 && c.count / total > 0.5) c.flag = 'heavy';
   });
   return { buckets: counts, total: total, unbucketed: unbucketed };
+}
+
+// Historical context for the look-back period. Queries quill_campaigns
+// (Klaviyo import data, has full performance metrics) rather than
+// quill_calendar (planning data, often incomplete for past sends).
+// quill_campaigns is the authoritative source of "what SFH actually sent"
+// because every row was an actual send with bucket tags + Klaviyo metrics.
+async function buildHistoricalContext(lookbackMonths) {
+  var months = lookbackMonths || 3;
+  var now = new Date();
+  var start = new Date(now);
+  start.setMonth(start.getMonth() - months);
+  start.setHours(0,0,0,0);
+  var end = new Date(now);
+  end.setHours(0,0,0,0);
+
+  // Make sure campaigns are loaded (cached in insightsData)
+  if (!insightsData.campaigns) {
+    try { await loadInsightsIfNeeded(); } catch (err) { /* soft fail */ }
+  }
+  var allCampaigns = insightsData.campaigns || [];
+
+  // Filter to consumer audience only (matches Insights default)
+  // and to send_time within the look-back window.
+  var pastRows = allCampaigns.filter(function(c){
+    if ((c.audience_type || 'consumer') !== 'consumer') return false;
+    if (!c.send_time) return false;
+    var d = new Date(c.send_time);
+    if (isNaN(d.getTime())) return false;
+    return d >= start && d < end;
+  });
+
+  // Bucket distribution in the look-back
+  var bucketsList = (bucketsCache || []).map(function(b){ return b.name; });
+  pastRows.forEach(function(r){
+    if (r.bucket && bucketsList.indexOf(r.bucket) === -1) bucketsList.push(r.bucket);
+  });
+  var pastCounts = bucketsList.map(function(name){
+    var matchingRows = pastRows.filter(function(r){ return r.bucket === name; });
+    var c = matchingRows.length;
+    // Average open rate and click rate for this bucket (when available)
+    var openRates = matchingRows.map(function(r){ return Number(r.open_rate); }).filter(function(x){ return !isNaN(x) && x > 0; });
+    var clickRates = matchingRows.map(function(r){ return Number(r.click_rate); }).filter(function(x){ return !isNaN(x) && x > 0; });
+    var avgOpen = openRates.length ? openRates.reduce(function(a,b){return a+b;}, 0) / openRates.length : null;
+    var avgClick = clickRates.length ? clickRates.reduce(function(a,b){return a+b;}, 0) / clickRates.length : null;
+    return { name: name, count: c, avgOpenRate: avgOpen, avgClickRate: avgClick };
+  });
+  var pastTotal = pastRows.length;
+  pastCounts.forEach(function(c){
+    c.share = pastTotal > 0 ? (c.count / pastTotal) : 0;
+  });
+
+  // Average weekly cadence over the look-back window
+  var weeks = Math.max(1, Math.round(((end - start) / (1000 * 60 * 60 * 24 * 7))));
+  var avgCadence = pastTotal / weeks;
+
+  // Find the actual earliest send_time in the data, so we can warn the user
+  // if the look-back asked for more history than actually exists in campaigns.
+  var allSendTimes = allCampaigns
+    .filter(function(c){ return (c.audience_type || 'consumer') === 'consumer' && c.send_time; })
+    .map(function(c){ return new Date(c.send_time); })
+    .filter(function(d){ return !isNaN(d.getTime()); });
+  var earliestAvailable = allSendTimes.length ? new Date(Math.min.apply(null, allSendTimes)) : null;
+  var latestAvailable = allSendTimes.length ? new Date(Math.max.apply(null, allSendTimes)) : null;
+
+  return {
+    lookbackMonths: months,
+    lookbackStart: start,
+    lookbackEnd: end,
+    pastRowsCount: pastTotal,
+    avgWeeklyCadence: avgCadence,
+    bucketShares: pastCounts,
+    weeks: weeks,
+    earliestAvailable: earliestAvailable,
+    latestAvailable: latestAvailable,
+    source: 'quill_campaigns'
+  };
+}
+
+// Cross-reference historical bucket distribution with the planned bucketMix
+// to flag neglected (heavy in past, light in future) and over-repeated buckets.
+function applyHistoricalContextToBucketMix(bucketMix, historical) {
+  if (!historical) return bucketMix;
+  bucketMix.buckets.forEach(function(b){
+    var pastEntry = historical.bucketShares.find(function(p){ return p.name === b.name; });
+    b.pastShare = pastEntry ? pastEntry.share : 0;
+    b.pastCount = pastEntry ? pastEntry.count : 0;
+    b.pastAvgOpenRate = pastEntry ? pastEntry.avgOpenRate : null;
+    b.pastAvgClickRate = pastEntry ? pastEntry.avgClickRate : null;
+    // If this bucket was meaningful in the past (>=10% share, >=2 sends) but
+    // is at 0% in the planning window, flag as "neglected"
+    if (b.pastShare >= 0.1 && b.pastCount >= 2 && b.share === 0) {
+      b.historicalFlag = 'neglected';
+    }
+    // If this bucket was heavy in the past (>30% share) and is also planned
+    // heavy, suggest spreading
+    else if (b.pastShare > 0.3 && b.share > 0.3) {
+      b.historicalFlag = 'repeating-heavy';
+    }
+    // If this bucket was light in the past (<5% share) and is planned heavy
+    // (>30%), that is a notable shift, not necessarily bad but worth flagging
+    else if (b.pastShare < 0.05 && b.share > 0.3) {
+      b.historicalFlag = 'shifting-into';
+    }
+  });
+  bucketMix.historical = historical;
+  return bucketMix;
 }
 
 function buildWorkflowGaps() {
@@ -7289,12 +7419,23 @@ function buildGapsSummary(weeks, bucketMix, workflow, start, end, cadence) {
   }
   var heavy = bucketMix.buckets.filter(function(b){ return b.flag === 'heavy'; });
   var unused = bucketMix.buckets.filter(function(b){ return b.flag === 'unused'; });
+  var neglected = bucketMix.buckets.filter(function(b){ return b.historicalFlag === 'neglected'; });
   if (heavy.length) {
     parts.push(heavy[0].name + ' accounts for more than half of sends.');
   }
   if (unused.length && totalSends >= 3) {
     var list = unused.map(function(b){ return b.name; }).slice(0, 2);
     parts.push('Unused: ' + list.join(', ') + '.');
+  }
+  if (neglected.length) {
+    var nlist = neglected.map(function(b){ return b.name; }).slice(0, 2);
+    parts.push('<strong style="color:#8c3d0d;">Neglected vs history: ' + nlist.join(', ') + '.</strong>');
+  }
+  if (bucketMix.historical && bucketMix.historical.pastRowsCount > 0) {
+    var avg = Math.round(bucketMix.historical.avgWeeklyCadence * 10) / 10;
+    parts.push('Past ' + bucketMix.historical.lookbackMonths + 'mo (Klaviyo): ' + bucketMix.historical.pastRowsCount + ' campaigns, avg ' + avg + '/week.');
+  } else if (bucketMix.historical && bucketMix.historical.pastRowsCount === 0 && bucketMix.historical.latestAvailable) {
+    parts.push('<span style="color:var(--gg-orange);">No campaigns in the last ' + bucketMix.historical.lookbackMonths + 'mo. Latest in data: ' + formatShortDate(bucketMix.historical.latestAvailable) + '.</span>');
   }
   var ideasCount = workflow.ideasNotDrafted.length;
   var draftsCount = workflow.unappliedDrafts.length;
@@ -7327,13 +7468,20 @@ function renderGapsSections(weeks, bucketMix, workflow, cadence) {
   if (!weeks.length) {
     parts.push('<div class="gaps-workflow-empty">No weeks in range.</div>');
   } else {
+    // Cache contexts in a lookup so onclick handlers reference by id, not inline JSON.
+    // Inline JSON in HTML attributes is fragile (quote escaping nightmares).
+    if (!window._gapsCtx) window._gapsCtx = {};
+    var ctxIdSeq = 0;
     weeks.forEach(function(w){
       parts.push('<div class="gaps-week-row">');
       parts.push('<div><div class="gaps-week-label">' + w.label + '</div><div class="gaps-week-label-date">' + formatShortDate(w.startDate) + ' to ' + formatShortDate(w.endDate) + '</div></div>');
       if (w.count === 0) {
         parts.push('<div class="gaps-week-bar-track"></div>');
         var emptyLabel = cadence > 0 ? 'Below cadence' : 'No sends';
-        parts.push('<div class="gaps-week-count"><span class="gaps-week-bar-empty">' + emptyLabel + '</span></div>');
+        var weekCtx = 'Generate ideas for the week of ' + formatShortDate(w.startDate) + ' to ' + formatShortDate(w.endDate) + '. The calendar has no sends scheduled for this week. Pick a bucket that fits where the calendar is light overall.';
+        var ctxId1 = 'w' + (++ctxIdSeq);
+        window._gapsCtx[ctxId1] = { extraContext: weekCtx };
+        parts.push('<div class="gaps-week-count" style="display:flex;align-items:center;gap:8px;justify-content:flex-end;"><span class="gaps-week-bar-empty">' + emptyLabel + '</span><button class="gaps-action-btn" onclick="gapsJumpToIdeas(window._gapsCtx[\u0027' + ctxId1 + '\u0027])">Generate ideas</button></div>');
       } else {
         var cells = '';
         for (var i = 0; i < w.count; i++) {
@@ -7347,7 +7495,14 @@ function renderGapsSections(weeks, bucketMix, workflow, cadence) {
           if (w.flag === 'under') countLabel += ' <span class="gaps-week-flag under">-' + (cadence - w.count) + '</span>';
           else if (w.flag === 'over') countLabel += ' <span class="gaps-week-flag over">+' + (w.count - cadence) + '</span>';
         }
-        parts.push('<div class="gaps-week-count">' + countLabel + '</div>');
+        var rightCol = '<span>' + countLabel + '</span>';
+        if (w.flag === 'under') {
+          var underCtx = 'Generate ideas for the week of ' + formatShortDate(w.startDate) + ' to ' + formatShortDate(w.endDate) + '. The calendar has ' + w.count + ' send' + (w.count === 1 ? '' : 's') + ' that week, ' + (cadence - w.count) + ' under our cadence target of ' + cadence + ' per week.';
+          var ctxId2 = 'w' + (++ctxIdSeq);
+          window._gapsCtx[ctxId2] = { extraContext: underCtx };
+          rightCol += '<button class="gaps-action-btn" onclick="gapsJumpToIdeas(window._gapsCtx[\u0027' + ctxId2 + '\u0027])">Generate ideas</button>';
+        }
+        parts.push('<div class="gaps-week-count" style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">' + rightCol + '</div>');
       }
       parts.push('</div>');
     });
@@ -7356,22 +7511,86 @@ function renderGapsSections(weeks, bucketMix, workflow, cadence) {
 
   // Bucket mix
   parts.push('<div class="gaps-section">');
-  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Bucket mix</div><div class="gaps-section-note">Distribution of upcoming emails across content buckets.</div></div>');
+  var bucketSubtitle = 'Distribution of upcoming emails across content buckets.';
+  if (bucketMix.historical && bucketMix.historical.pastRowsCount > 0) {
+    bucketSubtitle += ' Compared against ' + bucketMix.historical.pastRowsCount
+      + ' past campaigns from the last ' + bucketMix.historical.lookbackMonths + ' months (Klaviyo data).';
+  } else if (bucketMix.historical && bucketMix.historical.pastRowsCount === 0) {
+    bucketSubtitle += ' No past campaigns found in the last ' + bucketMix.historical.lookbackMonths + ' months.';
+    if (bucketMix.historical.latestAvailable) {
+      bucketSubtitle += ' Latest campaign in Klaviyo data: ' + formatShortDate(bucketMix.historical.latestAvailable) + '.';
+    }
+  }
+  parts.push('<div class="gaps-section-head"><div class="gaps-section-title">Bucket mix</div><div class="gaps-section-note">' + bucketSubtitle + '</div></div>');
   parts.push('<div class="gaps-section-body">');
-  if (bucketMix.total === 0) {
-    parts.push('<div class="gaps-workflow-empty">No scheduled emails in range.</div>');
+  if (bucketMix.total === 0 && (!bucketMix.historical || bucketMix.historical.pastRowsCount === 0)) {
+    parts.push('<div class="gaps-workflow-empty">No scheduled emails in range and no historical data either.</div>');
   } else {
     bucketMix.buckets.forEach(function(b){
       var flagText = '';
       var fillClass = '';
+      // Primary flags from window analysis
       if (b.flag === 'unused') { flagText = '<span class="gaps-bucket-flag">Unused</span>'; fillClass = ' low'; }
       else if (b.flag === 'light') { flagText = '<span class="gaps-bucket-flag">Light</span>'; fillClass = ' low'; }
       else if (b.flag === 'heavy') { flagText = '<span class="gaps-bucket-flag">Heavy</span>'; }
+      // Historical flags add color
+      if (b.historicalFlag === 'neglected') {
+        flagText += '<span class="gaps-bucket-flag historical-neglected">Neglected</span>';
+      } else if (b.historicalFlag === 'repeating-heavy') {
+        flagText += '<span class="gaps-bucket-flag historical-warn">Heavy in past too</span>';
+      } else if (b.historicalFlag === 'shifting-into') {
+        flagText += '<span class="gaps-bucket-flag historical-info">New emphasis</span>';
+      }
       var pct = Math.round(b.ratio * 100);
+      // Show past share + perf metrics next to count when historical exists
+      var pastShareLabel = '';
+      if (bucketMix.historical && bucketMix.historical.pastRowsCount > 0) {
+        var pastPct = Math.round((b.pastShare || 0) * 100);
+        var perfBits = [];
+        if (b.pastAvgOpenRate !== null && b.pastAvgOpenRate !== undefined) {
+          perfBits.push((Math.round(b.pastAvgOpenRate * 1000) / 10) + '% open');
+        }
+        if (b.pastAvgClickRate !== null && b.pastAvgClickRate !== undefined) {
+          perfBits.push((Math.round(b.pastAvgClickRate * 1000) / 10) + '% click');
+        }
+        var perfText = perfBits.length ? ', ' + perfBits.join(', ') : '';
+        pastShareLabel = ' <span style="color:var(--q-muted);font-size:10px;">(' + pastPct + '% in past' + perfText + ')</span>';
+      }
       parts.push('<div class="gaps-bucket-row">');
       parts.push('<div class="gaps-bucket-label">' + escapeHtml(b.name) + flagText + '</div>');
       parts.push('<div class="gaps-bucket-bar-track"><div class="gaps-bucket-bar-fill' + fillClass + '" style="width:' + pct + '%"></div></div>');
-      parts.push('<div class="gaps-bucket-count">' + b.count + ' email' + (b.count === 1 ? '' : 's') + '</div>');
+      var countCell = b.count + ' email' + (b.count === 1 ? '' : 's') + pastShareLabel;
+      // Add Generate ideas button for unused, light, OR neglected buckets.
+      // Build context that draws on historical data when available.
+      var shouldShowButton = (b.flag === 'unused' || b.flag === 'light' || b.historicalFlag === 'neglected');
+      if (shouldShowButton) {
+        var bucketCtx;
+        var openRateTxt = (b.pastAvgOpenRate !== null && b.pastAvgOpenRate !== undefined)
+          ? ' (avg ' + (Math.round(b.pastAvgOpenRate * 1000) / 10) + '% open rate, ' + (Math.round((b.pastAvgClickRate || 0) * 1000) / 10) + '% click rate)'
+          : '';
+        if (b.historicalFlag === 'neglected') {
+          var pastShareTxt = Math.round((b.pastShare || 0) * 100);
+          bucketCtx = 'The "' + b.name + '" bucket has been neglected. In the last '
+            + bucketMix.historical.lookbackMonths + ' months it accounted for ' + pastShareTxt
+            + '% of sends (' + b.pastCount + ' campaign' + (b.pastCount === 1 ? '' : 's') + openRateTxt
+            + '), but the planning window has 0 sends from this bucket. Generate ideas to bring this bucket back in.';
+        } else if (b.flag === 'unused') {
+          bucketCtx = 'The "' + b.name + '" bucket is currently unused in the upcoming calendar. Generate ideas to fill this gap.';
+          if (bucketMix.historical && b.pastCount > 0) {
+            bucketCtx += ' For context, this bucket made up ' + Math.round((b.pastShare || 0) * 100)
+              + '% of sends in the last ' + bucketMix.historical.lookbackMonths + ' months' + openRateTxt + '.';
+          }
+        } else {
+          bucketCtx = 'The "' + b.name + '" bucket is currently light in the upcoming calendar (only ' + b.count + ' send). Generate ideas to balance the mix.';
+          if (bucketMix.historical && b.pastCount > 0) {
+            bucketCtx += ' Past performance' + openRateTxt + '.';
+          }
+        }
+        var ctxId3 = 'b' + (++ctxIdSeq);
+        window._gapsCtx[ctxId3] = { bucket: b.name, extraContext: bucketCtx };
+        countCell += '<button class="gaps-action-btn" onclick="gapsJumpToIdeas(window._gapsCtx[\u0027' + ctxId3 + '\u0027])" style="margin-left:8px;">Generate ideas</button>';
+      }
+      parts.push('<div class="gaps-bucket-count" style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">' + countCell + '</div>');
       parts.push('</div>');
     });
     if (bucketMix.unbucketed > 0) {
@@ -7452,6 +7671,41 @@ window.gapsJumpToDraft = function(draftId) {
       window.scrollTo({ top: 400, behavior: 'smooth' });
     }
   }, 120);
+};
+
+// Route to Ideas generator with bucket and extra context pre-filled.
+// Used by gap-action buttons to convert a flagged gap into a one-click
+// pre-positioned generation request. The user lands on Ideas with the form
+// ready and just needs to click Generate.
+window.gapsJumpToIdeas = function(opts) {
+  opts = opts || {};
+  var bucketName = opts.bucket || '';
+  var extraContext = opts.extraContext || '';
+  setStudioSection('ideas');
+  setTimeout(function(){
+    var bucketSel = document.getElementById('ideas-bucket-select');
+    var extraCtx = document.getElementById('ideas-extra-context');
+    if (bucketSel && bucketName) {
+      // Verify the bucket exists in the dropdown (case-insensitive match)
+      var match = null;
+      for (var i = 0; i < bucketSel.options.length; i++) {
+        if (bucketSel.options[i].value.toLowerCase() === bucketName.toLowerCase()) {
+          match = bucketSel.options[i].value;
+          break;
+        }
+      }
+      if (match) bucketSel.value = match;
+    }
+    if (extraCtx && extraContext) {
+      extraCtx.value = extraContext;
+    }
+    // Scroll to the generator controls so the user sees the prefilled form
+    var ctrl = document.querySelector('.ideas-generator') || bucketSel;
+    if (ctrl && ctrl.scrollIntoView) ctrl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Focus the bucket if not pre-filled (signals user needs to pick)
+    if (!bucketName && bucketSel) bucketSel.focus();
+    showToast('Form pre-filled. Adjust if needed, then click Generate ideas.');
+  }, 100);
 };
 
 // ── CAMPAIGN BOARD ────────────────────────────────────────────────────────
