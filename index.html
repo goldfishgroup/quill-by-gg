@@ -133,11 +133,11 @@
     .draggable-chip:active { cursor: grabbing; }
 
     /* WAITING BAY */
-    .cal-waiting-bay { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px; position: sticky; top: 76px; max-height: calc(100vh - 100px); overflow-y: auto; }
-    .cal-bay-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 0.5px solid var(--q-line); }
+    .cal-waiting-bay { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px; position: sticky; top: 76px; max-height: calc(100vh - 100px); display: flex; flex-direction: column; }
+    .cal-bay-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 0.5px solid var(--q-line); flex-shrink: 0; }
     .cal-bay-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: 0.01em; }
     .cal-bay-count { font-size: 11px; color: var(--q-muted); background: var(--gg-offwhite); padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-    .cal-bay-body { min-height: 120px; padding: 4px 0; }
+    .cal-bay-body { min-height: 120px; padding: 4px 0; flex: 1 1 auto; overflow-y: auto; }
     .cal-bay-body.bay-drag-over { background: #f4f0de; outline: 2px dashed var(--gg-olive); outline-offset: -2px; border-radius: 6px; }
     .cal-bay-card { background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 7px; padding: 9px 11px; margin-bottom: 7px; cursor: grab; transition: all 0.15s; }
     .cal-bay-card:hover { border-color: var(--gg-olive); }
@@ -145,7 +145,7 @@
     .cal-bay-card-title { font-size: 12px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; line-height: 1.3; }
     .cal-bay-card-meta { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--q-muted); }
     .cal-bay-status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-    .cal-bay-add { width: 100%; margin-top: 10px; padding: 8px; background: transparent; border: 0.5px dashed var(--q-line); border-radius: 7px; color: var(--q-muted); cursor: pointer; font-size: 11px; font-family: var(--font-body); }
+    .cal-bay-add { width: 100%; margin-top: 10px; padding: 8px; background: transparent; border: 0.5px dashed var(--q-line); border-radius: 7px; color: var(--q-muted); cursor: pointer; font-size: 11px; font-family: var(--font-body); flex-shrink: 0; }
     .cal-bay-add:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
 
     /* LIST VIEW */
