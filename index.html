@@ -1250,7 +1250,8 @@
 
         <div class="studio-nav-section-label">Copy Corner</div>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
-        <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Draft</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('draft')" id="snav-draft">Campaign Drafter</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('flow-drafter')" id="snav-flow-drafter">Flow Drafter</button>
 
         <div class="studio-nav-section-label">Shared</div>
         <button class="studio-nav-btn" onclick="setStudioSection('gaps')" id="snav-gaps">Gaps</button>
@@ -1480,41 +1481,6 @@
               </ul>
             </div>
           </div>
-          <div class="flow-builder-section">
-            <div class="flow-browser-head">
-              <div class="flow-browser-title">Flow Builder</div>
-              <div class="flow-browser-sub">Draft a new flow from scratch. Set the overall brief, add a slot for each message, and chat with Quill to draft each one. Quill uses your voice, products, and patterns. (Phase 1: structure; chat lands in Phase 2.)</div>
-            </div>
-            <div id="flow-builder-list-view">
-              <div class="flow-builder-toolbar">
-                <button class="flow-builder-create-btn" onclick="createFlowDraft()">+ New flow</button>
-              </div>
-              <div id="flow-builder-list" class="flow-builder-list"></div>
-            </div>
-            <div id="flow-builder-workspace" class="flow-builder-workspace" style="display:none;">
-              <div class="flow-builder-workspace-head">
-                <button class="flow-builder-back-btn" onclick="closeFlowBuilderWorkspace()">&lsaquo; Back to flows</button>
-                <button class="flow-builder-delete-btn" onclick="deleteCurrentFlowDraft()">Delete flow</button>
-              </div>
-              <div class="flow-builder-brief-card">
-                <div class="flow-builder-field">
-                  <label class="flow-builder-label">Flow name</label>
-                  <input type="text" id="flow-builder-name" class="flow-builder-input" maxlength="120" placeholder="e.g. Abandoned Cart Revamp v2" oninput="onFlowFieldEdit()">
-                </div>
-                <div class="flow-builder-field">
-                  <label class="flow-builder-label">Flow brief</label>
-                  <textarea id="flow-builder-brief" class="flow-builder-textarea" placeholder="Goal, audience, overall arc, success metric. The brief feeds every message draft so each chat knows the bigger picture." oninput="onFlowFieldEdit()"></textarea>
-                </div>
-                <div class="flow-builder-savestate" id="flow-builder-savestate">Saved</div>
-              </div>
-              <div class="flow-builder-slots-head">
-                <div class="flow-builder-slots-title">Messages</div>
-                <button class="flow-builder-add-slot-btn" onclick="addFlowSlot()">+ Add message</button>
-              </div>
-              <div id="flow-builder-slots" class="flow-builder-slots"></div>
-            </div>
-          </div>
-
           <div class="flow-browser-section">
             <div class="flow-browser-head">
               <div class="flow-browser-title">Flow messages</div>
@@ -1757,6 +1723,44 @@
           </div>
           <div class="extract-status" id="draft-status">Select a starred idea above and click Generate draft.</div>
           <div id="draft-grid"></div>
+        </div>
+        <div class="studio-section" id="studio-flow-drafter">
+          <div class="patterns-head">
+            <div>
+              <h2 style="margin-bottom:4px;">Flow Drafter</h2>
+              <div class="patterns-sub">Draft multi-message flows (abandoned cart, welcome, post-purchase) from scratch or from a diagnostic finding. Set the brief, add message slots, chat to draft each one. (Phase 1: structure ships first. Chat lands in Phase 2.)</div>
+            </div>
+          </div>
+          <div class="flow-builder-section" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+            <div id="flow-builder-list-view">
+              <div class="flow-builder-toolbar">
+                <button class="flow-builder-create-btn" onclick="createFlowDraft()">+ New flow</button>
+              </div>
+              <div id="flow-builder-list" class="flow-builder-list"></div>
+            </div>
+            <div id="flow-builder-workspace" class="flow-builder-workspace" style="display:none;">
+              <div class="flow-builder-workspace-head">
+                <button class="flow-builder-back-btn" onclick="closeFlowBuilderWorkspace()">&lsaquo; Back to flows</button>
+                <button class="flow-builder-delete-btn" onclick="deleteCurrentFlowDraft()">Delete flow</button>
+              </div>
+              <div class="flow-builder-brief-card">
+                <div class="flow-builder-field">
+                  <label class="flow-builder-label">Flow name</label>
+                  <input type="text" id="flow-builder-name" class="flow-builder-input" maxlength="120" placeholder="e.g. Abandoned Cart Revamp v2" oninput="onFlowFieldEdit()">
+                </div>
+                <div class="flow-builder-field">
+                  <label class="flow-builder-label">Flow brief</label>
+                  <textarea id="flow-builder-brief" class="flow-builder-textarea" placeholder="Goal, audience, overall arc, success metric. The brief feeds every message draft so each chat knows the bigger picture." oninput="onFlowFieldEdit()"></textarea>
+                </div>
+                <div class="flow-builder-savestate" id="flow-builder-savestate">Saved</div>
+              </div>
+              <div class="flow-builder-slots-head">
+                <div class="flow-builder-slots-title">Messages</div>
+                <button class="flow-builder-add-slot-btn" onclick="addFlowSlot()">+ Add message</button>
+              </div>
+              <div id="flow-builder-slots" class="flow-builder-slots"></div>
+            </div>
+          </div>
         </div>
         <div class="studio-section" id="studio-gaps">
           <div class="patterns-head">
@@ -3129,7 +3133,7 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','patterns','flows','buckets','voice','products','ideas','draft','gaps','refs'].forEach(function(s){
+  ['insights','patterns','flows','buckets','voice','products','ideas','draft','flow-drafter','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
@@ -3143,6 +3147,7 @@ window.setStudioSection = function(section) {
   if (section === 'products') showProductsOnOpen();
   if (section === 'ideas') showIdeasOnOpen();
   if (section === 'draft') showDraftOnOpen();
+  if (section === 'flow-drafter') showFlowDrafterOnOpen();
   if (section === 'gaps') showGapsOnOpen();
 };
 
@@ -4331,7 +4336,9 @@ async function showFlowDiagnosticsOnOpen() {
   // Also load the flow message browser for the panel below diagnostics
   await loadFlowBrowserData();
   renderFlowBrowser();
-  // And the Flow Builder list
+}
+
+async function showFlowDrafterOnOpen() {
   await ensureFlowDraftsLoaded();
 }
 
@@ -4498,12 +4505,18 @@ function buildDiagnosticCard(d) {
     improveBtn.textContent = 'Draft an improvement';
     improveBtn.title = 'Pick a flow message to improve, with this diagnostic attached as context';
     improveBtn.onclick = function(){ deeplinkToFlowImprove(d.id); };
+    var draftFlowBtn = document.createElement('button');
+    draftFlowBtn.className = 'pattern-action-btn';
+    draftFlowBtn.textContent = 'Draft as flow';
+    draftFlowBtn.title = 'Send this diagnostic to Flow Drafter as the brief for a fresh flow';
+    draftFlowBtn.onclick = function(){ seedFlowDrafterFromDiagnostic(d.id); };
     var dismissBtn = document.createElement('button');
     dismissBtn.className = 'pattern-action-btn';
     dismissBtn.textContent = 'Dismiss';
     dismissBtn.onclick = function(){ dismissDiagnostic(d.id); };
     actions.appendChild(starBtn);
     actions.appendChild(improveBtn);
+    actions.appendChild(draftFlowBtn);
     actions.appendChild(dismissBtn);
   } else {
     var restoreBtn = document.createElement('button');
@@ -4946,6 +4959,44 @@ window.createFlowDraft = async function() {
   flowDraftsCache.unshift(res.data);
   renderFlowBuilderList();
   openFlowDraft(res.data.id);
+};
+
+// Seed a new flow draft from a diagnostic finding. Auto-populates the brief
+// with the finding context so Phase 2 chat already knows what to build for.
+window.seedFlowDrafterFromDiagnostic = async function(diagnosticId) {
+  var d = (diagnosticsCache || []).find(function(x){ return x.id === diagnosticId; });
+  if (!d) { showToast('Diagnostic not found', true); return; }
+
+  var flowName = (d.flow_name || 'Flow') + ' improvement';
+  var briefParts = [];
+  briefParts.push('Flow improvement seeded from diagnostic finding.');
+  briefParts.push('');
+  if (d.flow_name) briefParts.push('Original flow: ' + d.flow_name);
+  if (d.severity) briefParts.push('Severity: ' + String(d.severity).replace(/_/g, ' '));
+  if (d.finding) {
+    briefParts.push('');
+    briefParts.push('Finding: ' + d.finding);
+  }
+  if (d.recommendation) {
+    briefParts.push('');
+    briefParts.push('Recommendation: ' + d.recommendation);
+  }
+  if (d.ab_hint) {
+    briefParts.push('');
+    briefParts.push('Test angle: ' + d.ab_hint);
+  }
+  briefParts.push('');
+  briefParts.push('Use this brief as the strategic direction for the new flow. Edit, expand, or refine before drafting messages.');
+  var brief = briefParts.join('\n');
+
+  var res = await db.from('quill_flow_drafts').insert({ name: flowName, brief: brief }).select().single();
+  if (res.error) { showToast('Could not create flow: ' + res.error.message, true); return; }
+  if (!flowDraftsCache) flowDraftsCache = [];
+  flowDraftsCache.unshift(res.data);
+  showToast('Flow draft seeded from diagnostic. Opening Flow Drafter.');
+  // Switch to Flow Drafter section and open the new flow
+  setStudioSection('flow-drafter');
+  setTimeout(function(){ openFlowDraft(res.data.id); }, 100);
 };
 
 window.openFlowDraft = async function(flowId) {
