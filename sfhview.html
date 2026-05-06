@@ -144,6 +144,28 @@
     .notes-textarea:focus { outline: none; border-color: var(--gg-olive); }
 
     .footer { text-align: center; padding: 30px 0 20px; font-size: 11px; color: var(--q-muted); }
+
+    /* Tour overlay */
+    .tour-backdrop { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.5); z-index: 2000; pointer-events: auto; }
+    .tour-spotlight { position: absolute; box-shadow: 0 0 0 3px var(--gg-orange), 0 0 0 9999px rgba(50, 49, 47, 0.5); border-radius: 8px; pointer-events: none; transition: all 0.25s ease; }
+    .tour-tooltip { position: absolute; background: #fff; border: 0.5px solid var(--q-line); border-radius: 10px; padding: 16px 18px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); width: 280px; z-index: 2001; transition: top 0.25s ease, left 0.25s ease; }
+    .tour-step-meta { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .tour-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 6px; }
+    .tour-body { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; margin-bottom: 14px; }
+    .tour-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .tour-skip { background: transparent; border: none; color: var(--q-muted); font-size: 11px; cursor: pointer; font-family: var(--font-body); padding: 4px 0; }
+    .tour-skip:hover { color: var(--gg-charcoal); }
+    .tour-next { padding: 7px 16px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .tour-next:hover { background: #2f3214; }
+    .tour-arrow { position: absolute; width: 0; height: 0; }
+    .tour-arrow.up { border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid #fff; top: -8px; left: 24px; }
+    .tour-arrow.down { border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #fff; bottom: -8px; left: 24px; }
+    .tour-arrow.left { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 8px solid #fff; left: -8px; top: 24px; }
+    .tour-arrow.right { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 8px solid #fff; right: -8px; top: 24px; }
+
+    /* Tour trigger button (always visible after first run) */
+    .tour-trigger { background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); padding: 5px 12px; border-radius: 14px; font-size: 11px; font-family: var(--font-body); cursor: pointer; }
+    .tour-trigger:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); border-color: var(--gg-olive); }
   </style>
 </head>
 <body>
@@ -169,7 +191,10 @@
       <div class="app-brand-name">Quill</div>
       <div class="app-brand-tag">SFH Content Calendar</div>
     </div>
-    <div class="app-sub">Read only. Notes save automatically.</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="tour-trigger" id="tourTriggerBtn">Give me a tour</button>
+      <div class="app-sub">Read only. Notes save automatically.</div>
+    </div>
   </div>
 
   <div class="cal-nav">
@@ -205,6 +230,20 @@
   </div>
 
   <div class="footer">SFH x Goldfish Group</div>
+</div>
+
+<div class="tour-backdrop" id="tourBackdrop" style="display:none;">
+  <div class="tour-spotlight" id="tourSpotlight"></div>
+  <div class="tour-tooltip" id="tourTooltip">
+    <div class="tour-arrow" id="tourArrow"></div>
+    <div class="tour-step-meta" id="tourStepMeta"></div>
+    <div class="tour-title" id="tourTitle"></div>
+    <div class="tour-body" id="tourBody"></div>
+    <div class="tour-actions">
+      <button class="tour-skip" id="tourSkip">Skip</button>
+      <button class="tour-next" id="tourNext">Next</button>
+    </div>
+  </div>
 </div>
 
 <div class="details-overlay" id="detailsOverlay" onclick="if(event.target===this) closeDetailsModal()">
@@ -301,7 +340,7 @@ try {
 function showApp() {
   document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('app').classList.add('active');
-  loadAll();
+  loadAll().then(function(){ maybeAutoStartTour(); });
 }
 
 async function loadAll() {
@@ -562,8 +601,147 @@ function formatLongDate(dateStr) {
 }
 
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') closeDetailsModal();
+  if (e.key === 'Escape') {
+    closeDetailsModal();
+    if (tourActive) endTour();
+  }
 });
+
+// ── ONBOARDING TOUR ───────────────────────────────────────────────────────
+// 6-step guided tour. Auto-runs on first login (localStorage flag), can be
+// re-triggered any time via the "Give me a tour" button.
+
+var TOUR_STEPS = [
+  {
+    target: '#tourTriggerBtn',
+    title: 'Start here',
+    body: 'Click "Give me a tour" any time you want a refresher. We will walk through the rest of the page now.',
+    placement: 'bottom'
+  },
+  {
+    target: '.cal-nav-buttons',
+    title: 'Navigate dates',
+    body: 'Use these buttons to move between months. "Today" jumps you back to the current month.',
+    placement: 'bottom'
+  },
+  {
+    target: '#calGrid',
+    title: 'Click an item to open',
+    body: 'Each card on the calendar is a planned email. Click any of them to see the subject, concept, products, and any planned promo.',
+    placement: 'right'
+  },
+  {
+    target: '#toggleNotesBtn',
+    title: 'Notes panel',
+    body: 'There is a notes panel on the right side of the calendar where you can write feedback, requests, or comments. Notes save automatically and each month gets its own. Use the "Hide notes" button to collapse it when you want more space for the calendar.',
+    placement: 'bottom'
+  }
+];
+
+var tourActive = false;
+var tourIndex = 0;
+
+function startTour() {
+  tourActive = true;
+  tourIndex = 0;
+  document.getElementById('tourBackdrop').style.display = 'block';
+  showTourStep(0);
+}
+
+function endTour() {
+  tourActive = false;
+  document.getElementById('tourBackdrop').style.display = 'none';
+  try { localStorage.setItem('quill.client.tourSeen', '1'); } catch (e) {}
+}
+
+function showTourStep(i) {
+  var step = TOUR_STEPS[i];
+  if (!step) { endTour(); return; }
+  tourIndex = i;
+
+  var target = document.querySelector(step.target);
+  if (!target) {
+    // If a target element is missing, skip to next step rather than break
+    showTourStep(i + 1);
+    return;
+  }
+
+  // Position spotlight over the target
+  var rect = target.getBoundingClientRect();
+  var spotlight = document.getElementById('tourSpotlight');
+  var pad = 6;
+  spotlight.style.top = (rect.top + window.scrollY - pad) + 'px';
+  spotlight.style.left = (rect.left + window.scrollX - pad) + 'px';
+  spotlight.style.width = (rect.width + pad * 2) + 'px';
+  spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+  // Position tooltip relative to target based on placement
+  var tooltip = document.getElementById('tourTooltip');
+  var arrow = document.getElementById('tourArrow');
+  arrow.className = 'tour-arrow';
+  var tooltipWidth = 280;
+  var tooltipHeight = 180;
+  var top, left;
+  var placement = step.placement || 'bottom';
+  var gap = 14;
+
+  if (placement === 'bottom') {
+    top = rect.bottom + window.scrollY + gap;
+    left = rect.left + window.scrollX;
+    arrow.classList.add('up');
+  } else if (placement === 'top') {
+    top = rect.top + window.scrollY - tooltipHeight - gap;
+    left = rect.left + window.scrollX;
+    arrow.classList.add('down');
+  } else if (placement === 'right') {
+    top = rect.top + window.scrollY;
+    left = rect.right + window.scrollX + gap;
+    arrow.classList.add('left');
+  } else if (placement === 'left') {
+    top = rect.top + window.scrollY;
+    left = rect.left + window.scrollX - tooltipWidth - gap;
+    arrow.classList.add('right');
+  }
+
+  // Keep tooltip on screen, clamp horizontally
+  var maxLeft = window.scrollX + window.innerWidth - tooltipWidth - 16;
+  if (left > maxLeft) left = maxLeft;
+  if (left < window.scrollX + 16) left = window.scrollX + 16;
+
+  tooltip.style.top = top + 'px';
+  tooltip.style.left = left + 'px';
+
+  // Scroll the target into view if it's offscreen
+  var inView = rect.top >= 0 && rect.bottom <= window.innerHeight;
+  if (!inView) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Reposition after scroll settles
+    setTimeout(function(){ if (tourActive && tourIndex === i) showTourStep(i); }, 350);
+  }
+
+  // Populate content
+  document.getElementById('tourStepMeta').textContent = 'Step ' + (i + 1) + ' of ' + TOUR_STEPS.length;
+  document.getElementById('tourTitle').textContent = step.title;
+  document.getElementById('tourBody').textContent = step.body;
+  document.getElementById('tourNext').textContent = (i === TOUR_STEPS.length - 1) ? 'Done' : 'Next';
+}
+
+document.getElementById('tourTriggerBtn').addEventListener('click', startTour);
+document.getElementById('tourNext').addEventListener('click', function(){
+  if (tourIndex >= TOUR_STEPS.length - 1) endTour();
+  else showTourStep(tourIndex + 1);
+});
+document.getElementById('tourSkip').addEventListener('click', endTour);
+
+// Auto-run on first login
+function maybeAutoStartTour() {
+  try {
+    if (localStorage.getItem('quill.client.tourSeen') !== '1') {
+      // Small delay so the calendar renders first
+      setTimeout(startTour, 700);
+    }
+  } catch (e) {}
+}
 
 function isoDate(d) {
   var y = d.getFullYear();
