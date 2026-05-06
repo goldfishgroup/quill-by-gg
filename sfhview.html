@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SFH Content Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gg-olive: #43471d;
+      --gg-orange: #e57442;
+      --gg-charcoal: #32312f;
+      --gg-lime: #ccea6c;
+      --gg-offwhite: #f7f4ee;
+      --q-line: #e6e3db;
+      --q-muted: #6f6e6a;
+      --radius: 10px;
+      --font-head: 'Funnel Display', system-ui, sans-serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: var(--gg-offwhite); color: var(--gg-charcoal); font-family: var(--font-body); font-size: 14px; line-height: 1.55; }
+
+    /* Login screen */
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 40px 36px; max-width: 420px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+    .login-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .login-brand-dot { width: 9px; height: 9px; background: var(--gg-orange); border-radius: 50%; }
+    .login-brand-name { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-olive); }
+    .login-title { font-family: var(--font-head); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .login-sub { font-size: 13px; color: var(--q-muted); margin-bottom: 24px; line-height: 1.5; }
+    .login-input { width: 100%; padding: 11px 14px; font-size: 14px; border: 0.5px solid var(--q-line); border-radius: 6px; font-family: var(--font-body); margin-bottom: 12px; }
+    .login-input:focus { outline: none; border-color: var(--gg-olive); }
+    .login-btn { width: 100%; padding: 11px; background: var(--gg-olive); color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .login-btn:hover { background: #2f3214; }
+    .login-error { font-size: 12px; color: #a32d2d; margin-top: 8px; }
+
+    /* App */
+    .app { display: none; max-width: 1280px; margin: 0 auto; padding: 24px; }
+    .app.active { display: block; }
+    .app-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 0.5px solid var(--q-line); }
+    .app-brand { display: flex; align-items: center; gap: 10px; }
+    .app-brand-dot { width: 9px; height: 9px; background: var(--gg-orange); border-radius: 50%; }
+    .app-brand-name { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-olive); }
+    .app-brand-tag { font-size: 11px; color: var(--q-muted); padding: 3px 9px; background: #fff; border-radius: 10px; border: 0.5px solid var(--q-line); }
+    .app-sub { font-size: 12px; color: var(--q-muted); }
+
+    /* Calendar nav */
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 16px; }
+    .cal-nav-left { display: flex; align-items: center; gap: 12px; }
+    .cal-nav-buttons { display: flex; gap: 4px; }
+    .cal-nav-btn { padding: 6px 12px; border: 0.5px solid var(--q-line); background: #fff; color: var(--gg-charcoal); border-radius: 6px; cursor: pointer; font-family: var(--font-body); font-size: 12px; }
+    .cal-nav-btn:hover { background: var(--gg-offwhite); }
+    .cal-nav-btn.icon-only { padding: 6px 10px; min-width: 32px; }
+    .cal-month-label { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); min-width: 180px; }
+
+    /* Themes band */
+    .cal-themes-band { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .cal-themes-band-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .cal-themes-band-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cal-theme-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 500; border: 0.5px solid transparent; }
+    .cal-theme-pill .cal-theme-dates { font-size: 10px; opacity: 0.7; }
+    .cal-theme-pill.theme-olive { background: #f0edd8; color: #43471d; border-color: #d8d4b6; }
+    .cal-theme-pill.theme-orange { background: #fdecd8; color: #8c3d0d; border-color: #f5d4ae; }
+    .cal-theme-pill.theme-lime { background: #e9f1c7; color: #4d6217; border-color: #d4dca0; }
+    .cal-theme-pill.theme-charcoal { background: #ebe9e3; color: #32312f; border-color: #d4d2cc; }
+    .cal-theme-pill.theme-rose { background: #f5dfdf; color: #8a3535; border-color: #e0c4c4; }
+    .cal-theme-pill.theme-sky { background: #dee5ed; color: #1e436b; border-color: #bfcad9; }
+    .cal-themes-empty { font-size: 11px; color: var(--q-muted); font-style: italic; }
+
+    /* Two-column main layout */
+    .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+    .main-grid.notes-collapsed { grid-template-columns: 1fr; }
+    .main-grid.notes-collapsed .main-notes-col { display: none; }
+    @media (max-width: 1080px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .main-cal-col { min-width: 0; }
+    .main-notes-col { position: sticky; top: 24px; }
+
+    /* Calendar grid */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(105px, 1fr)); border: 0.5px solid var(--q-line); border-radius: var(--radius); overflow: hidden; background: var(--q-line); gap: 0.5px; min-width: 740px; margin-bottom: 24px; }
+    .cal-day-header { background: var(--gg-offwhite); padding: 8px 10px; text-align: center; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--q-muted); letter-spacing: 0.08em; }
+    .cal-cell { background: #fff; min-height: 110px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .cal-cell-other { background: #fafaf6; }
+    .cal-cell-today { background: #f4f0de; }
+    .cal-cell-date { font-size: 11px; color: var(--q-muted); margin-bottom: 4px; }
+    .cal-cell-today .cal-cell-date { color: var(--gg-olive); font-weight: 700; }
+    .cal-chip { font-size: 10px; padding: 3px 8px; border-radius: 4px; background: var(--gg-offwhite); color: var(--gg-charcoal); border-left: 2px solid var(--gg-olive); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; font-weight: 500; cursor: pointer; transition: opacity 0.12s; display: flex; align-items: center; gap: 5px; }
+    .cal-chip:hover { opacity: 0.7; }
+    .cal-chip.status-draft { border-left-color: #b4b2a9; }
+    .cal-chip.status-approved { border-left-color: #4b9e4b; }
+    .cal-chip.status-sent-to-design { border-left-color: #e8a030; }
+    .cal-chip.status-scheduled { border-left-color: var(--gg-olive); background: #f4f0de; }
+    .cal-chip-approved-dot { display: inline-block; width: 6px; height: 6px; background: #4b9e4b; border-radius: 50%; flex-shrink: 0; }
+    .cal-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+    /* Email details modal */
+    .details-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .details-overlay.open { display: flex; }
+    .details-modal { background: #fff; border: 0.5px solid var(--q-line); border-radius: 10px; width: 100%; max-width: 560px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: calc(100vh - 80px); }
+    .details-head { padding: 18px 22px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .details-meta-line { font-size: 11px; color: var(--q-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+    .details-subject { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.35; }
+    .details-close { background: transparent; border: none; color: var(--q-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 18px; line-height: 1; flex-shrink: 0; }
+    .details-close:hover { background: #efece5; color: var(--gg-charcoal); }
+    .details-body { padding: 18px 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+    .details-field-label { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .details-field-value { font-size: 13px; color: var(--gg-charcoal); line-height: 1.55; white-space: pre-wrap; }
+    .details-pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .details-pill { display: inline-block; padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 500; background: var(--gg-offwhite); color: var(--gg-charcoal); border: 0.5px solid var(--q-line); }
+    .details-pill.bucket { background: #f0edd8; color: #43471d; border-color: #d8d4b6; }
+    .details-pill.status-approved { background: #e4eedc; color: #2e5e2e; border-color: #c4d8b8; }
+    .details-pill.status-draft { background: #f0eee6; color: var(--q-muted); border-color: var(--q-line); }
+    .details-pill.status-sent-to-design { background: #fdecd8; color: #8c3d0d; border-color: #f5d4ae; }
+    .details-pill.status-scheduled { background: #f4f0de; color: var(--gg-olive); border-color: #d8d4b6; }
+
+    /* Approve button + approved state */
+    .details-foot { padding: 14px 22px; border-top: 0.5px solid var(--q-line); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--gg-offwhite); border-radius: 0 0 10px 10px; flex-shrink: 0; }
+    .details-approve-btn { padding: 8px 18px; background: var(--gg-olive); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font-body); display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; gap: 2px; min-width: 160px; }
+    .details-approve-btn:hover { background: #2f3214; }
+    .details-approve-btn:disabled { opacity: 0.5; cursor: default; }
+    .details-approve-btn .approve-phrase { font-size: 14px; font-weight: 600; font-family: var(--font-head); letter-spacing: 0.01em; }
+    .details-approve-btn .approve-sublabel { font-size: 10px; font-weight: 500; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.12em; }
+    .details-approved-state { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2e5e2e; font-weight: 600; }
+    .details-approved-check { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: #4b9e4b; color: #fff; border-radius: 50%; font-size: 11px; line-height: 1; }
+    .details-approved-meta { font-size: 11px; color: var(--q-muted); font-weight: 400; }
+    .details-unapprove-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .details-unapprove-btn:hover { background: #fff; color: var(--gg-charcoal); }
+
+    /* Notes section */
+    .notes-section { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; }
+    .notes-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .notes-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; }
+    .notes-sub { font-size: 11px; color: var(--q-muted); margin-bottom: 12px; line-height: 1.5; }
+    .notes-status { font-size: 10px; color: var(--q-muted); display: flex; align-items: center; gap: 6px; }
+    .notes-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #b4b2a9; }
+    .notes-status-dot.saving { background: #e8a030; }
+    .notes-status-dot.saved { background: #4b9e4b; }
+    .notes-textarea { width: 100%; min-height: 360px; padding: 12px 14px; font-size: 13px; font-family: var(--font-body); line-height: 1.55; border: 0.5px solid var(--q-line); border-radius: 7px; resize: vertical; color: var(--gg-charcoal); background: #fff; }
+    .notes-textarea:focus { outline: none; border-color: var(--gg-olive); }
+
+    .footer { text-align: center; padding: 30px 0 20px; font-size: 11px; color: var(--q-muted); }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-dot"></div>
+      <div class="login-brand-name">Quill</div>
+    </div>
+    <div class="login-title">SFH Content Calendar</div>
+    <div class="login-sub">Enter the password to view the upcoming content calendar.</div>
+    <input type="password" id="passwordInput" class="login-input" placeholder="Password" autocomplete="off">
+    <button class="login-btn" id="loginBtn">View calendar</button>
+    <div class="login-error" id="loginError" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="app-head">
+    <div class="app-brand">
+      <div class="app-brand-dot"></div>
+      <div class="app-brand-name">Quill</div>
+      <div class="app-brand-tag">SFH Content Calendar</div>
+    </div>
+    <div class="app-sub">Read only. Notes save automatically.</div>
+  </div>
+
+  <div class="cal-nav">
+    <div class="cal-nav-left">
+      <div class="cal-month-label" id="monthLabel">Loading...</div>
+      <div class="cal-nav-buttons">
+        <button class="cal-nav-btn icon-only" id="prevBtn" title="Previous month">&lsaquo;</button>
+        <button class="cal-nav-btn" id="todayBtn">Today</button>
+        <button class="cal-nav-btn icon-only" id="nextBtn" title="Next month">&rsaquo;</button>
+      </div>
+    </div>
+    <button class="cal-nav-btn" id="toggleNotesBtn" title="Hide or show the notes panel">Hide notes</button>
+  </div>
+
+  <div class="cal-themes-band" id="themesBand"></div>
+
+  <div class="main-grid" id="mainGrid">
+    <div class="main-cal-col">
+      <div style="overflow-x:auto;">
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+    <div class="main-notes-col">
+      <div class="notes-section">
+        <div class="notes-head">
+          <div class="notes-title">Notes for <span id="notesMonthLabel"></span></div>
+          <div class="notes-status" id="notesStatus"><span class="notes-status-dot saved"></span><span id="notesStatusText">Saved</span></div>
+        </div>
+        <div class="notes-sub">Add comments, requests, or feedback for the strategist. Notes save automatically.</div>
+        <textarea class="notes-textarea" id="notesTextarea" placeholder="Notes for this month..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">SFH x Goldfish Group</div>
+</div>
+
+<div class="details-overlay" id="detailsOverlay" onclick="if(event.target===this) closeDetailsModal()">
+  <div class="details-modal">
+    <div class="details-head">
+      <div style="flex:1; min-width:0;">
+        <div class="details-meta-line" id="detailsDate"></div>
+        <div class="details-subject" id="detailsSubject"></div>
+      </div>
+      <button class="details-close" onclick="closeDetailsModal()" title="Close">&times;</button>
+    </div>
+    <div class="details-body" id="detailsBody"></div>
+    <div class="details-foot" id="detailsFoot"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', function(){
+
+// Config
+var SUPABASE_URL = 'https://bjnfsgfulocyqhkvfjmr.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqbmZzZ2Z1bG9jeXFoa3Zmam1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MjE5NDEsImV4cCI6MjA4OTE5Nzk0MX0.hFvQgt8d_TDnVFdgSCHsJY6Cv_bWnZRndohPOE9yxzA';
+var CLIENT_PASSWORD = 'sfh2026';
+
+var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// State
+var emails = [];
+var themes = [];
+var currentYear = new Date().getFullYear();
+var currentMonth = new Date().getMonth();
+var notesSaveTimer = null;
+
+var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Fun approve phrases. Picked at random when the approve button is rendered.
+// Pure UI flourish, no data implication. Curated by Pia.
+var APPROVE_PHRASES = [
+  'Ship it',
+  'Lock it in',
+  'Chef\u0027s kiss',
+  'This slaps',
+  'Green light',
+  'Cleared',
+  'Stamp of approval',
+  'Signed, sealed, and delivered',
+  'Love it',
+  'Nailed it',
+  'It\u0027s a go!',
+  'Run it',
+  'Roll it',
+  'Ready to fly',
+  'Cleared to send'
+];
+
+function pickApprovePhrase() {
+  return APPROVE_PHRASES[Math.floor(Math.random() * APPROVE_PHRASES.length)];
+}
+
+// Login flow
+function tryLogin() {
+  var input = document.getElementById('passwordInput');
+  var entered = (input.value || '').trim();
+  if (entered === CLIENT_PASSWORD) {
+    try { localStorage.setItem('quill.client.auth', 'ok'); } catch (e) {}
+    showApp();
+  } else {
+    var err = document.getElementById('loginError');
+    err.textContent = 'Incorrect password';
+    err.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', tryLogin);
+document.getElementById('passwordInput').addEventListener('keypress', function(e){
+  if (e.key === 'Enter') tryLogin();
+});
+
+// Check existing auth on load
+try {
+  if (localStorage.getItem('quill.client.auth') === 'ok') {
+    showApp();
+  } else {
+    setTimeout(function(){ document.getElementById('passwordInput').focus(); }, 100);
+  }
+} catch (e) {
+  setTimeout(function(){ document.getElementById('passwordInput').focus(); }, 100);
+}
+
+function showApp() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  loadAll();
+}
+
+async function loadAll() {
+  try {
+    var emailsRes = await db.from('quill_calendar').select('id,subject,preview,send_date,status,bucket,notes,products_to_feature,discount_promo,client_approved,client_approved_at').order('send_date', { ascending: true });
+    if (emailsRes.error) throw emailsRes.error;
+    emails = (emailsRes.data || []).filter(function(e){ return e.send_date; });
+
+    var themesRes = await db.from('quill_calendar_themes').select('*').order('date_start', { ascending: true });
+    if (themesRes.error) throw themesRes.error;
+    themes = themesRes.data || [];
+  } catch (err) {
+    console.error('loadAll error', err);
+    document.getElementById('calGrid').innerHTML = '<div style="padding:40px;text-align:center;color:#a32d2d;grid-column:1/-1;">Could not load calendar data. Please refresh.</div>';
+    return;
+  }
+  renderAll();
+  loadNotesForMonth();
+}
+
+function renderAll() {
+  document.getElementById('monthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+  document.getElementById('notesMonthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+  renderThemes();
+  renderCalendar();
+}
+
+function renderThemes() {
+  var band = document.getElementById('themesBand');
+  var monthStart = new Date(currentYear, currentMonth, 1);
+  var monthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+  var inMonth = (themes || []).filter(function(t){
+    var ts = new Date(t.date_start + 'T00:00:00');
+    var te = new Date(t.date_end + 'T23:59:59');
+    return ts <= monthEnd && te >= monthStart;
+  });
+  inMonth.sort(function(a,b){ return new Date(a.date_start) - new Date(b.date_start); });
+
+  var parts = [];
+  parts.push('<div class="cal-themes-band-title">Themes for ' + MONTHS[currentMonth] + '</div>');
+  parts.push('<div class="cal-themes-band-list">');
+  if (!inMonth.length) {
+    parts.push('<span class="cal-themes-empty">No themes for this month yet.</span>');
+  } else {
+    inMonth.forEach(function(t){
+      var color = t.color || 'olive';
+      parts.push('<span class="cal-theme-pill theme-' + color + '" title="' + esc(t.notes || '') + '">');
+      parts.push('  <span>' + esc(t.label || '') + '</span>');
+      parts.push('  <span class="cal-theme-dates">' + formatThemeDateRange(t.date_start, t.date_end) + '</span>');
+      parts.push('</span>');
+    });
+  }
+  parts.push('</div>');
+  band.innerHTML = parts.join('\n');
+}
+
+function formatThemeDateRange(startStr, endStr) {
+  var s = new Date(startStr + 'T12:00:00');
+  var e = new Date(endStr + 'T12:00:00');
+  var sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+  var sameDay = sameMonth && s.getDate() === e.getDate();
+  if (sameDay) return MONTHS[s.getMonth()].slice(0,3) + ' ' + s.getDate();
+  if (sameMonth) return MONTHS[s.getMonth()].slice(0,3) + ' ' + s.getDate() + '-' + e.getDate();
+  return MONTHS[s.getMonth()].slice(0,3) + ' ' + s.getDate() + ' to ' + MONTHS[e.getMonth()].slice(0,3) + ' ' + e.getDate();
+}
+
+function renderCalendar() {
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  DAYS.forEach(function(d){
+    var h = document.createElement('div');
+    h.className = 'cal-day-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  var firstDay = new Date(currentYear, currentMonth, 1);
+  var startWeekday = firstDay.getDay();
+  var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  var prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+  var totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+
+  var todayStr = isoDate(new Date());
+
+  for (var i = 0; i < totalCells; i++) {
+    var cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    var dayNum, cellDate, isOther = false;
+    if (i < startWeekday) {
+      dayNum = prevMonthDays - (startWeekday - 1 - i);
+      cellDate = new Date(currentYear, currentMonth - 1, dayNum);
+      isOther = true;
+    } else if (i >= startWeekday + daysInMonth) {
+      dayNum = i - (startWeekday + daysInMonth) + 1;
+      cellDate = new Date(currentYear, currentMonth + 1, dayNum);
+      isOther = true;
+    } else {
+      dayNum = i - startWeekday + 1;
+      cellDate = new Date(currentYear, currentMonth, dayNum);
+    }
+    if (isOther) cell.classList.add('cal-cell-other');
+    var ds = isoDate(cellDate);
+    if (ds === todayStr) cell.classList.add('cal-cell-today');
+
+    var dateLabel = document.createElement('div');
+    dateLabel.className = 'cal-cell-date';
+    dateLabel.textContent = String(dayNum);
+    cell.appendChild(dateLabel);
+
+    var dayEmails = emails.filter(function(e){ return e.send_date === ds; });
+    dayEmails.forEach(function(e){
+      var chip = document.createElement('div');
+      chip.className = 'cal-chip status-' + (e.status || 'draft');
+      chip.title = 'Click to view details';
+      var inner = '';
+      if (e.client_approved) {
+        inner += '<span class="cal-chip-approved-dot" title="Approved by client"></span>';
+      }
+      inner += '<span class="cal-chip-text">' + esc(e.subject || 'Untitled') + '</span>';
+      chip.innerHTML = inner;
+      (function(emailId){
+        chip.addEventListener('click', function(){ openDetailsModal(emailId); });
+      })(e.id);
+      cell.appendChild(chip);
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function openDetailsModal(emailId) {
+  var em = emails.find(function(e){ return e.id === emailId; });
+  if (!em) return;
+  var status = em.status || 'draft';
+  var statusLabel = status === 'approved' ? 'In Progress'
+    : status === 'sent-to-design' ? 'Sent to Design'
+    : status === 'scheduled' ? 'Scheduled'
+    : 'Draft';
+
+  document.getElementById('detailsDate').textContent = formatLongDate(em.send_date);
+  document.getElementById('detailsSubject').textContent = em.subject || 'Untitled';
+
+  var bodyParts = [];
+  bodyParts.push('<div class="details-pill-row">');
+  if (em.bucket) bodyParts.push('<span class="details-pill bucket">' + esc(em.bucket) + '</span>');
+  bodyParts.push('<span class="details-pill status-' + status + '">' + statusLabel + '</span>');
+  bodyParts.push('</div>');
+
+  if (em.preview) {
+    bodyParts.push('<div>');
+    bodyParts.push('<div class="details-field-label">Preview text</div>');
+    bodyParts.push('<div class="details-field-value">' + esc(em.preview) + '</div>');
+    bodyParts.push('</div>');
+  }
+  if (em.notes) {
+    bodyParts.push('<div>');
+    bodyParts.push('<div class="details-field-label">Concept and angle</div>');
+    bodyParts.push('<div class="details-field-value">' + esc(em.notes) + '</div>');
+    bodyParts.push('</div>');
+  }
+  if (em.products_to_feature) {
+    bodyParts.push('<div>');
+    bodyParts.push('<div class="details-field-label">Products featured</div>');
+    bodyParts.push('<div class="details-field-value">' + esc(em.products_to_feature) + '</div>');
+    bodyParts.push('</div>');
+  }
+  if (em.discount_promo) {
+    bodyParts.push('<div>');
+    bodyParts.push('<div class="details-field-label">Discount or promo</div>');
+    bodyParts.push('<div class="details-field-value">' + esc(em.discount_promo) + '</div>');
+    bodyParts.push('</div>');
+  }
+  if (!em.preview && !em.notes && !em.products_to_feature && !em.discount_promo) {
+    bodyParts.push('<div class="details-field-value" style="color:var(--q-muted); font-style:italic;">No details added yet for this email.</div>');
+  }
+
+  document.getElementById('detailsBody').innerHTML = bodyParts.join('\n');
+  renderDetailsFoot(em);
+  document.getElementById('detailsOverlay').classList.add('open');
+}
+
+function renderDetailsFoot(em) {
+  var foot = document.getElementById('detailsFoot');
+  if (!foot) return;
+  if (em.client_approved) {
+    var when = em.client_approved_at ? formatApprovedTimestamp(em.client_approved_at) : '';
+    var parts = [];
+    parts.push('<div class="details-approved-state">');
+    parts.push('  <span class="details-approved-check">&#10003;</span>');
+    parts.push('  <span>Approved</span>');
+    if (when) parts.push('  <span class="details-approved-meta">' + esc(when) + '</span>');
+    parts.push('</div>');
+    parts.push('<button class="details-unapprove-btn" onclick="setEmailApproval(' + em.id + ', false)">Undo approval</button>');
+    foot.innerHTML = parts.join('\n');
+  } else {
+    var phrase = pickApprovePhrase();
+    foot.innerHTML = '<div style="font-size:12px; color:var(--q-muted);">Approving signals to the strategist that this email is good to go.</div>'
+      + '<button class="details-approve-btn" onclick="setEmailApproval(' + em.id + ', true)">'
+      + '<span class="approve-phrase">' + esc(phrase) + '</span>'
+      + '<span class="approve-sublabel">approve</span>'
+      + '</button>';
+  }
+}
+
+function formatApprovedTimestamp(iso) {
+  try {
+    var d = new Date(iso);
+    var now = new Date();
+    var sameDay = d.toDateString() === now.toDateString();
+    if (sameDay) {
+      var hours = d.getHours();
+      var mins = String(d.getMinutes()).padStart(2, '0');
+      var ampm = hours >= 12 ? 'pm' : 'am';
+      var h12 = hours % 12 || 12;
+      return 'today at ' + h12 + ':' + mins + ampm;
+    }
+    return MONTHS[d.getMonth()].slice(0,3) + ' ' + d.getDate();
+  } catch (e) { return ''; }
+}
+
+window.setEmailApproval = async function(emailId, approve) {
+  var em = emails.find(function(e){ return e.id === emailId; });
+  if (!em) return;
+  // Optimistic update
+  var prevApproved = em.client_approved;
+  var prevAt = em.client_approved_at;
+  em.client_approved = approve;
+  em.client_approved_at = approve ? new Date().toISOString() : null;
+  renderDetailsFoot(em);
+  renderCalendar();
+
+  var payload = {
+    client_approved: approve,
+    client_approved_at: approve ? new Date().toISOString() : null
+  };
+  var res = await db.from('quill_calendar').update(payload).eq('id', emailId);
+  if (res.error) {
+    // Revert on failure
+    em.client_approved = prevApproved;
+    em.client_approved_at = prevAt;
+    renderDetailsFoot(em);
+    renderCalendar();
+    alert('Could not save approval. Please try again.');
+    console.error('Approval save error', res.error);
+  }
+};
+
+function closeDetailsModal() {
+  document.getElementById('detailsOverlay').classList.remove('open');
+}
+
+window.openDetailsModal = openDetailsModal;
+window.closeDetailsModal = closeDetailsModal;
+
+function formatLongDate(dateStr) {
+  if (!dateStr) return '';
+  var d = new Date(dateStr + 'T12:00:00');
+  return DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeDetailsModal();
+});
+
+function isoDate(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+function getMonthKey() {
+  return currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
+}
+
+async function loadNotesForMonth() {
+  var key = getMonthKey();
+  var ta = document.getElementById('notesTextarea');
+  ta.value = '';
+  setNotesStatus('saved', 'Loading...');
+  var res = await db.from('quill_client_notes').select('*').eq('month_key', key).maybeSingle();
+  if (res.error && res.error.code !== 'PGRST116') {
+    console.error('Notes load error', res.error);
+    setNotesStatus('saved', 'Could not load');
+    return;
+  }
+  ta.value = (res.data && res.data.notes) || '';
+  setNotesStatus('saved', 'Saved');
+}
+
+function setNotesStatus(state, text) {
+  var dot = document.querySelector('#notesStatus .notes-status-dot');
+  var txt = document.getElementById('notesStatusText');
+  dot.classList.remove('saving', 'saved');
+  if (state === 'saving') dot.classList.add('saving');
+  else dot.classList.add('saved');
+  txt.textContent = text;
+}
+
+async function saveNotes() {
+  var key = getMonthKey();
+  var content = document.getElementById('notesTextarea').value;
+  setNotesStatus('saving', 'Saving...');
+  var payload = { month_key: key, notes: content, updated_at: new Date().toISOString() };
+  var res = await db.from('quill_client_notes').upsert(payload, { onConflict: 'month_key' });
+  if (res.error) {
+    console.error('Notes save error', res.error);
+    setNotesStatus('saved', 'Save failed');
+    return;
+  }
+  setNotesStatus('saved', 'Saved');
+}
+
+document.getElementById('notesTextarea').addEventListener('input', function(){
+  setNotesStatus('saving', 'Saving...');
+  if (notesSaveTimer) clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(saveNotes, 700);
+});
+
+document.getElementById('prevBtn').addEventListener('click', function(){
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderAll();
+  loadNotesForMonth();
+});
+document.getElementById('nextBtn').addEventListener('click', function(){
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderAll();
+  loadNotesForMonth();
+});
+document.getElementById('todayBtn').addEventListener('click', function(){
+  var now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
+  renderAll();
+  loadNotesForMonth();
+});
+
+// Notes panel collapse toggle. Persist state in localStorage so the client's
+// preference survives across visits.
+function applyNotesCollapsed(collapsed) {
+  var grid = document.getElementById('mainGrid');
+  var btn = document.getElementById('toggleNotesBtn');
+  if (collapsed) {
+    grid.classList.add('notes-collapsed');
+    btn.textContent = 'Show notes';
+  } else {
+    grid.classList.remove('notes-collapsed');
+    btn.textContent = 'Hide notes';
+  }
+}
+
+document.getElementById('toggleNotesBtn').addEventListener('click', function(){
+  var grid = document.getElementById('mainGrid');
+  var nowCollapsed = !grid.classList.contains('notes-collapsed');
+  applyNotesCollapsed(nowCollapsed);
+  try { localStorage.setItem('quill.client.notesCollapsed', nowCollapsed ? '1' : '0'); } catch (e) {}
+});
+
+// Restore collapse state on load
+try {
+  if (localStorage.getItem('quill.client.notesCollapsed') === '1') {
+    applyNotesCollapsed(true);
+  }
+} catch (e) {}
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+});
+</script>
+</body>
+</html>
