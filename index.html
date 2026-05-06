@@ -116,6 +116,50 @@
 
     /* CALENDAR GRID */
     .cal-grid { display: grid; grid-template-columns: repeat(7,minmax(130px,1fr)); border: 0.5px solid var(--q-line); border-radius: var(--radius); overflow: hidden; background: var(--q-line); gap: 0.5px; min-width: 910px; }
+
+    /* CALENDAR THEMES BAND */
+    .cal-themes-band { min-width: 910px; margin-bottom: 12px; padding: 10px 12px; background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
+    .cal-themes-band-head { display: flex; align-items: center; justify-content: space-between; }
+    .cal-themes-band-title { font-family: var(--font-head); font-size: 11px; font-weight: 700; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.08em; }
+    .cal-themes-band-add { font-size: 11px; padding: 4px 10px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 4px; cursor: pointer; font-family: var(--font-body); font-weight: 600; }
+    .cal-themes-band-add:hover { background: var(--gg-olive); color: #fff; }
+    .cal-themes-band-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cal-themes-empty { font-size: 11px; color: var(--q-muted); font-style: italic; }
+    .cal-theme-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 500; cursor: pointer; border: 0.5px solid transparent; transition: opacity 0.12s; }
+    .cal-theme-pill:hover { opacity: 0.82; }
+    .cal-theme-pill .cal-theme-dates { font-size: 10px; opacity: 0.7; }
+    .cal-theme-pill.theme-olive { background: #f0edd8; color: #43471d; border-color: #d8d4b6; }
+    .cal-theme-pill.theme-orange { background: #fdecd8; color: #8c3d0d; border-color: #f5d4ae; }
+    .cal-theme-pill.theme-lime { background: #e9f1c7; color: #4d6217; border-color: #d4dca0; }
+    .cal-theme-pill.theme-charcoal { background: #ebe9e3; color: #32312f; border-color: #d4d2cc; }
+    .cal-theme-pill.theme-rose { background: #f5dfdf; color: #8a3535; border-color: #e0c4c4; }
+    .cal-theme-pill.theme-sky { background: #dee5ed; color: #1e436b; border-color: #bfcad9; }
+
+    /* Theme edit modal */
+    .theme-modal-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .theme-modal-overlay.open { display: flex; }
+    .theme-modal { background: #fff; border-radius: 10px; width: 100%; max-width: 480px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+    .theme-modal-head { padding: 16px 20px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); border-radius: 10px 10px 0 0; }
+    .theme-modal-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--gg-charcoal); }
+    .theme-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .theme-modal-foot { padding: 12px 20px; border-top: 0.5px solid var(--q-line); display: flex; justify-content: space-between; align-items: center; gap: 8px; border-radius: 0 0 10px 10px; }
+    .theme-modal-foot-right { display: flex; gap: 6px; }
+    .theme-modal-cancel { padding: 7px 14px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 12px; cursor: pointer; font-family: var(--font-body); }
+    .theme-modal-cancel:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .theme-modal-save { padding: 7px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .theme-modal-save:hover { background: #2f3214; }
+    .theme-modal-delete { padding: 7px 12px; background: transparent; border: 0.5px solid #f0d6d6; color: #a32d2d; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .theme-modal-delete:hover { background: #fce4e4; color: #8a1e1e; border-color: #e8b8b8; }
+    .theme-color-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+    .theme-color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.12s; }
+    .theme-color-swatch:hover { transform: scale(1.1); }
+    .theme-color-swatch.selected { border-color: var(--gg-charcoal); }
+    .theme-color-swatch.color-olive { background: #f0edd8; }
+    .theme-color-swatch.color-orange { background: #fdecd8; }
+    .theme-color-swatch.color-lime { background: #e9f1c7; }
+    .theme-color-swatch.color-charcoal { background: #ebe9e3; }
+    .theme-color-swatch.color-rose { background: #f5dfdf; }
+    .theme-color-swatch.color-sky { background: #dee5ed; }
     .cal-day-header { padding: 10px 8px; text-align: center; font-size: 10px; font-weight: 600; color: var(--q-muted); background: var(--gg-offwhite); letter-spacing: 0.08em; text-transform: uppercase; }
     .cal-cell { min-height: 100px; padding: 8px; background: #fff; cursor: pointer; transition: background 0.1s; position: relative; }
     .cal-cell:hover { background: #fdfcf7; }
@@ -1028,7 +1072,10 @@
       <button class="filter-chip" onclick="toggleFilter(this,'scheduled')">Scheduled</button>
     </div>
     <div class="cal-layout" style="display:grid;grid-template-columns:1fr 240px;gap:18px;align-items:start;">
-      <div id="month-view" style="overflow-x:auto;min-width:0;"><div class="cal-grid" id="calGrid"></div></div>
+      <div id="month-view" style="overflow-x:auto;min-width:0;">
+        <div class="cal-themes-band" id="calThemesBand"></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
       <div class="cal-waiting-bay" id="calWaitingBay">
         <div class="cal-bay-header">
           <span class="cal-bay-title">Waiting Bay</span>
@@ -1851,6 +1898,52 @@
   </div>
 </div>
 
+<div class="theme-modal-overlay" id="theme-modal-overlay" onclick="if(event.target===this) closeThemeModal()">
+  <div class="theme-modal">
+    <div class="theme-modal-head">
+      <div class="theme-modal-title" id="theme-modal-title">Add theme</div>
+    </div>
+    <div class="theme-modal-body">
+      <div>
+        <label class="field-label">Label</label>
+        <input type="text" id="theme-label-input" class="field-input" placeholder="e.g. Mother\u0027s Day, End-of-quarter promo, Summer kickoff" maxlength="80">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="field-label">Start date</label>
+          <input type="date" id="theme-start-input" class="field-input">
+        </div>
+        <div>
+          <label class="field-label">End date</label>
+          <input type="date" id="theme-end-input" class="field-input">
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Color</label>
+        <div class="theme-color-picker" id="theme-color-picker">
+          <div class="theme-color-swatch color-olive selected" data-color="olive" onclick="selectThemeColor(this)" title="Olive"></div>
+          <div class="theme-color-swatch color-orange" data-color="orange" onclick="selectThemeColor(this)" title="Orange"></div>
+          <div class="theme-color-swatch color-lime" data-color="lime" onclick="selectThemeColor(this)" title="Lime"></div>
+          <div class="theme-color-swatch color-charcoal" data-color="charcoal" onclick="selectThemeColor(this)" title="Charcoal"></div>
+          <div class="theme-color-swatch color-rose" data-color="rose" onclick="selectThemeColor(this)" title="Rose"></div>
+          <div class="theme-color-swatch color-sky" data-color="sky" onclick="selectThemeColor(this)" title="Sky"></div>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Notes (optional)</label>
+        <textarea id="theme-notes-input" class="field-textarea" placeholder="Strategic context for this theme. Why is it on the calendar? What should planning around it consider?" style="min-height:60px;"></textarea>
+      </div>
+    </div>
+    <div class="theme-modal-foot">
+      <button class="theme-modal-delete" id="theme-modal-delete" onclick="deleteCurrentTheme()" style="display:none;">Delete</button>
+      <div class="theme-modal-foot-right">
+        <button class="theme-modal-cancel" onclick="closeThemeModal()">Cancel</button>
+        <button class="theme-modal-save" onclick="saveThemeFromModal()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script defer>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1944,6 +2037,10 @@ window.switchTab = function(t) {
   if (t === 'upload') refreshUploadCounts();
   if (t === 'studio') loadInsightsIfNeeded();
   if (t === 'board') renderCampaignBoard();
+  if (t === 'calendar') {
+    // Lazy-load themes when the calendar tab is shown
+    loadThemes(false).then(function(){ renderThemesBand(); });
+  }
 };
 
 // Calendar nav
@@ -2000,6 +2097,7 @@ function renderCalendar() {
   if (calView === 'month') renderMonthView();
   else renderListView();
   renderWaitingBay();
+  renderThemesBand();
 }
 
 function renderMonthView() {
@@ -2076,8 +2174,208 @@ function renderMonthView() {
   }
 }
 
-function renderListView() {
-  var fe = filteredMonthEmails().sort(function(a,b){
+// ── CALENDAR THEMES ───────────────────────────────────────────────────────
+// Themes are seasonal moments, important dates, or campaign themes that
+// frame the calendar. They render as colored pills above the calendar grid
+// so the strategist can see what is happening in the current month at a
+// glance. Click a pill to edit, click + to add new.
+
+var themesCache = null;
+var themesLoadedAt = 0;
+var themeEditingId = null;
+
+async function loadThemes(force) {
+  if (!force && themesCache && (Date.now() - themesLoadedAt) < 60000) return;
+  var res = await db.from('quill_calendar_themes').select('*').order('date_start', { ascending: true });
+  if (res.error) {
+    console.error('loadThemes error', res.error.message || res.error);
+    themesCache = [];
+    return;
+  }
+  themesCache = res.data || [];
+  themesLoadedAt = Date.now();
+}
+
+function renderThemesBand() {
+  var band = document.getElementById('calThemesBand');
+  if (!band) return;
+  if (calView !== 'month') { band.style.display = 'none'; return; }
+  band.style.display = 'flex';
+
+  // Compute month bounds for the currently displayed month
+  var monthStart = new Date(currentYear, currentMonth, 1);
+  var monthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+  // Filter themes that overlap this month
+  var inMonth = (themesCache || []).filter(function(t){
+    var ts = new Date(t.date_start + 'T00:00:00');
+    var te = new Date(t.date_end + 'T23:59:59');
+    return ts <= monthEnd && te >= monthStart;
+  });
+
+  // Sort by date_start
+  inMonth.sort(function(a, b){
+    return new Date(a.date_start) - new Date(b.date_start);
+  });
+
+  var parts = [];
+  parts.push('<div class="cal-themes-band-head">');
+  parts.push('  <span class="cal-themes-band-title">Themes</span>');
+  parts.push('  <button class="cal-themes-band-add" onclick="openThemeModal()">+ Add theme</button>');
+  parts.push('</div>');
+  parts.push('<div class="cal-themes-band-list">');
+
+  if (!inMonth.length) {
+    parts.push('<span class="cal-themes-empty">No themes for ' + MONTHS[currentMonth] + ' ' + currentYear + '. Add seasonal moments, important dates, or campaign themes to frame your planning.</span>');
+  } else {
+    inMonth.forEach(function(t){
+      var color = t.color || 'olive';
+      var dateRange = formatThemeDateRange(t.date_start, t.date_end);
+      parts.push('<button class="cal-theme-pill theme-' + escapeHtml(color) + '" onclick="openThemeModal(' + t.id + ')" title="' + escapeHtml(t.notes || '') + '">');
+      parts.push('  <span>' + escapeHtml(t.label || '') + '</span>');
+      parts.push('  <span class="cal-theme-dates">' + escapeHtml(dateRange) + '</span>');
+      parts.push('</button>');
+    });
+  }
+
+  parts.push('</div>');
+  band.innerHTML = parts.join('\n');
+}
+
+function formatThemeDateRange(startStr, endStr) {
+  var s = new Date(startStr + 'T12:00:00');
+  var e = new Date(endStr + 'T12:00:00');
+  var sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+  var sameDay = sameMonth && s.getDate() === e.getDate();
+  if (sameDay) {
+    return MONTHS[s.getMonth()].slice(0, 3) + ' ' + s.getDate();
+  }
+  if (sameMonth) {
+    return MONTHS[s.getMonth()].slice(0, 3) + ' ' + s.getDate() + '-' + e.getDate();
+  }
+  return MONTHS[s.getMonth()].slice(0, 3) + ' ' + s.getDate() + ' - ' + MONTHS[e.getMonth()].slice(0, 3) + ' ' + e.getDate();
+}
+
+window.openThemeModal = function(themeId) {
+  themeEditingId = themeId || null;
+  var titleEl = document.getElementById('theme-modal-title');
+  var labelEl = document.getElementById('theme-label-input');
+  var startEl = document.getElementById('theme-start-input');
+  var endEl = document.getElementById('theme-end-input');
+  var notesEl = document.getElementById('theme-notes-input');
+  var deleteBtn = document.getElementById('theme-modal-delete');
+
+  if (themeId) {
+    var t = (themesCache || []).find(function(x){ return x.id === themeId; });
+    if (!t) return;
+    titleEl.textContent = 'Edit theme';
+    labelEl.value = t.label || '';
+    startEl.value = t.date_start || '';
+    endEl.value = t.date_end || '';
+    notesEl.value = t.notes || '';
+    setSelectedThemeColor(t.color || 'olive');
+    deleteBtn.style.display = 'inline-block';
+  } else {
+    titleEl.textContent = 'Add theme';
+    labelEl.value = '';
+    // Default dates to first day of current month and 7 days later
+    var defaultStart = new Date(currentYear, currentMonth, 1);
+    var defaultEnd = new Date(currentYear, currentMonth, 7);
+    startEl.value = isoDate(defaultStart);
+    endEl.value = isoDate(defaultEnd);
+    notesEl.value = '';
+    setSelectedThemeColor('olive');
+    deleteBtn.style.display = 'none';
+  }
+
+  document.getElementById('theme-modal-overlay').classList.add('open');
+  setTimeout(function(){ labelEl.focus(); }, 50);
+};
+
+window.closeThemeModal = function() {
+  document.getElementById('theme-modal-overlay').classList.remove('open');
+  themeEditingId = null;
+};
+
+window.selectThemeColor = function(swatchEl) {
+  var picker = document.getElementById('theme-color-picker');
+  var swatches = picker.querySelectorAll('.theme-color-swatch');
+  swatches.forEach(function(s){ s.classList.remove('selected'); });
+  swatchEl.classList.add('selected');
+};
+
+function setSelectedThemeColor(color) {
+  var picker = document.getElementById('theme-color-picker');
+  var swatches = picker.querySelectorAll('.theme-color-swatch');
+  swatches.forEach(function(s){
+    if (s.getAttribute('data-color') === color) s.classList.add('selected');
+    else s.classList.remove('selected');
+  });
+}
+
+function getSelectedThemeColor() {
+  var picker = document.getElementById('theme-color-picker');
+  var selected = picker.querySelector('.theme-color-swatch.selected');
+  return selected ? selected.getAttribute('data-color') : 'olive';
+}
+
+window.saveThemeFromModal = async function() {
+  var label = (document.getElementById('theme-label-input').value || '').trim();
+  var startStr = document.getElementById('theme-start-input').value;
+  var endStr = document.getElementById('theme-end-input').value;
+  var notes = (document.getElementById('theme-notes-input').value || '').trim();
+  var color = getSelectedThemeColor();
+
+  if (!label) { showToast('Label is required', true); return; }
+  if (!startStr || !endStr) { showToast('Start and end dates are required', true); return; }
+  if (new Date(endStr) < new Date(startStr)) { showToast('End date must be after start date', true); return; }
+
+  var payload = {
+    label: label.slice(0, 80),
+    date_start: startStr,
+    date_end: endStr,
+    color: color,
+    notes: notes ? notes.slice(0, 500) : null
+  };
+
+  var res;
+  if (themeEditingId) {
+    res = await db.from('quill_calendar_themes').update(payload).eq('id', themeEditingId).select().single();
+  } else {
+    res = await db.from('quill_calendar_themes').insert(payload).select().single();
+  }
+  if (res.error) { showToast('Could not save theme: ' + res.error.message, true); return; }
+
+  // Update cache
+  if (!themesCache) themesCache = [];
+  if (themeEditingId) {
+    var idx = themesCache.findIndex(function(t){ return t.id === themeEditingId; });
+    if (idx !== -1) themesCache[idx] = res.data;
+  } else {
+    themesCache.push(res.data);
+  }
+
+  closeThemeModal();
+  renderThemesBand();
+  showToast(themeEditingId ? 'Theme updated' : 'Theme added');
+};
+
+window.deleteCurrentTheme = async function() {
+  if (!themeEditingId) return;
+  var t = (themesCache || []).find(function(x){ return x.id === themeEditingId; });
+  if (!t) return;
+  if (!confirm('Delete the "' + (t.label || 'untitled') + '" theme? This cannot be undone.')) return;
+
+  var res = await db.from('quill_calendar_themes').delete().eq('id', themeEditingId);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+
+  themesCache = themesCache.filter(function(x){ return x.id !== themeEditingId; });
+  closeThemeModal();
+  renderThemesBand();
+  showToast('Theme deleted');
+};
+
+function renderListView() {  var fe = filteredMonthEmails().sort(function(a,b){
     return new Date(a.send_date) - new Date(b.send_date);
   });
   var rows = document.getElementById('listRows');
@@ -4484,7 +4782,10 @@ window.renderFlowBrowser = function() {
     if (flowFilter && m.flow_name !== flowFilter) return false;
     if (statusFilter === 'live' && (m.status || '').toLowerCase() !== 'live') return false;
     if (q) {
-      var hay = ((m.flow_name || '') + ' ' + (m.subject || '') + ' ' + (m.body || '')).toLowerCase();
+      // Build search haystack from all available text fields. quill_flow_messages
+      // has no 'body' column (Klaviyo flow exports do not include email body),
+      // but message_name often has the most identifying info per row.
+      var hay = ((m.flow_name || '') + ' ' + (m.message_name || '') + ' ' + (m.subject || '') + ' ' + (m.preview || '')).toLowerCase();
       if (hay.indexOf(q) === -1) return false;
     }
     return true;
@@ -4499,13 +4800,23 @@ window.renderFlowBrowser = function() {
   });
 
   if (!rows.length) {
-    grid.innerHTML = '<div class="flow-browser-empty">No flow messages match these filters. Try clearing the search or switching to All statuses.</div>';
+    var hints = [];
+    if (q) hints.push('search text "' + escapeHtml(search) + '"');
+    if (flowFilter) hints.push('flow filter "' + escapeHtml(flowFilter) + '"');
+    if (statusFilter === 'live') hints.push('"Live only" status filter');
+    var hintText = hints.length ? ' Active filters: ' + hints.join(', ') + '.' : '';
+    grid.innerHTML = '<div class="flow-browser-empty">No flow messages match.' + hintText + ' Try clearing the search, picking a different flow, or switching to All statuses.</div>';
     return;
   }
 
   // Cap at 50 visible rows for performance
   var capped = rows.slice(0, 50);
-  var html = capped.map(function(m){
+  var totalCached = flowMessagesCache.length;
+  var html = '';
+  if (rows.length < totalCached) {
+    html += '<div class="flow-browser-meta" style="font-size:11px; color:var(--q-muted); padding:4px 0 8px 0;">Showing ' + rows.length + ' of ' + totalCached + ' flow messages.</div>';
+  }
+  html += capped.map(function(m){
     var openRate = m.delivered ? Math.round((Number(m.unique_opens || 0) / Number(m.delivered)) * 1000) / 10 : null;
     var clickRate = m.delivered ? Math.round((Number(m.unique_clicks || 0) / Number(m.delivered)) * 1000) / 10 : null;
     var statsBits = [];
@@ -10258,6 +10569,7 @@ async function saveVoiceField(field, value) {
 loadEmails();
 refreshUploadCounts();
 initTipWidgets();
+loadThemes(false).then(function(){ renderThemesBand(); });
 
 });
 </script>
