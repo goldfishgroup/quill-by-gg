@@ -415,6 +415,63 @@
     .flow-browser-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-browser-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
 
+    /* FLOW BUILDER */
+    .flow-builder-section { margin-top: 18px; padding-bottom: 28px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 28px; }
+    .flow-builder-toolbar { margin-bottom: 12px; }
+    .flow-builder-create-btn { padding: 8px 16px; background: var(--gg-olive); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .flow-builder-create-btn:hover { background: #2f3214; }
+    .flow-builder-list { display: flex; flex-direction: column; gap: 8px; }
+    .flow-builder-list-empty { padding: 20px; text-align: center; color: var(--q-muted); font-size: 12px; font-style: italic; background: #fff; border: 0.5px dashed var(--q-line); border-radius: var(--radius); }
+    .flow-builder-list-card { padding: 14px 18px; background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color 0.12s; }
+    .flow-builder-list-card:hover { border-color: var(--gg-olive); }
+    .flow-builder-list-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
+    .flow-builder-list-card-meta { font-size: 11px; color: var(--q-muted); }
+
+    .flow-builder-workspace-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .flow-builder-back-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 12px; cursor: pointer; font-family: var(--font-body); }
+    .flow-builder-back-btn:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
+    .flow-builder-delete-btn { padding: 6px 12px; background: transparent; border: 0.5px solid #f0d6d6; color: #a32d2d; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .flow-builder-delete-btn:hover { background: #fce4e4; }
+
+    .flow-builder-brief-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; }
+    .flow-builder-field { margin-bottom: 12px; }
+    .flow-builder-field:last-child { margin-bottom: 0; }
+    .flow-builder-label { display: block; font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .flow-builder-input { width: 100%; padding: 9px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
+    .flow-builder-input:focus { outline: none; border-color: var(--gg-olive); }
+    .flow-builder-textarea { width: 100%; min-height: 90px; padding: 10px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; font-size: 13px; font-family: var(--font-body); line-height: 1.55; color: var(--gg-charcoal); background: #fff; resize: vertical; }
+    .flow-builder-textarea:focus { outline: none; border-color: var(--gg-olive); }
+    .flow-builder-savestate { font-size: 10px; color: var(--q-muted); text-align: right; margin-top: 6px; }
+    .flow-builder-savestate.saving { color: var(--gg-orange); }
+
+    .flow-builder-slots-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .flow-builder-slots-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gg-charcoal); text-transform: uppercase; letter-spacing: 0.06em; }
+    .flow-builder-add-slot-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .flow-builder-add-slot-btn:hover { background: var(--gg-olive); color: #fff; }
+    .flow-builder-slots { display: flex; flex-direction: column; gap: 12px; }
+    .flow-builder-slots-empty { padding: 28px; text-align: center; color: var(--q-muted); font-size: 12px; font-style: italic; background: #fff; border: 0.5px dashed var(--q-line); border-radius: var(--radius); }
+
+    .flow-builder-slot { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 16px 18px; }
+    .flow-builder-slot-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+    .flow-builder-slot-pos { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.06em; min-width: 70px; }
+    .flow-builder-slot-delay { flex: 1; min-width: 0; }
+    .flow-builder-slot-delay input { width: 100%; padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 5px; font-size: 12px; font-family: var(--font-body); color: var(--gg-charcoal); }
+    .flow-builder-slot-delay input:focus { outline: none; border-color: var(--gg-olive); }
+    .flow-builder-slot-actions { display: flex; gap: 6px; }
+    .flow-builder-slot-chat-btn { padding: 6px 12px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-builder-slot-chat-btn:hover { background: #2f3214; }
+    .flow-builder-slot-chat-btn:disabled { opacity: 0.5; cursor: default; }
+    .flow-builder-slot-remove-btn { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .flow-builder-slot-remove-btn:hover { background: #fce4e4; color: #a32d2d; border-color: #f0d6d6; }
+    .flow-builder-slot-content { background: var(--gg-offwhite); border-radius: 6px; padding: 12px 14px; }
+    .flow-builder-slot-content-empty { color: var(--q-muted); font-size: 12px; font-style: italic; }
+    .flow-builder-slot-field { margin-bottom: 10px; }
+    .flow-builder-slot-field:last-child { margin-bottom: 0; }
+    .flow-builder-slot-field-label { font-size: 9px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+    .flow-builder-slot-field-copy { background: transparent; border: none; color: var(--gg-olive); font-size: 10px; cursor: pointer; font-family: var(--font-body); padding: 2px 6px; border-radius: 3px; }
+    .flow-builder-slot-field-copy:hover { background: rgba(67, 71, 29, 0.1); }
+    .flow-builder-slot-field-value { font-size: 13px; color: var(--gg-charcoal); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+
     /* FLOW DIAGNOSTICS SECTION (below the browser) */
     .flow-diagnostics-section { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--q-line); }
     .flow-diagnostics-head { margin-bottom: 14px; }
@@ -627,6 +684,26 @@
     .gaps-bucket-bar-fill.low { background: var(--gg-orange); }
     .gaps-bucket-count { font-size: 12px; color: var(--q-muted); min-width: 80px; text-align: right; }
     .gaps-bucket-flag { font-size: 10px; color: var(--gg-orange); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
+
+    /* SMART PLAN PANEL (Option A, prescriptive Gaps suggestion) */
+    .gaps-smart-plan { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px; }
+    .gaps-smart-plan-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .gaps-smart-plan-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .gaps-smart-plan-sub { font-size: 11px; color: var(--q-muted); line-height: 1.5; max-width: 540px; }
+    .gaps-smart-plan-btn { padding: 8px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex-shrink: 0; }
+    .gaps-smart-plan-btn:hover { background: #2f3214; }
+    .gaps-smart-plan-btn:disabled { opacity: 0.5; cursor: default; }
+    .gaps-smart-plan-output { margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--q-line); }
+    .gaps-smart-plan-distribution { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .gaps-smart-plan-row { display: grid; grid-template-columns: 220px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 0.5px solid #f0eee6; }
+    .gaps-smart-plan-row:first-child { border-top: none; }
+    .gaps-smart-plan-bucket { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); display: flex; align-items: center; gap: 8px; }
+    .gaps-smart-plan-count { font-size: 11px; color: var(--gg-olive); background: #f0edd8; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+    .gaps-smart-plan-rationale { font-size: 12px; color: var(--q-muted); line-height: 1.5; }
+    .gaps-smart-plan-reasoning { background: var(--gg-offwhite); border-left: 2px solid var(--gg-olive); padding: 10px 14px; margin-top: 10px; border-radius: 4px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; }
+    .gaps-smart-plan-reasoning-label { font-size: 9px; font-weight: 700; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .gaps-smart-plan-thinking { font-size: 12px; color: var(--q-muted); font-style: italic; padding: 12px 0; }
+    .gaps-smart-plan-error { font-size: 12px; color: #a32d2d; background: #fce4e4; padding: 10px 14px; border-radius: 4px; }
     .gaps-bucket-flag.historical-neglected { color: #8c3d0d; background: #fdecd8; padding: 1px 6px; border-radius: 3px; }
     .gaps-bucket-flag.historical-warn { color: #8a1e1e; background: #f4d9d9; padding: 1px 6px; border-radius: 3px; }
     .gaps-bucket-flag.historical-info { color: var(--gg-olive); background: #f0edd8; padding: 1px 6px; border-radius: 3px; }
@@ -1403,6 +1480,41 @@
               </ul>
             </div>
           </div>
+          <div class="flow-builder-section">
+            <div class="flow-browser-head">
+              <div class="flow-browser-title">Flow Builder</div>
+              <div class="flow-browser-sub">Draft a new flow from scratch. Set the overall brief, add a slot for each message, and chat with Quill to draft each one. Quill uses your voice, products, and patterns. (Phase 1: structure; chat lands in Phase 2.)</div>
+            </div>
+            <div id="flow-builder-list-view">
+              <div class="flow-builder-toolbar">
+                <button class="flow-builder-create-btn" onclick="createFlowDraft()">+ New flow</button>
+              </div>
+              <div id="flow-builder-list" class="flow-builder-list"></div>
+            </div>
+            <div id="flow-builder-workspace" class="flow-builder-workspace" style="display:none;">
+              <div class="flow-builder-workspace-head">
+                <button class="flow-builder-back-btn" onclick="closeFlowBuilderWorkspace()">&lsaquo; Back to flows</button>
+                <button class="flow-builder-delete-btn" onclick="deleteCurrentFlowDraft()">Delete flow</button>
+              </div>
+              <div class="flow-builder-brief-card">
+                <div class="flow-builder-field">
+                  <label class="flow-builder-label">Flow name</label>
+                  <input type="text" id="flow-builder-name" class="flow-builder-input" maxlength="120" placeholder="e.g. Abandoned Cart Revamp v2" oninput="onFlowFieldEdit()">
+                </div>
+                <div class="flow-builder-field">
+                  <label class="flow-builder-label">Flow brief</label>
+                  <textarea id="flow-builder-brief" class="flow-builder-textarea" placeholder="Goal, audience, overall arc, success metric. The brief feeds every message draft so each chat knows the bigger picture." oninput="onFlowFieldEdit()"></textarea>
+                </div>
+                <div class="flow-builder-savestate" id="flow-builder-savestate">Saved</div>
+              </div>
+              <div class="flow-builder-slots-head">
+                <div class="flow-builder-slots-title">Messages</div>
+                <button class="flow-builder-add-slot-btn" onclick="addFlowSlot()">+ Add message</button>
+              </div>
+              <div id="flow-builder-slots" class="flow-builder-slots"></div>
+            </div>
+          </div>
+
           <div class="flow-browser-section">
             <div class="flow-browser-head">
               <div class="flow-browser-title">Flow messages</div>
@@ -1713,6 +1825,18 @@
             <button class="extract-btn" onclick="runGapsAnalysis()" id="gaps-run-btn">Run gap analysis</button>
           </div>
           <div id="gaps-summary" class="gaps-summary" style="display:none;"></div>
+
+          <div id="gaps-smart-plan" class="gaps-smart-plan" style="display:none;">
+            <div class="gaps-smart-plan-head">
+              <div>
+                <div class="gaps-smart-plan-title">Suggested plan</div>
+                <div class="gaps-smart-plan-sub">Quill takes your historical performance, target cadence, and the planning window, then suggests a balanced bucket distribution with reasoning.</div>
+              </div>
+              <button class="gaps-smart-plan-btn" id="gaps-smart-plan-btn" onclick="suggestPlanForWindow()">Suggest a plan for this window</button>
+            </div>
+            <div id="gaps-smart-plan-output" class="gaps-smart-plan-output" style="display:none;"></div>
+          </div>
+
           <div id="gaps-body"></div>
         </div>
         <div class="studio-section" id="studio-refs">
@@ -4207,6 +4331,8 @@ async function showFlowDiagnosticsOnOpen() {
   // Also load the flow message browser for the panel below diagnostics
   await loadFlowBrowserData();
   renderFlowBrowser();
+  // And the Flow Builder list
+  await ensureFlowDraftsLoaded();
 }
 
 function renderFlowDiagnostics() {
@@ -4763,6 +4889,246 @@ async function loadFlowBrowserData() {
     sel.innerHTML = '<option value="">All flows</option>'
       + sortedNames.map(function(n){ return '<option value="' + escapeHtml(n) + '">' + escapeHtml(n) + '</option>'; }).join('');
     if (existing) sel.value = existing;
+  }
+}
+
+// ── FLOW BUILDER (Phase 1: structure + slot management) ──────────────────
+// Conversational drafter for multi-message flows. Phase 1 ships flow CRUD,
+// brief editing, and slot management. Phase 2 will add per-slot chat.
+// Phase 3 will add sequence-aware context across slots.
+
+var flowDraftsCache = null;
+var currentFlowDraft = null;
+var currentFlowSlots = [];
+var flowFieldSaveTimer = null;
+var slotDelaySaveTimer = null;
+
+async function loadFlowDrafts() {
+  var res = await db.from('quill_flow_drafts').select('*').order('updated_at', { ascending: false });
+  if (res.error) { console.error('loadFlowDrafts', res.error); flowDraftsCache = []; return; }
+  flowDraftsCache = res.data || [];
+}
+
+async function loadFlowSlots(flowId) {
+  var res = await db.from('quill_flow_draft_slots').select('*').eq('flow_id', flowId).order('position', { ascending: true });
+  if (res.error) { console.error('loadFlowSlots', res.error); currentFlowSlots = []; return; }
+  currentFlowSlots = res.data || [];
+}
+
+function renderFlowBuilderList() {
+  var list = document.getElementById('flow-builder-list');
+  if (!list) return;
+  if (!flowDraftsCache || !flowDraftsCache.length) {
+    list.innerHTML = '<div class="flow-builder-list-empty">No flow drafts yet. Click "+ New flow" to start.</div>';
+    return;
+  }
+  var html = flowDraftsCache.map(function(f){
+    var when = f.updated_at ? new Date(f.updated_at).toLocaleDateString() : '';
+    var briefSnippet = (f.brief || '').slice(0, 80);
+    return '<div class="flow-builder-list-card" onclick="openFlowDraft(' + f.id + ')">'
+      + '<div>'
+      + '  <div class="flow-builder-list-card-name">' + escapeHtml(f.name || 'Untitled flow') + '</div>'
+      + '  <div class="flow-builder-list-card-meta">' + (briefSnippet ? escapeHtml(briefSnippet) + (f.brief.length > 80 ? '...' : '') : 'No brief yet') + '</div>'
+      + '</div>'
+      + '<div class="flow-builder-list-card-meta">Updated ' + when + '</div>'
+      + '</div>';
+  }).join('');
+  list.innerHTML = html;
+}
+
+window.createFlowDraft = async function() {
+  var name = prompt('Name for this flow draft (you can rename later):', 'New flow');
+  if (name === null) return;
+  name = (name || '').trim() || 'New flow';
+  var res = await db.from('quill_flow_drafts').insert({ name: name, brief: '' }).select().single();
+  if (res.error) { showToast('Could not create flow: ' + res.error.message, true); return; }
+  if (!flowDraftsCache) flowDraftsCache = [];
+  flowDraftsCache.unshift(res.data);
+  renderFlowBuilderList();
+  openFlowDraft(res.data.id);
+};
+
+window.openFlowDraft = async function(flowId) {
+  if (!flowDraftsCache) await loadFlowDrafts();
+  var flow = flowDraftsCache.find(function(f){ return f.id === flowId; });
+  if (!flow) { showToast('Flow not found', true); return; }
+  currentFlowDraft = flow;
+  await loadFlowSlots(flowId);
+
+  document.getElementById('flow-builder-list-view').style.display = 'none';
+  document.getElementById('flow-builder-workspace').style.display = 'block';
+  document.getElementById('flow-builder-name').value = flow.name || '';
+  document.getElementById('flow-builder-brief').value = flow.brief || '';
+  setFlowSaveState('Saved', false);
+  renderFlowSlots();
+};
+
+window.closeFlowBuilderWorkspace = function() {
+  currentFlowDraft = null;
+  currentFlowSlots = [];
+  document.getElementById('flow-builder-workspace').style.display = 'none';
+  document.getElementById('flow-builder-list-view').style.display = 'block';
+  loadFlowDrafts().then(renderFlowBuilderList);
+};
+
+window.deleteCurrentFlowDraft = async function() {
+  if (!currentFlowDraft) return;
+  if (!confirm('Delete the "' + (currentFlowDraft.name || 'untitled') + '" flow and all its messages? This cannot be undone.')) return;
+  var res = await db.from('quill_flow_drafts').delete().eq('id', currentFlowDraft.id);
+  if (res.error) { showToast('Could not delete: ' + res.error.message, true); return; }
+  showToast('Flow deleted');
+  closeFlowBuilderWorkspace();
+};
+
+function setFlowSaveState(text, isSaving) {
+  var el = document.getElementById('flow-builder-savestate');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('saving', !!isSaving);
+}
+
+window.onFlowFieldEdit = function() {
+  setFlowSaveState('Saving...', true);
+  if (flowFieldSaveTimer) clearTimeout(flowFieldSaveTimer);
+  flowFieldSaveTimer = setTimeout(saveFlowFields, 700);
+};
+
+async function saveFlowFields() {
+  if (!currentFlowDraft) return;
+  var name = (document.getElementById('flow-builder-name').value || '').trim().slice(0, 120);
+  var brief = (document.getElementById('flow-builder-brief').value || '').trim();
+  var payload = { name: name || 'Untitled flow', brief: brief, updated_at: new Date().toISOString() };
+  var res = await db.from('quill_flow_drafts').update(payload).eq('id', currentFlowDraft.id).select().single();
+  if (res.error) {
+    setFlowSaveState('Save failed', false);
+    console.error('saveFlowFields', res.error);
+    return;
+  }
+  currentFlowDraft = res.data;
+  // Update cache
+  var idx = (flowDraftsCache || []).findIndex(function(f){ return f.id === currentFlowDraft.id; });
+  if (idx !== -1) flowDraftsCache[idx] = res.data;
+  setFlowSaveState('Saved', false);
+}
+
+function renderFlowSlots() {
+  var container = document.getElementById('flow-builder-slots');
+  if (!container) return;
+  if (!currentFlowSlots.length) {
+    container.innerHTML = '<div class="flow-builder-slots-empty">No messages yet. Click "+ Add message" to add the first one.</div>';
+    return;
+  }
+  var html = currentFlowSlots.map(function(s, idx){
+    var pos = idx + 1;
+    var hasContent = s.generated_subject || s.generated_preview || s.generated_body;
+    var contentHtml;
+    if (hasContent) {
+      var parts = [];
+      if (s.generated_subject) {
+        parts.push('<div class="flow-builder-slot-field">'
+          + '<div class="flow-builder-slot-field-label">Subject <button class="flow-builder-slot-field-copy" onclick="copyFieldText(' + s.id + ', \u0027subject\u0027)">Copy</button></div>'
+          + '<div class="flow-builder-slot-field-value" id="slot-' + s.id + '-subject">' + escapeHtml(s.generated_subject) + '</div>'
+          + '</div>');
+      }
+      if (s.generated_preview) {
+        parts.push('<div class="flow-builder-slot-field">'
+          + '<div class="flow-builder-slot-field-label">Preview <button class="flow-builder-slot-field-copy" onclick="copyFieldText(' + s.id + ', \u0027preview\u0027)">Copy</button></div>'
+          + '<div class="flow-builder-slot-field-value" id="slot-' + s.id + '-preview">' + escapeHtml(s.generated_preview) + '</div>'
+          + '</div>');
+      }
+      if (s.generated_body) {
+        parts.push('<div class="flow-builder-slot-field">'
+          + '<div class="flow-builder-slot-field-label">Body <button class="flow-builder-slot-field-copy" onclick="copyFieldText(' + s.id + ', \u0027body\u0027)">Copy</button></div>'
+          + '<div class="flow-builder-slot-field-value" id="slot-' + s.id + '-body">' + escapeHtml(s.generated_body) + '</div>'
+          + '</div>');
+      }
+      contentHtml = parts.join('');
+    } else {
+      contentHtml = '<div class="flow-builder-slot-content-empty">No draft yet. Use chat to draft this message. (Coming in Phase 2.)</div>';
+    }
+    var delayValue = s.recommended_delay || '';
+    return '<div class="flow-builder-slot" data-slot-id="' + s.id + '">'
+      + '  <div class="flow-builder-slot-head">'
+      + '    <div class="flow-builder-slot-pos">Email ' + pos + '</div>'
+      + '    <div class="flow-builder-slot-delay">'
+      + '      <input type="text" placeholder="Delay (e.g. 1 hour after trigger, 24 hours after Email 1)" value="' + escapeHtml(delayValue) + '" oninput="onSlotDelayEdit(' + s.id + ', this.value)">'
+      + '    </div>'
+      + '    <div class="flow-builder-slot-actions">'
+      + '      <button class="flow-builder-slot-chat-btn" disabled title="Chat ships in Phase 2">Chat to draft</button>'
+      + '      <button class="flow-builder-slot-remove-btn" onclick="removeFlowSlot(' + s.id + ')">Remove</button>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="flow-builder-slot-content">' + contentHtml + '</div>'
+      + '</div>';
+  }).join('');
+  container.innerHTML = html;
+}
+
+window.addFlowSlot = async function() {
+  if (!currentFlowDraft) return;
+  var nextPos = currentFlowSlots.length + 1;
+  var res = await db.from('quill_flow_draft_slots').insert({
+    flow_id: currentFlowDraft.id,
+    position: nextPos
+  }).select().single();
+  if (res.error) { showToast('Could not add slot: ' + res.error.message, true); return; }
+  currentFlowSlots.push(res.data);
+  renderFlowSlots();
+  // Bump the parent updated_at
+  await db.from('quill_flow_drafts').update({ updated_at: new Date().toISOString() }).eq('id', currentFlowDraft.id);
+};
+
+window.removeFlowSlot = async function(slotId) {
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  if (!slot) return;
+  if (!confirm('Remove Email ' + (currentFlowSlots.indexOf(slot) + 1) + ' from this flow? This cannot be undone.')) return;
+  var res = await db.from('quill_flow_draft_slots').delete().eq('id', slotId);
+  if (res.error) { showToast('Could not remove: ' + res.error.message, true); return; }
+  currentFlowSlots = currentFlowSlots.filter(function(s){ return s.id !== slotId; });
+  // Reindex positions in DB so the remaining slots are 1, 2, 3...
+  for (var i = 0; i < currentFlowSlots.length; i++) {
+    var newPos = i + 1;
+    if (currentFlowSlots[i].position !== newPos) {
+      currentFlowSlots[i].position = newPos;
+      await db.from('quill_flow_draft_slots').update({ position: newPos }).eq('id', currentFlowSlots[i].id);
+    }
+  }
+  renderFlowSlots();
+};
+
+window.onSlotDelayEdit = function(slotId, val) {
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  if (!slot) return;
+  slot.recommended_delay = val;
+  if (slotDelaySaveTimer) clearTimeout(slotDelaySaveTimer);
+  slotDelaySaveTimer = setTimeout(function(){ saveSlotDelay(slotId, val); }, 700);
+};
+
+async function saveSlotDelay(slotId, val) {
+  var res = await db.from('quill_flow_draft_slots').update({ recommended_delay: val }).eq('id', slotId);
+  if (res.error) console.error('saveSlotDelay', res.error);
+}
+
+window.copyFieldText = function(slotId, field) {
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  if (!slot) return;
+  var text = '';
+  if (field === 'subject') text = slot.generated_subject || '';
+  else if (field === 'preview') text = slot.generated_preview || '';
+  else if (field === 'body') text = slot.generated_body || '';
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ showToast('Copied'); }, function(){ showToast('Copy failed', true); });
+  } else {
+    showToast('Clipboard not available', true);
+  }
+};
+
+// Initial load when AI Studio opens to studio-flows section
+async function ensureFlowDraftsLoaded() {
+  if (flowDraftsCache === null) {
+    await loadFlowDrafts();
+    renderFlowBuilderList();
   }
 }
 
@@ -7508,6 +7874,19 @@ window.runGapsAnalysis = async function() {
     var workflow = buildWorkflowGaps();
     var summary = buildGapsSummary(weeks, bucketMix, workflow, start, end, cadence);
 
+    // Cache the analysis context on window so the smart plan button can use it
+    // without re-computing. Each Run gap analysis click refreshes this.
+    window._gapsAnalysisContext = {
+      start: start,
+      end: end,
+      cadence: cadence,
+      lookbackMonths: lookbackMonths,
+      inWindow: inWindow,
+      weeks: weeks,
+      bucketMix: bucketMix,
+      historical: historical
+    };
+
     renderGapsSummary(summary);
     renderGapsSections(weeks, bucketMix, workflow, cadence);
   } catch (err) {
@@ -7764,6 +8143,13 @@ function renderGapsSummary(html) {
   if (!el) return;
   el.innerHTML = html;
   el.style.display = html ? 'block' : 'none';
+  // Reveal the smart plan panel once analysis has run. The output starts hidden
+  // until the user clicks the suggest button.
+  var smartPanel = document.getElementById('gaps-smart-plan');
+  if (smartPanel) smartPanel.style.display = html ? 'block' : 'none';
+  // Reset prior output when re-running
+  var smartOutput = document.getElementById('gaps-smart-plan-output');
+  if (smartOutput) { smartOutput.innerHTML = ''; smartOutput.style.display = 'none'; }
 }
 
 function renderGapsSections(weeks, bucketMix, workflow, cadence) {
@@ -8018,6 +8404,238 @@ window.gapsJumpToIdeas = function(opts) {
     showToast('Form pre-filled. Adjust if needed, then click Generate ideas.');
   }, 100);
 };
+
+// ── GAPS SMART PLAN (prescriptive suggestion) ─────────────────────────────
+// Calls Claude with the full diagnostic context to produce a recommended
+// bucket distribution + reasoning for the planning window. Renders a small
+// panel above the diagnostic sections. Each line in the recommendation has
+// a Generate ideas button that uses the existing routing helper.
+
+window.suggestPlanForWindow = async function() {
+  var ctx = window._gapsAnalysisContext;
+  if (!ctx) {
+    showToast('Run gap analysis first', true);
+    return;
+  }
+
+  var btn = document.getElementById('gaps-smart-plan-btn');
+  var output = document.getElementById('gaps-smart-plan-output');
+  if (btn) { btn.disabled = true; btn.textContent = 'Thinking...'; }
+  if (output) {
+    output.style.display = 'block';
+    output.innerHTML = '<div class="gaps-smart-plan-thinking">Quill is analyzing your historical data, voice, and patterns to suggest a balanced plan...</div>';
+  }
+
+  try {
+    // Make sure we have the inputs the prompt needs
+    if (!voiceCache) await loadVoiceBrief(true);
+    var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
+    var patterns = (patternsRes.data || []);
+    var starredPatterns = patterns.filter(function(p){ return p.starred; });
+    var patternsForPrompt = starredPatterns.length ? starredPatterns : patterns.slice(0, 6);
+
+    var systemPrompt = buildSmartPlanSystemPrompt(ctx, voiceCache || {}, patternsForPrompt);
+    var userMessage = buildSmartPlanUserMessage(ctx);
+
+    var resp = await callClaudeForSmartPlan(systemPrompt, userMessage);
+    renderSmartPlanOutput(resp);
+  } catch (err) {
+    console.error('Smart plan error', err);
+    if (output) {
+      output.innerHTML = '<div class="gaps-smart-plan-error">Could not generate a plan: ' + escapeHtml(err.message || String(err)) + '. Try again, or run a fresh gap analysis first.</div>';
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Suggest a plan for this window'; }
+  }
+};
+
+function buildSmartPlanSystemPrompt(ctx, voice, patterns) {
+  var lines = [];
+  lines.push('You are Quill, an AI agent for SFH email marketing. Your job in this conversation is to suggest a balanced content plan for an upcoming planning window, based on historical performance and brand voice.');
+  lines.push('');
+  lines.push('YOUR LANE: pattern intelligence, diagnostics, and copy production. You are doing diagnostics + planning here, which is squarely in lane.');
+  lines.push('');
+  lines.push('OUTPUT FORMAT (REQUIRED): respond with valid JSON in this exact shape:');
+  lines.push('{');
+  lines.push('  "distribution": [');
+  lines.push('    { "bucket": "<bucket name>", "count": <integer>, "rationale": "<one sentence why this count>" },');
+  lines.push('    ...');
+  lines.push('  ],');
+  lines.push('  "reasoning": "<2 to 4 sentences explaining the overall logic of this plan, citing historical data>"');
+  lines.push('}');
+  lines.push('');
+  lines.push('Do not include any text outside the JSON. Do not wrap it in markdown code fences.');
+  lines.push('');
+  lines.push('PLANNING PRINCIPLES:');
+  lines.push('- Total count across all buckets should match (cadence per week) x (number of weeks in window). Round to whole numbers.');
+  lines.push('- Continue what worked in the past. Buckets with strong historical performance get meaningful share.');
+  lines.push('- Rebalance what was neglected. Buckets that were meaningful historically but at 0% in the planning window deserve attention.');
+  lines.push('- Avoid over-repeating heavy buckets. If a bucket was 30%+ historically, it does not need to be 30%+ again.');
+  lines.push('- Respect the strategist. The planning window may already have some content; preserve what is there and fill the gaps thoughtfully.');
+  lines.push('- Be specific in rationale. Each bucket count gets a one-sentence reason that cites real data when possible (open rates, share, neglect status).');
+  lines.push('- Do not invent buckets. Use only the buckets provided.');
+  lines.push('');
+  lines.push('VOICE CONSTRAINTS (apply to all generated text):');
+  lines.push('- NEVER use em dashes. Use commas, periods, or parentheses instead.');
+  lines.push('- NEVER use hyperbolic words: critical, massive, exceptional, remarkable, phenomenal, concerning, severe, alarming, plummeting.');
+  lines.push('- American English. Apostrophes use ASCII single quotes.');
+  if (voice.pov) lines.push('- POV: ' + voice.pov);
+  if (voice.formality) lines.push('- Formality: ' + voice.formality);
+  return lines.join('\n');
+}
+
+function buildSmartPlanUserMessage(ctx) {
+  var lines = [];
+  var weeksInWindow = Math.max(1, Math.round((ctx.end - ctx.start) / (1000 * 60 * 60 * 24 * 7)));
+  var targetTotal = Math.max(1, weeksInWindow * (ctx.cadence || 1));
+
+  lines.push('PLANNING WINDOW: ' + ctx.start.toDateString() + ' to ' + ctx.end.toDateString());
+  lines.push('That is approximately ' + weeksInWindow + ' week' + (weeksInWindow === 1 ? '' : 's') + '.');
+  lines.push('Target cadence: ' + ctx.cadence + ' send' + (ctx.cadence === 1 ? '' : 's') + ' per week.');
+  lines.push('Target total for the window: ' + targetTotal + ' send' + (targetTotal === 1 ? '' : 's') + '.');
+  lines.push('');
+
+  lines.push('AVAILABLE BUCKETS (use these names exactly):');
+  ctx.bucketMix.buckets.forEach(function(b){
+    lines.push('- ' + b.name);
+  });
+  lines.push('');
+
+  // Currently planned in window
+  lines.push('CURRENTLY PLANNED IN THIS WINDOW:');
+  if (ctx.bucketMix.total === 0) {
+    lines.push('Nothing yet. The window is empty.');
+  } else {
+    lines.push('Total: ' + ctx.bucketMix.total + ' send' + (ctx.bucketMix.total === 1 ? '' : 's') + '.');
+    ctx.bucketMix.buckets.forEach(function(b){
+      if (b.count > 0) {
+        lines.push('- ' + b.name + ': ' + b.count + ' send' + (b.count === 1 ? '' : 's') + ' (' + Math.round(b.share * 100) + '% of plan)');
+      }
+    });
+  }
+  lines.push('');
+
+  // Historical performance
+  if (ctx.historical && ctx.historical.pastRowsCount > 0) {
+    lines.push('HISTORICAL PERFORMANCE (past ' + ctx.historical.lookbackMonths + ' months, ' + ctx.historical.pastRowsCount + ' campaigns from Klaviyo):');
+    lines.push('Average weekly cadence: ' + (Math.round(ctx.historical.avgWeeklyCadence * 10) / 10) + ' sends per week');
+    lines.push('');
+    lines.push('Per-bucket history:');
+    ctx.bucketMix.buckets.forEach(function(b){
+      var pastShare = Math.round((b.pastShare || 0) * 100);
+      var openRate = (b.pastAvgOpenRate !== null && b.pastAvgOpenRate !== undefined)
+        ? (Math.round(b.pastAvgOpenRate * 1000) / 10) + '% avg open'
+        : 'no open rate data';
+      var clickRate = (b.pastAvgClickRate !== null && b.pastAvgClickRate !== undefined)
+        ? (Math.round(b.pastAvgClickRate * 1000) / 10) + '% avg click'
+        : 'no click rate data';
+      var flagNote = '';
+      if (b.historicalFlag === 'neglected') flagNote = ' [NEGLECTED: meaningful in past, 0% planned]';
+      else if (b.historicalFlag === 'repeating-heavy') flagNote = ' [HEAVY in past AND planned heavy]';
+      else if (b.historicalFlag === 'shifting-into') flagNote = ' [NEW EMPHASIS: was light in past, planned heavy]';
+      lines.push('- ' + b.name + ': ' + (b.pastCount || 0) + ' past sends (' + pastShare + '% share), ' + openRate + ', ' + clickRate + flagNote);
+    });
+  } else {
+    lines.push('HISTORICAL PERFORMANCE: No data available for the look-back period. Make recommendations based on bucket coverage and target cadence alone.');
+  }
+  lines.push('');
+
+  // Week breakdown
+  var underWeeks = ctx.weeks.filter(function(w){ return w.flag === 'under'; }).length;
+  var emptyWeeks = ctx.weeks.filter(function(w){ return w.count === 0; }).length;
+  if (underWeeks || emptyWeeks) {
+    lines.push('WEEK COVERAGE: ' + emptyWeeks + ' empty week' + (emptyWeeks === 1 ? '' : 's') + ', ' + underWeeks + ' under-cadence week' + (underWeeks === 1 ? '' : 's') + '.');
+    lines.push('');
+  }
+
+  lines.push('Now suggest a balanced distribution. Total counts should sum close to ' + targetTotal + '. Use the JSON format specified.');
+
+  return lines.join('\n');
+}
+
+async function callClaudeForSmartPlan(systemPrompt, userMessage) {
+  var res = await fetch('/api/diagnose', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      max_tokens: 1500
+    })
+  });
+  var rawText = await res.text();
+  if (res.status === 504 || rawText.indexOf('<!DOCTYPE') === 0 || rawText.indexOf('<html') === 0) {
+    throw new Error('Server timed out. Try again.');
+  }
+  var data;
+  try { data = JSON.parse(rawText); } catch (e) { throw new Error('Bad response: ' + rawText.slice(0, 200)); }
+  if (data.error) throw new Error(data.error);
+  var contentBlock = (data.content || []).find(function(b){ return b.type === 'text'; });
+  if (!contentBlock) throw new Error('No content in response');
+  var raw = contentBlock.text || '';
+
+  // Extract JSON
+  var jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Response did not contain JSON. Raw: ' + raw.slice(0, 200));
+  var parsed;
+  try { parsed = JSON.parse(jsonMatch[0]); }
+  catch (e) {
+    var repaired = jsonMatch[0].replace(/,\s*([}\]])/g, '$1');
+    try { parsed = JSON.parse(repaired); }
+    catch (e2) { throw new Error('Could not parse plan JSON. Raw: ' + raw.slice(0, 200)); }
+  }
+  if (!parsed.distribution || !Array.isArray(parsed.distribution)) {
+    throw new Error('Plan response missing distribution array');
+  }
+  return parsed;
+}
+
+function renderSmartPlanOutput(plan) {
+  var output = document.getElementById('gaps-smart-plan-output');
+  if (!output) return;
+  if (!plan || !plan.distribution || !plan.distribution.length) {
+    output.innerHTML = '<div class="gaps-smart-plan-error">No distribution returned. Try again.</div>';
+    return;
+  }
+
+  var parts = [];
+  parts.push('<div class="gaps-smart-plan-distribution">');
+
+  if (!window._gapsCtx) window._gapsCtx = {};
+  var ctxIdSeq = 0;
+
+  plan.distribution.forEach(function(item){
+    if (!item || !item.bucket) return;
+    var count = parseInt(item.count, 10);
+    if (isNaN(count) || count < 0) count = 0;
+    var rationale = item.rationale || '';
+
+    // Build a Generate ideas button context that includes the suggested count
+    // and the rationale, so the Ideas generator gets rich framing.
+    var genCtx = 'Suggested plan recommends ' + count + ' "' + item.bucket + '" idea' + (count === 1 ? '' : 's')
+      + ' for the planning window. Rationale: ' + rationale;
+    var ctxId = 'sp' + (++ctxIdSeq);
+    window._gapsCtx[ctxId] = { bucket: item.bucket, extraContext: genCtx, suggestedCount: count };
+
+    parts.push('<div class="gaps-smart-plan-row">');
+    parts.push('  <div class="gaps-smart-plan-bucket">' + escapeHtml(item.bucket) + ' <span class="gaps-smart-plan-count">' + count + '</span></div>');
+    parts.push('  <div class="gaps-smart-plan-rationale">' + escapeHtml(rationale) + '</div>');
+    parts.push('  <button class="gaps-action-btn" onclick="gapsJumpToIdeas(window._gapsCtx[\u0027' + ctxId + '\u0027])">Generate ideas</button>');
+    parts.push('</div>');
+  });
+
+  parts.push('</div>');
+
+  if (plan.reasoning) {
+    parts.push('<div class="gaps-smart-plan-reasoning">');
+    parts.push('  <div class="gaps-smart-plan-reasoning-label">Reasoning</div>');
+    parts.push('  <div>' + escapeHtml(plan.reasoning) + '</div>');
+    parts.push('</div>');
+  }
+
+  output.innerHTML = parts.join('\n');
+  output.style.display = 'block';
+}
 
 // ── CAMPAIGN BOARD ────────────────────────────────────────────────────────
 
