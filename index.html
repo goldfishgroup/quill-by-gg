@@ -472,6 +472,52 @@
     .flow-builder-slot-field-copy:hover { background: rgba(67, 71, 29, 0.1); }
     .flow-builder-slot-field-value { font-size: 13px; color: var(--gg-charcoal); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
 
+    /* Slot source content (existing copy when improving) */
+    .flow-builder-slot-source { margin-bottom: 12px; }
+    .flow-builder-slot-source.open { background: #fff8ed; border: 0.5px solid #f5d4ae; border-radius: 6px; padding: 10px 12px; }
+    .flow-builder-slot-source-label { font-size: 9px; font-weight: 700; color: #8c3d0d; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .flow-builder-slot-source-textarea { width: 100%; min-height: 80px; padding: 8px 10px; border: 0.5px solid #f5d4ae; border-radius: 4px; font-size: 12px; font-family: var(--font-body); line-height: 1.55; color: var(--gg-charcoal); background: #fff; resize: vertical; }
+    .flow-builder-slot-source-textarea:focus { outline: none; border-color: var(--gg-orange); }
+    .flow-builder-slot-source-toggle { background: transparent; border: 0.5px dashed var(--q-line); color: var(--q-muted); padding: 6px 10px; border-radius: 5px; font-size: 11px; font-family: var(--font-body); cursor: pointer; }
+    .flow-builder-slot-source-toggle:hover { color: var(--gg-charcoal); border-color: var(--gg-olive); }
+
+    /* Slot chat panel (modal-style overlay) */
+    .slot-chat-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: stretch; justify-content: flex-end; }
+    .slot-chat-overlay.open { display: flex; }
+    .slot-chat-panel { background: #fff; width: 460px; max-width: 100%; height: 100vh; display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.15); }
+    .slot-chat-head { padding: 14px 18px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-shrink: 0; }
+    .slot-chat-head-left { flex: 1; min-width: 0; }
+    .slot-chat-meta { font-size: 10px; color: var(--gg-olive); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .slot-chat-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--gg-charcoal); }
+    .slot-chat-close { background: transparent; border: none; color: var(--q-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 18px; line-height: 1; }
+    .slot-chat-close:hover { background: #efece5; color: var(--gg-charcoal); }
+    .slot-chat-messages { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .slot-chat-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; line-height: 1.55; max-width: 92%; white-space: pre-wrap; }
+    .slot-chat-msg.user { background: var(--gg-olive); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .slot-chat-msg.assistant { background: var(--gg-offwhite); color: var(--gg-charcoal); align-self: flex-start; border-bottom-left-radius: 2px; }
+    .slot-chat-msg-meta { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; font-weight: 600; }
+    .slot-chat-empty { text-align: center; color: var(--q-muted); font-size: 12px; font-style: italic; padding: 20px; line-height: 1.55; }
+    .slot-chat-thinking { color: var(--q-muted); font-size: 12px; font-style: italic; padding: 8px 14px; }
+    .slot-chat-draft-card { background: #fff; border: 1px solid var(--gg-olive); border-radius: 7px; padding: 12px 14px; margin-top: 6px; align-self: flex-start; max-width: 92%; }
+    .slot-chat-draft-card-label { font-size: 9px; color: var(--gg-olive); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 8px; }
+    .slot-chat-draft-card-field { margin-bottom: 8px; }
+    .slot-chat-draft-card-field:last-child { margin-bottom: 0; }
+    .slot-chat-draft-card-field-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .slot-chat-draft-card-field-value { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; white-space: pre-wrap; }
+    .slot-chat-draft-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .slot-chat-draft-apply { padding: 6px 12px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .slot-chat-draft-apply:hover { background: #2f3214; }
+    .slot-chat-input-wrap { padding: 12px 18px; border-top: 0.5px solid var(--q-line); flex-shrink: 0; background: #fff; }
+    .slot-chat-input { width: 100%; min-height: 60px; padding: 10px 12px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 13px; font-family: var(--font-body); line-height: 1.55; color: var(--gg-charcoal); resize: none; }
+    .slot-chat-input:focus { outline: none; border-color: var(--gg-olive); }
+    .slot-chat-input-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+    .slot-chat-input-hint { font-size: 10px; color: var(--q-muted); }
+    .slot-chat-send { padding: 7px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .slot-chat-send:hover { background: #2f3214; }
+    .slot-chat-send:disabled { opacity: 0.5; cursor: default; }
+    .slot-chat-starter-btn { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--gg-charcoal); border-radius: 14px; font-size: 11px; cursor: pointer; font-family: var(--font-body); margin: 2px 4px 2px 0; }
+    .slot-chat-starter-btn:hover { background: var(--gg-offwhite); border-color: var(--gg-olive); }
+
     /* FLOW DIAGNOSTICS SECTION (below the browser) */
     .flow-diagnostics-section { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--q-line); }
     .flow-diagnostics-head { margin-bottom: 14px; }
@@ -2067,6 +2113,26 @@
       <div class="theme-modal-foot-right">
         <button class="theme-modal-cancel" onclick="closeThemeModal()">Cancel</button>
         <button class="theme-modal-save" onclick="saveThemeFromModal()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slot-chat-overlay" id="slot-chat-overlay" onclick="if(event.target===this) closeSlotChat()">
+  <div class="slot-chat-panel">
+    <div class="slot-chat-head">
+      <div class="slot-chat-head-left">
+        <div class="slot-chat-meta" id="slot-chat-meta">Email 1</div>
+        <div class="slot-chat-title">Chat to draft this message</div>
+      </div>
+      <button class="slot-chat-close" onclick="closeSlotChat()" title="Close">&times;</button>
+    </div>
+    <div class="slot-chat-messages" id="slot-chat-messages"></div>
+    <div class="slot-chat-input-wrap">
+      <textarea class="slot-chat-input" id="slot-chat-input" placeholder="Tell Quill what kind of message you want, or ask for a draft..." onkeydown="onSlotChatKeydown(event)"></textarea>
+      <div class="slot-chat-input-row">
+        <div class="slot-chat-input-hint">Cmd or Ctrl + Enter to send</div>
+        <button class="slot-chat-send" id="slot-chat-send-btn" onclick="sendSlotChatMessage()">Send</button>
       </div>
     </div>
   </div>
@@ -4915,6 +4981,9 @@ var currentFlowDraft = null;
 var currentFlowSlots = [];
 var flowFieldSaveTimer = null;
 var slotDelaySaveTimer = null;
+var slotSourceSaveTimer = null;
+var openSlotChatId = null;
+var slotChatHistoryCache = {};
 
 async function loadFlowDrafts() {
   var res = await db.from('quill_flow_drafts').select('*').order('updated_at', { ascending: false });
@@ -5069,6 +5138,11 @@ function renderFlowSlots() {
     container.innerHTML = '<div class="flow-builder-slots-empty">No messages yet. Click "+ Add message" to add the first one.</div>';
     return;
   }
+  // Determine if this flow looks like an improvement (brief mentions improvement language).
+  // If so, source content textarea is shown by default for each slot. Otherwise hidden behind a toggle.
+  var briefText = (currentFlowDraft && currentFlowDraft.brief) ? currentFlowDraft.brief.toLowerCase() : '';
+  var isImprovementFlow = briefText.indexOf('improvement') !== -1 || briefText.indexOf('seeded from diagnostic') !== -1 || briefText.indexOf('revamp') !== -1;
+
   var html = currentFlowSlots.map(function(s, idx){
     var pos = idx + 1;
     var hasContent = s.generated_subject || s.generated_preview || s.generated_body;
@@ -5095,9 +5169,26 @@ function renderFlowSlots() {
       }
       contentHtml = parts.join('');
     } else {
-      contentHtml = '<div class="flow-builder-slot-content-empty">No draft yet. Use chat to draft this message. (Coming in Phase 2.)</div>';
+      contentHtml = '<div class="flow-builder-slot-content-empty">No draft yet. Click "Chat to draft" to start a conversation with Quill.</div>';
     }
     var delayValue = s.recommended_delay || '';
+    var sourceValue = s.source_content || '';
+    var hasSource = !!sourceValue.trim();
+    // Show source field by default when (a) improvement-flagged flow OR (b) the slot already has source content
+    var showSourceByDefault = isImprovementFlow || hasSource;
+
+    var sourceHtml;
+    if (showSourceByDefault) {
+      sourceHtml = '<div class="flow-builder-slot-source open">'
+        + '<div class="flow-builder-slot-source-label">Source content (existing copy to improve)</div>'
+        + '<textarea class="flow-builder-slot-source-textarea" placeholder="Paste the existing email body here. Quill will reference it when drafting the improvement." oninput="onSlotSourceEdit(' + s.id + ', this.value)">' + escapeHtml(sourceValue) + '</textarea>'
+        + '</div>';
+    } else {
+      sourceHtml = '<div class="flow-builder-slot-source" id="slot-source-' + s.id + '">'
+        + '<button class="flow-builder-slot-source-toggle" onclick="expandSlotSource(' + s.id + ')">+ Add source content (for improving existing copy)</button>'
+        + '</div>';
+    }
+
     return '<div class="flow-builder-slot" data-slot-id="' + s.id + '">'
       + '  <div class="flow-builder-slot-head">'
       + '    <div class="flow-builder-slot-pos">Email ' + pos + '</div>'
@@ -5105,14 +5196,39 @@ function renderFlowSlots() {
       + '      <input type="text" placeholder="Delay (e.g. 1 hour after trigger, 24 hours after Email 1)" value="' + escapeHtml(delayValue) + '" oninput="onSlotDelayEdit(' + s.id + ', this.value)">'
       + '    </div>'
       + '    <div class="flow-builder-slot-actions">'
-      + '      <button class="flow-builder-slot-chat-btn" disabled title="Chat ships in Phase 2">Chat to draft</button>'
+      + '      <button class="flow-builder-slot-chat-btn" onclick="openSlotChat(' + s.id + ')">Chat to draft</button>'
       + '      <button class="flow-builder-slot-remove-btn" onclick="removeFlowSlot(' + s.id + ')">Remove</button>'
       + '    </div>'
       + '  </div>'
+      + sourceHtml
       + '  <div class="flow-builder-slot-content">' + contentHtml + '</div>'
       + '</div>';
   }).join('');
   container.innerHTML = html;
+}
+
+window.expandSlotSource = function(slotId) {
+  var wrap = document.getElementById('slot-source-' + slotId);
+  if (!wrap) return;
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  wrap.className = 'flow-builder-slot-source open';
+  wrap.innerHTML = '<div class="flow-builder-slot-source-label">Source content (existing copy to improve)</div>'
+    + '<textarea class="flow-builder-slot-source-textarea" placeholder="Paste the existing email body here. Quill will reference it when drafting the improvement." oninput="onSlotSourceEdit(' + slotId + ', this.value)">' + escapeHtml((slot && slot.source_content) || '') + '</textarea>';
+  // Focus the textarea
+  setTimeout(function(){ var ta = wrap.querySelector('textarea'); if (ta) ta.focus(); }, 50);
+};
+
+window.onSlotSourceEdit = function(slotId, val) {
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  if (!slot) return;
+  slot.source_content = val;
+  if (slotSourceSaveTimer) clearTimeout(slotSourceSaveTimer);
+  slotSourceSaveTimer = setTimeout(function(){ saveSlotSource(slotId, val); }, 700);
+};
+
+async function saveSlotSource(slotId, val) {
+  var res = await db.from('quill_flow_draft_slots').update({ source_content: val }).eq('id', slotId);
+  if (res.error) console.error('saveSlotSource', res.error);
 }
 
 window.addFlowSlot = async function() {
@@ -5173,6 +5289,352 @@ window.copyFieldText = function(slotId, field) {
   } else {
     showToast('Clipboard not available', true);
   }
+};
+
+// ── SLOT CHAT (Phase 2) ──────────────────────────────────────────────────
+// Per-slot conversational drafting. User opens a slot, chats with Quill,
+// Quill returns structured drafts (subject + preview + body) the user can
+// apply to the slot. Conversations persist in quill_flow_slot_chats.
+// Phase 2 ships this. Phase 3 will add cross-slot sequence awareness.
+
+window.openSlotChat = async function(slotId) {
+  var slot = currentFlowSlots.find(function(s){ return s.id === slotId; });
+  if (!slot) return;
+  openSlotChatId = slotId;
+
+  // Set the meta (Email N)
+  var idx = currentFlowSlots.indexOf(slot);
+  document.getElementById('slot-chat-meta').textContent = 'Email ' + (idx + 1);
+
+  // Load chat history if not cached
+  if (!slotChatHistoryCache[slotId]) {
+    var res = await db.from('quill_flow_slot_chats').select('*').eq('slot_id', slotId).order('created_at', { ascending: true });
+    if (res.error) {
+      console.error('load slot chats', res.error);
+      slotChatHistoryCache[slotId] = [];
+    } else {
+      slotChatHistoryCache[slotId] = res.data || [];
+    }
+  }
+
+  renderSlotChatHistory();
+  document.getElementById('slot-chat-overlay').classList.add('open');
+  setTimeout(function(){
+    var ta = document.getElementById('slot-chat-input');
+    if (ta) ta.focus();
+  }, 50);
+};
+
+window.closeSlotChat = function() {
+  document.getElementById('slot-chat-overlay').classList.remove('open');
+  openSlotChatId = null;
+};
+
+function renderSlotChatHistory() {
+  var container = document.getElementById('slot-chat-messages');
+  if (!container) return;
+  var history = slotChatHistoryCache[openSlotChatId] || [];
+  if (!history.length) {
+    var slot = currentFlowSlots.find(function(s){ return s.id === openSlotChatId; });
+    var idx = slot ? currentFlowSlots.indexOf(slot) + 1 : 1;
+    var hasSource = slot && slot.source_content && slot.source_content.trim();
+    var prompt = hasSource
+      ? 'Quill has the existing copy as source material. Tell it what direction the improvement should take, or ask for a draft.'
+      : 'Tell Quill what this email should do. Pick a starter or describe in your own words.';
+    container.innerHTML = '<div class="slot-chat-empty">'
+      + 'Starting a fresh conversation for Email ' + idx + '. ' + prompt + '<br><br>'
+      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Draft this email based on the brief and (if provided) source content.\u0027)">Just draft it</button>'
+      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027What hook should this email open with? Give me 3 options before drafting.\u0027)">Hook ideas first</button>'
+      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Make this softer and less urgency-driven.\u0027)">Soft, less urgent</button>'
+      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Lead with social proof or customer voice.\u0027)">Lead with social proof</button>'
+      + '</div>';
+    return;
+  }
+
+  var html = history.map(function(msg){
+    if (msg.role === 'user') {
+      return '<div class="slot-chat-msg user">' + escapeHtml(msg.content) + '</div>';
+    } else {
+      // Assistant message: check if it has a generated_extra (a draft)
+      var extra = msg.generated_extra;
+      if (extra && typeof extra === 'object' && extra.draft) {
+        return renderSlotChatDraftCard(msg.content, extra.draft, msg.id);
+      }
+      return '<div class="slot-chat-msg assistant">' + escapeHtml(msg.content) + '</div>';
+    }
+  }).join('');
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderSlotChatDraftCard(commentary, draft, msgId) {
+  var parts = [];
+  if (commentary && commentary.trim()) {
+    parts.push('<div class="slot-chat-msg assistant">' + escapeHtml(commentary) + '</div>');
+  }
+  parts.push('<div class="slot-chat-draft-card">');
+  parts.push('  <div class="slot-chat-draft-card-label">Draft</div>');
+  if (draft.subject) {
+    parts.push('  <div class="slot-chat-draft-card-field">');
+    parts.push('    <div class="slot-chat-draft-card-field-label">Subject</div>');
+    parts.push('    <div class="slot-chat-draft-card-field-value">' + escapeHtml(draft.subject) + '</div>');
+    parts.push('  </div>');
+  }
+  if (draft.preview) {
+    parts.push('  <div class="slot-chat-draft-card-field">');
+    parts.push('    <div class="slot-chat-draft-card-field-label">Preview</div>');
+    parts.push('    <div class="slot-chat-draft-card-field-value">' + escapeHtml(draft.preview) + '</div>');
+    parts.push('  </div>');
+  }
+  if (draft.body) {
+    parts.push('  <div class="slot-chat-draft-card-field">');
+    parts.push('    <div class="slot-chat-draft-card-field-label">Body</div>');
+    parts.push('    <div class="slot-chat-draft-card-field-value">' + escapeHtml(draft.body) + '</div>');
+    parts.push('  </div>');
+  }
+  parts.push('  <div class="slot-chat-draft-actions">');
+  parts.push('    <button class="slot-chat-draft-apply" onclick="applyDraftToSlot(' + msgId + ')">Apply to slot</button>');
+  parts.push('  </div>');
+  parts.push('</div>');
+  return parts.join('\n');
+}
+
+window.useSlotChatStarter = function(text) {
+  var ta = document.getElementById('slot-chat-input');
+  if (ta) { ta.value = text; ta.focus(); }
+};
+
+window.onSlotChatKeydown = function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    sendSlotChatMessage();
+  }
+};
+
+window.sendSlotChatMessage = async function() {
+  var ta = document.getElementById('slot-chat-input');
+  var msg = (ta.value || '').trim();
+  if (!msg || !openSlotChatId) return;
+  var sendBtn = document.getElementById('slot-chat-send-btn');
+  sendBtn.disabled = true;
+  ta.value = '';
+
+  // Save user message
+  var userRow = await db.from('quill_flow_slot_chats').insert({
+    slot_id: openSlotChatId,
+    role: 'user',
+    content: msg
+  }).select().single();
+  if (userRow.error) {
+    showToast('Failed to send: ' + userRow.error.message, true);
+    sendBtn.disabled = false;
+    return;
+  }
+  if (!slotChatHistoryCache[openSlotChatId]) slotChatHistoryCache[openSlotChatId] = [];
+  slotChatHistoryCache[openSlotChatId].push(userRow.data);
+  renderSlotChatHistory();
+
+  // Show thinking indicator
+  var container = document.getElementById('slot-chat-messages');
+  var thinkingEl = document.createElement('div');
+  thinkingEl.className = 'slot-chat-thinking';
+  thinkingEl.textContent = 'Quill is thinking...';
+  container.appendChild(thinkingEl);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    var response = await callSlotChatClaude();
+    thinkingEl.remove();
+
+    // Save assistant response
+    var assistantRow = await db.from('quill_flow_slot_chats').insert({
+      slot_id: openSlotChatId,
+      role: 'assistant',
+      content: response.commentary || '',
+      generated_extra: response.draft ? { draft: response.draft } : null
+    }).select().single();
+    if (!assistantRow.error) {
+      slotChatHistoryCache[openSlotChatId].push(assistantRow.data);
+    }
+    renderSlotChatHistory();
+  } catch (err) {
+    thinkingEl.remove();
+    var errorEl = document.createElement('div');
+    errorEl.className = 'slot-chat-msg assistant';
+    errorEl.style.color = '#a32d2d';
+    errorEl.textContent = 'Could not generate a response: ' + (err.message || String(err));
+    container.appendChild(errorEl);
+    container.scrollTop = container.scrollHeight;
+    console.error('slot chat error', err);
+  } finally {
+    sendBtn.disabled = false;
+  }
+};
+
+async function callSlotChatClaude() {
+  var slot = currentFlowSlots.find(function(s){ return s.id === openSlotChatId; });
+  if (!slot) throw new Error('Slot not found');
+  var idx = currentFlowSlots.indexOf(slot);
+  var pos = idx + 1;
+
+  // Make sure inputs are loaded
+  if (!voiceCache) await loadVoiceBrief(true);
+  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).eq('starred', true).order('extracted_at', { ascending: false }).limit(8);
+  var patterns = patternsRes.data || [];
+
+  var systemPrompt = buildSlotChatSystemPrompt(slot, pos, voiceCache || {}, patterns);
+  var userMessages = (slotChatHistoryCache[openSlotChatId] || []).slice(-12).map(function(m){
+    return { role: m.role, content: m.content };
+  });
+
+  var res = await fetch('/api/diagnose', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      messages: userMessages,
+      max_tokens: 2000
+    })
+  });
+  var rawText = await res.text();
+  if (res.status === 504 || rawText.indexOf('<!DOCTYPE') === 0 || rawText.indexOf('<html') === 0) {
+    throw new Error('Server timed out. Try again.');
+  }
+  var data;
+  try { data = JSON.parse(rawText); } catch (e) { throw new Error('Bad response: ' + rawText.slice(0, 200)); }
+  if (data.error) throw new Error(data.error);
+  var contentBlock = (data.content || []).find(function(b){ return b.type === 'text'; });
+  if (!contentBlock) throw new Error('No content in response');
+  var raw = contentBlock.text || '';
+
+  // Try to find a JSON block in the response (the system prompt asks for one when drafting)
+  // Format: { commentary: "...", draft: { subject, preview, body } }
+  var jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    // No structured response, treat the whole thing as commentary
+    return { commentary: raw.trim(), draft: null };
+  }
+  var parsed;
+  try { parsed = JSON.parse(jsonMatch[0]); }
+  catch (e) {
+    var repaired = jsonMatch[0].replace(/,\s*([}\]])/g, '$1');
+    try { parsed = JSON.parse(repaired); }
+    catch (e2) {
+      // JSON failed to parse, treat whole response as commentary
+      return { commentary: raw.trim(), draft: null };
+    }
+  }
+
+  return {
+    commentary: parsed.commentary || '',
+    draft: parsed.draft || null
+  };
+}
+
+function buildSlotChatSystemPrompt(slot, position, voice, patterns) {
+  var lines = [];
+  lines.push('You are Quill, an AI agent for SFH email marketing. You are drafting Email ' + position + ' in a multi-message flow.');
+  lines.push('');
+  lines.push('YOUR LANE: pattern intelligence, diagnostics, and copy production. You are doing copy production here.');
+  lines.push('');
+  lines.push('FLOW CONTEXT:');
+  if (currentFlowDraft) {
+    if (currentFlowDraft.name) lines.push('Flow name: ' + currentFlowDraft.name);
+    if (currentFlowDraft.brief) {
+      lines.push('Flow brief:');
+      lines.push(currentFlowDraft.brief);
+    }
+  }
+  lines.push('');
+  lines.push('THIS MESSAGE:');
+  lines.push('Position in flow: Email ' + position + ' of ' + currentFlowSlots.length);
+  if (slot.recommended_delay) lines.push('Send timing: ' + slot.recommended_delay);
+  if (slot.source_content && slot.source_content.trim()) {
+    lines.push('');
+    lines.push('EXISTING SOURCE COPY (this is what is being improved):');
+    lines.push(slot.source_content);
+  }
+  lines.push('');
+
+  // Voice constraints
+  lines.push('VOICE CONSTRAINTS (apply to all generated copy):');
+  lines.push('- NEVER use em dashes. Use commas, periods, or parentheses instead.');
+  lines.push('- NEVER use hyperbolic words: critical, massive, exceptional, remarkable, phenomenal, concerning, severe, alarming, plummeting.');
+  lines.push('- American English. Apostrophes use ASCII single quotes.');
+  lines.push('- Warm, sharp, no fluff. Senior consultant energy, never tech bro.');
+  if (voice.pov) lines.push('- POV: ' + voice.pov);
+  if (voice.formality) lines.push('- Formality: ' + voice.formality);
+  if (voice.dos && voice.dos.length) {
+    lines.push('- Voice DOs:');
+    voice.dos.slice(0, 8).forEach(function(d){ lines.push('  - ' + d); });
+  }
+  if (voice.donts && voice.donts.length) {
+    lines.push('- Voice DON\u0027Ts:');
+    voice.donts.slice(0, 8).forEach(function(d){ lines.push('  - ' + d); });
+  }
+  lines.push('');
+
+  // Patterns
+  if (patterns.length) {
+    lines.push('STARRED PATTERNS (proven angles for this brand):');
+    patterns.slice(0, 6).forEach(function(p){
+      lines.push('- ' + (p.title || '') + (p.summary ? ': ' + p.summary : ''));
+    });
+    lines.push('');
+  }
+
+  lines.push('RESPONSE FORMAT:');
+  lines.push('You can respond in two modes:');
+  lines.push('');
+  lines.push('1. CONVERSATIONAL MODE (default): when the user asks a question, requests options, or has not yet asked for a draft. Respond with plain text. No JSON.');
+  lines.push('');
+  lines.push('2. DRAFT MODE: when the user asks for a draft, asks you to write/draft/give them the email, or says things like "draft it", "write it", "give me the email". Respond with JSON in this exact shape:');
+  lines.push('{');
+  lines.push('  "commentary": "<1-2 sentences explaining the draft choices>",');
+  lines.push('  "draft": {');
+  lines.push('    "subject": "<subject line>",');
+  lines.push('    "preview": "<preview text>",');
+  lines.push('    "body": "<full email body>"');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+  lines.push('When using draft mode, do not wrap the JSON in markdown code fences. Output ONLY the JSON object.');
+  lines.push('Default to conversational mode if uncertain. Drafting is the higher-effort path; only do it when clearly requested.');
+
+  return lines.join('\n');
+}
+
+window.applyDraftToSlot = async function(msgId) {
+  if (!openSlotChatId) return;
+  var history = slotChatHistoryCache[openSlotChatId] || [];
+  var msg = history.find(function(m){ return m.id === msgId; });
+  if (!msg || !msg.generated_extra || !msg.generated_extra.draft) {
+    showToast('Could not find that draft', true);
+    return;
+  }
+  var draft = msg.generated_extra.draft;
+  var payload = {
+    generated_subject: draft.subject || null,
+    generated_preview: draft.preview || null,
+    generated_body: draft.body || null,
+    generated_at: new Date().toISOString()
+  };
+  var res = await db.from('quill_flow_draft_slots').update(payload).eq('id', openSlotChatId).select().single();
+  if (res.error) {
+    showToast('Could not apply draft: ' + res.error.message, true);
+    return;
+  }
+  // Update slot in memory
+  var slot = currentFlowSlots.find(function(s){ return s.id === openSlotChatId; });
+  if (slot) {
+    slot.generated_subject = res.data.generated_subject;
+    slot.generated_preview = res.data.generated_preview;
+    slot.generated_body = res.data.generated_body;
+    slot.generated_at = res.data.generated_at;
+  }
+  showToast('Draft applied to slot');
+  closeSlotChat();
+  renderFlowSlots();
 };
 
 // Initial load when AI Studio opens to studio-flows section
