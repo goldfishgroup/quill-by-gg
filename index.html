@@ -484,7 +484,8 @@
     /* Slot chat panel (modal-style overlay) */
     .slot-chat-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: stretch; justify-content: flex-end; }
     .slot-chat-overlay.open { display: flex; }
-    .slot-chat-panel { background: #fff; width: 460px; max-width: 100%; height: 100vh; display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.15); }
+    .slot-chat-panel { background: #fff; width: 640px; max-width: 100%; height: 100vh; display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.15); }
+    @media (max-width: 720px) { .slot-chat-panel { width: 100%; } }
     .slot-chat-head { padding: 14px 18px; background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-shrink: 0; }
     .slot-chat-head-left { flex: 1; min-width: 0; }
     .slot-chat-meta { font-size: 10px; color: var(--gg-olive); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
@@ -515,7 +516,7 @@
     .slot-chat-send { padding: 7px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
     .slot-chat-send:hover { background: #2f3214; }
     .slot-chat-send:disabled { opacity: 0.5; cursor: default; }
-    .slot-chat-starter-btn { padding: 6px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--gg-charcoal); border-radius: 14px; font-size: 11px; cursor: pointer; font-family: var(--font-body); margin: 2px 4px 2px 0; }
+    .slot-chat-starter-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--gg-charcoal); border-radius: 14px; font-size: 11px; cursor: pointer; font-family: var(--font-body); margin: 3px 4px 3px 0; line-height: 1.4; }
     .slot-chat-starter-btn:hover { background: var(--gg-offwhite); border-color: var(--gg-olive); }
 
     /* FLOW DIAGNOSTICS SECTION (below the browser) */
@@ -5339,14 +5340,32 @@ function renderSlotChatHistory() {
     var idx = slot ? currentFlowSlots.indexOf(slot) + 1 : 1;
     var hasSource = slot && slot.source_content && slot.source_content.trim();
     var prompt = hasSource
-      ? 'Quill has the existing copy as source material. Tell it what direction the improvement should take, or ask for a draft.'
-      : 'Tell Quill what this email should do. Pick a starter or describe in your own words.';
+      ? 'Quill has the existing copy as source material. Talk through the direction, ask for a critique, or jump to a draft.'
+      : 'Talk through the angle, brainstorm hooks, or jump to a draft. This conversation knows your voice, products, and patterns.';
+
+    // Build starter set. Conversational starters first, drafting starters last.
+    var starters = [];
+    // Conversational
+    starters.push({ label: 'Talk through the angle', text: 'Help me think through what this email should actually do. Walk me through the right angle for Email ' + idx + ' given the flow brief and the brand. Ask me questions if you need more context.' });
+    starters.push({ label: 'Brainstorm 5 hooks', text: 'Give me 5 different opening hooks for this email. Each should feel meaningfully different from the others. Briefly explain why each could work for SFH.' });
+    starters.push({ label: 'What is missing from the brief?', text: 'Read the flow brief and tell me what is missing or unclear that would make Email ' + idx + ' weaker. What questions would you ask before drafting?' });
+    if (hasSource) {
+      starters.push({ label: 'Critique the source copy', text: 'Critique the existing source copy honestly. What works, what does not, what would you change. Be specific.' });
+    }
+    // Drafting
+    starters.push({ label: 'Just draft it', text: 'Draft this email based on the brief, voice, and (if provided) source content. Keep it tight per the brevity constraints.' });
+    starters.push({ label: 'Soft, less urgent', text: 'Draft this email in a softer, less urgency-driven register. Make it feel like a thoughtful note, not a pitch.' });
+    starters.push({ label: 'Lead with social proof', text: 'Draft this email leading with customer voice or social proof. Open with what other people experienced, not a brand statement.' });
+
+    // Cache starters globally and reference by index in onclick (avoids inline-JSON-in-onclick fragility)
+    window._slotChatStarters = starters;
+    var starterHtml = starters.map(function(s, i){
+      return '<button class="slot-chat-starter-btn" onclick="useSlotChatStarterByIndex(' + i + ')">' + escapeHtml(s.label) + '</button>';
+    }).join('');
+
     container.innerHTML = '<div class="slot-chat-empty">'
       + 'Starting a fresh conversation for Email ' + idx + '. ' + prompt + '<br><br>'
-      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Draft this email based on the brief and (if provided) source content.\u0027)">Just draft it</button>'
-      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027What hook should this email open with? Give me 3 options before drafting.\u0027)">Hook ideas first</button>'
-      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Make this softer and less urgency-driven.\u0027)">Soft, less urgent</button>'
-      + '<button class="slot-chat-starter-btn" onclick="useSlotChatStarter(\u0027Lead with social proof or customer voice.\u0027)">Lead with social proof</button>'
+      + '<div style="text-align:left;">' + starterHtml + '</div>'
       + '</div>';
     return;
   }
@@ -5402,6 +5421,14 @@ function renderSlotChatDraftCard(commentary, draft, msgId) {
 window.useSlotChatStarter = function(text) {
   var ta = document.getElementById('slot-chat-input');
   if (ta) { ta.value = text; ta.focus(); }
+};
+
+window.useSlotChatStarterByIndex = function(i) {
+  var starters = window._slotChatStarters || [];
+  var s = starters[i];
+  if (!s) return;
+  var ta = document.getElementById('slot-chat-input');
+  if (ta) { ta.value = s.text; ta.focus(); }
 };
 
 window.onSlotChatKeydown = function(e) {
@@ -5698,11 +5725,11 @@ function buildSlotChatSystemPrompt(ctx) {
 
   // Response format
   lines.push('=== RESPONSE FORMAT ===');
-  lines.push('You can respond in two modes:');
+  lines.push('You have two response modes. Both are first-class. Neither is preferred over the other; pick whichever serves the user\u0027s actual ask.');
   lines.push('');
-  lines.push('1. CONVERSATIONAL MODE (default): when the user asks a question, requests options, or has not yet asked for a draft. Respond with plain text. No JSON.');
+  lines.push('1. CONVERSATIONAL MODE: when the user is thinking out loud, brainstorming, asking a question, requesting options, critiquing existing copy, or asking for your opinion. Respond as a smart copywriting partner would. Plain text. Be substantive and useful, not terse. The user wants a real conversation, not a checkbox response. Engage with their thinking. Push back when warranted. Surface tradeoffs. Suggest things they didn\u0027t ask for if they\u0027re relevant. Match the depth of their question with the depth of your answer. Do NOT output JSON in this mode.');
   lines.push('');
-  lines.push('2. DRAFT MODE: when the user asks for a draft, asks you to write/draft/give them the email, or says things like "draft it", "write it", "give me the email". Respond with JSON in this exact shape:');
+  lines.push('2. DRAFT MODE: when the user explicitly asks for a draft. Triggers include "draft it", "write it", "give me the email", "let\u0027s draft", or starter phrases like "Just draft it". Respond with JSON in this exact shape:');
   lines.push('{');
   lines.push('  "commentary": "<1-2 sentences explaining the draft choices, brief>",');
   lines.push('  "draft": {');
@@ -5713,7 +5740,8 @@ function buildSlotChatSystemPrompt(ctx) {
   lines.push('}');
   lines.push('');
   lines.push('When using draft mode, do not wrap the JSON in markdown code fences. Output ONLY the JSON object.');
-  lines.push('Default to conversational mode if uncertain. Drafting is the higher-effort path; only do it when clearly requested.');
+  lines.push('');
+  lines.push('IMPORTANT: when in conversational mode, behave like a knowledgeable copywriter friend who happens to know everything about SFH. Discuss freely. Workshop sentences. Brainstorm angles. Critique drafts. Suggest products from the catalog. Offer hooks, opening lines, structural ideas. Talk about voice, audience, sequence position. The user is here so they don\u0027t have to leave for claude.ai. Make this conversation worth that choice.');
 
   return lines.join('\n');
 }
