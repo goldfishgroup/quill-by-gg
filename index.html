@@ -456,6 +456,56 @@
     .flow-health-reason { padding: 2px 0; }
     .flow-health-reason-marker { color: #a83232; font-weight: 700; }
     .flow-health-reason-marker.warn { color: #b8741f; }
+
+    /* B1: expand line + message rows */
+    .flow-health-attention-line { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--q-line); gap: 12px; }
+    .flow-health-attention-text { font-size: 12px; color: var(--gg-charcoal); }
+    .flow-health-expand-btn { padding: 5px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-health-expand-btn:hover { background: var(--gg-olive); color: #fff; }
+
+    .flow-msg-list { margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--q-line); display: flex; flex-direction: column; gap: 10px; }
+    .flow-msg-row { background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; padding: 12px 14px; }
+    .flow-msg-row.bad { border-left: 3px solid #a83232; }
+    .flow-msg-row.warn { border-left: 3px solid #d68d2a; }
+    .flow-msg-row.good { border-left: 3px solid #5d8a3a; }
+
+    .flow-msg-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .flow-msg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .flow-msg-dot.bad { background: #a83232; }
+    .flow-msg-dot.warn { background: #d68d2a; }
+    .flow-msg-dot.good { background: #5d8a3a; }
+    .flow-msg-head-body { flex: 1; min-width: 0; }
+    .flow-msg-subject { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.4; margin-bottom: 3px; word-break: break-word; }
+    .flow-msg-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--q-muted); flex-wrap: wrap; }
+    .flow-msg-pos { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gg-olive); }
+    .flow-msg-delivered { color: var(--q-muted); }
+    .flow-msg-actions { flex-shrink: 0; }
+    .flow-msg-improve-btn { padding: 5px 10px; background: var(--gg-olive); color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-msg-improve-btn:hover { background: #2f3214; }
+
+    .flow-msg-metrics { display: flex; gap: 18px; padding: 8px 0; flex-wrap: wrap; }
+    .flow-msg-metric { font-size: 11px; }
+    .flow-msg-metric-label { color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 9px; margin-right: 4px; }
+    .flow-msg-metric-val { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--gg-charcoal); }
+    .flow-msg-metric-val.bad { color: #a83232; }
+    .flow-msg-metric-val.warn { color: #b8741f; }
+    .flow-msg-metric-val.good { color: #3d6022; }
+
+    .flow-msg-findings { margin-top: 8px; padding-top: 8px; border-top: 0.5px solid var(--q-line); display: flex; flex-direction: column; gap: 6px; }
+    .flow-msg-findings-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 2px; }
+    .flow-msg-finding { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+    .flow-msg-finding-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .flow-msg-finding-dot.bad { background: #a83232; }
+    .flow-msg-finding-dot.warn { background: #d68d2a; }
+    .flow-msg-finding-dot.neutral { background: #b8b6ad; }
+    .flow-msg-finding-body { flex: 1; min-width: 0; }
+    .flow-msg-finding-title { font-size: 12px; color: var(--gg-charcoal); font-weight: 500; line-height: 1.4; }
+    .flow-msg-finding-sev { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-left: 4px; }
+    .flow-msg-finding-rec { font-size: 11px; color: var(--q-muted); line-height: 1.5; margin-top: 3px; }
+    .flow-msg-finding-actions { flex-shrink: 0; }
+    .flow-msg-fix-btn { padding: 4px 9px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-msg-fix-btn:hover { background: var(--gg-olive); color: #fff; }
+    .flow-msg-no-findings { font-size: 11px; color: var(--q-muted); font-style: italic; padding: 4px 0; }
     .flow-browser-head { margin-bottom: 14px; }
     .flow-browser-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-browser-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
@@ -5008,6 +5058,17 @@ var FLOW_HEALTH_THRESHOLDS = {
   complaint_rate: { critical: 0.1, warn: 0.05 } // % above 0.1 critical (deliverability emergency)
 };
 
+// Per-message thresholds (consumer flows). Looser than flow-level because
+// individual messages have more noise. From the Phase B spec.
+var FLOW_HEALTH_MSG_THRESHOLDS = {
+  open_rate: { critical: 12, warn: 22 },
+  click_rate: { warn: 0.8, good: 2 },
+  unsubscribe_rate: { critical: 0.6, warn: 0.4 }
+};
+
+// Tracks which flow cards are currently expanded. Per-session, not persisted.
+var expandedFlows = {};
+
 function aggregateFlowHealthData(messages) {
   // Group consumer-facing messages by flow_name, compute delivered-weighted
   // averages so a flow with one viral message and many small ones doesn't
@@ -5165,6 +5226,97 @@ function metricColorClass(metricKey, value) {
   }
 }
 
+// Same shape as metricColorClass but uses the tighter per-message thresholds.
+// Per-message metrics are noisier so the warn/critical lines are looser.
+function metricColorClassMessage(metricKey, value) {
+  if (value === null || value === undefined || isNaN(value)) return '';
+  var t = FLOW_HEALTH_MSG_THRESHOLDS[metricKey];
+  if (!t) return '';
+  if (metricKey === 'unsubscribe_rate') {
+    if (value > t.critical) return 'bad';
+    if (value > t.warn) return 'warn';
+    return 'good';
+  } else {
+    if (t.critical !== undefined && value < t.critical) return 'bad';
+    if (t.warn !== undefined && value < t.warn) return 'warn';
+    return 'good';
+  }
+}
+
+// Classify a single message into healthy / warn / bad based on the worst of
+// its metrics and any matched diagnostic findings.
+function classifyMessageHealth(msg, matchedDiags) {
+  var hasFixNow = (matchedDiags || []).some(function(d){ return d.severity === 'fix_now'; });
+  if (hasFixNow) return 'bad';
+  var openCls = metricColorClassMessage('open_rate', toMessageOpenRate(msg));
+  var unsubCls = metricColorClassMessage('unsubscribe_rate', toMessageUnsubRate(msg));
+  var clickCls = metricColorClassMessage('click_rate', toMessageClickRate(msg));
+  if (openCls === 'bad' || unsubCls === 'bad') return 'bad';
+  var hasOpp = (matchedDiags || []).some(function(d){ return d.severity === 'opportunity'; });
+  if (openCls === 'warn' || unsubCls === 'warn' || clickCls === 'warn' || hasOpp) return 'warn';
+  return 'good';
+}
+
+// Convert quill_flow_messages row into per-message rates. Klaviyo CSVs sometimes
+// give us computed rates directly; if not, derive from raw counts.
+function toMessageOpenRate(m) {
+  if (m.open_rate !== null && m.open_rate !== undefined && !isNaN(Number(m.open_rate))) return Number(m.open_rate);
+  var d = Number(m.delivered) || 0;
+  if (d <= 0) return null;
+  return ((Number(m.unique_opens) || 0) / d) * 100;
+}
+function toMessageClickRate(m) {
+  if (m.click_rate !== null && m.click_rate !== undefined && !isNaN(Number(m.click_rate))) return Number(m.click_rate);
+  var d = Number(m.delivered) || 0;
+  if (d <= 0) return null;
+  return ((Number(m.unique_clicks) || 0) / d) * 100;
+}
+function toMessageUnsubRate(m) {
+  if (m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined && !isNaN(Number(m.unsubscribe_rate))) return Number(m.unsubscribe_rate);
+  return null;
+}
+
+// Match diagnostic findings to a specific message within a flow. Findings
+// always have flow_name. They MAY have a message_subject too. If they do, we
+// match on subject. If they don't, the finding is flow-level and applies to
+// every message in the flow.
+function matchDiagnosticsToMessage(msg, flowDiags) {
+  var msgSubject = (msg.subject || '').trim().toLowerCase();
+  var msgName = (msg.message_name || '').trim().toLowerCase();
+  return (flowDiags || []).filter(function(d){
+    if (!d.active) return false;
+    var ds = (d.message_subject || '').trim().toLowerCase();
+    if (!ds) return true; // flow-level finding: applies to all messages in this flow
+    if (msgSubject && ds === msgSubject) return true;
+    if (msgName && ds === msgName) return true;
+    // Fuzzy: ds contained in msgSubject or vice versa (helps when one was truncated)
+    if (msgSubject && (msgSubject.indexOf(ds) !== -1 || ds.indexOf(msgSubject) !== -1)) return true;
+    return false;
+  });
+}
+
+window.toggleFlowExpand = function(flowName) {
+  if (expandedFlows[flowName]) delete expandedFlows[flowName];
+  else expandedFlows[flowName] = true;
+  renderFlowHealthCards();
+};
+
+window.openFlowImproveFromHealth = function(flowMessageId, diagId) {
+  // Reuse existing flow improvement modal. If a diagnostic id is provided,
+  // attach it as context using the same trick as deeplinkToFlowImprove.
+  if (diagId) {
+    if (!window._originalOpenFlowImprove) window._originalOpenFlowImprove = window.openFlowImprove;
+    window._pendingDiagnosticForImprove = diagId;
+    window.openFlowImprove = function(fmid){
+      var diagToAttach = window._pendingDiagnosticForImprove;
+      window._pendingDiagnosticForImprove = null;
+      window.openFlowImprove = window._originalOpenFlowImprove;
+      return window._originalOpenFlowImprove(fmid, diagToAttach);
+    };
+  }
+  window.openFlowImprove(flowMessageId);
+};
+
 function fmtPct(v, decimals) {
   if (v === null || v === undefined || isNaN(v)) return '\u2014';
   return Number(v).toFixed(decimals === undefined ? 1 : decimals) + '%';
@@ -5270,6 +5422,32 @@ window.renderFlowHealthCards = function() {
         + '</div>';
     }
 
+    // B1: count messages needing attention + render expand control
+    var flowDiags = diagsByFlow[f.flow_name] || [];
+    var attentionCount = 0;
+    f.messages.forEach(function(m){
+      var matched = matchDiagnosticsToMessage(m, flowDiags);
+      var msgStatus = classifyMessageHealth(m, matched);
+      if (msgStatus !== 'good') attentionCount++;
+    });
+
+    var totalMessages = f.message_count;
+    var attentionLineText;
+    if (h.status === 'unknown') {
+      attentionLineText = 'No delivery data on individual messages yet.';
+    } else if (attentionCount === 0) {
+      attentionLineText = 'All ' + totalMessages + ' message' + (totalMessages !== 1 ? 's are' : ' is') + ' within ranges.';
+    } else {
+      attentionLineText = attentionCount + ' of ' + totalMessages + ' message' + (totalMessages !== 1 ? 's' : '') + ' need' + (attentionCount === 1 ? 's' : '') + ' attention.';
+    }
+    var isExpanded = !!expandedFlows[f.flow_name];
+    var expandToggleLabel = isExpanded ? 'Hide messages' : 'Show messages';
+
+    var expandedHtml = '';
+    if (isExpanded) {
+      expandedHtml = renderFlowExpandedPanel(f, flowDiags);
+    }
+
     return '<div class="flow-health-card ' + h.status + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
       + '  <div class="flow-health-card-head">'
       + '    <div>'
@@ -5297,10 +5475,90 @@ window.renderFlowHealthCards = function() {
       + '    </div>'
       + '  </div>'
       + reasonsHtml
+      + '  <div class="flow-health-attention-line">'
+      + '    <span class="flow-health-attention-text">' + escapeHtml(attentionLineText) + '</span>'
+      + '    <button class="flow-health-expand-btn" onclick="toggleFlowExpand(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + expandToggleLabel + '</button>'
+      + '  </div>'
+      + expandedHtml
       + '</div>';
   }).join('');
   container.innerHTML = html;
 };
+
+function renderFlowExpandedPanel(flow, flowDiags) {
+  // Render one row per message in the flow. We don't have a true position
+  // column (Klaviyo CSV doesn't always export it), so sort by delivered desc
+  // as a sensible default. The user sees position in the message_name itself
+  // when it's like "Email 1 of 5".
+  var msgs = flow.messages.slice();
+  msgs.sort(function(a, b){
+    return (Number(b.delivered) || 0) - (Number(a.delivered) || 0);
+  });
+
+  var rows = msgs.map(function(m){
+    var matched = matchDiagnosticsToMessage(m, flowDiags);
+    var msgStatus = classifyMessageHealth(m, matched);
+    var statusClass = msgStatus === 'bad' ? 'bad' : (msgStatus === 'warn' ? 'warn' : 'good');
+    var subjectText = m.subject || m.message_name || '(Untitled message)';
+    var posLabel = '';
+    if (m.message_name && m.message_name !== subjectText) {
+      posLabel = '<span class="flow-msg-pos">' + escapeHtml(String(m.message_name).slice(0, 60)) + '</span>';
+    }
+
+    var openVal = toMessageOpenRate(m);
+    var clickVal = toMessageClickRate(m);
+    var unsubVal = toMessageUnsubRate(m);
+    var openCls = metricColorClassMessage('open_rate', openVal);
+    var clickCls = metricColorClassMessage('click_rate', clickVal);
+    var unsubCls = metricColorClassMessage('unsubscribe_rate', unsubVal);
+
+    var findingsHtml;
+    if (matched.length) {
+      findingsHtml = '<div class="flow-msg-findings">'
+        + '<div class="flow-msg-findings-label">Diagnostic findings</div>'
+        + matched.map(function(d){
+            var dotClass = d.severity === 'fix_now' ? 'bad' : (d.severity === 'opportunity' || d.severity === 'test') ? 'warn' : 'neutral';
+            var sevLabel = (d.severity || 'monitor').replace(/_/g, ' ');
+            var fixBtn = '';
+            if (d.recommendation || d.severity === 'fix_now' || d.severity === 'opportunity') {
+              fixBtn = '<button class="flow-msg-fix-btn" onclick="openFlowImproveFromHealth(' + m.id + ', ' + d.id + ')">Draft fix</button>';
+            }
+            return '<div class="flow-msg-finding">'
+              + '  <span class="flow-msg-finding-dot ' + dotClass + '"></span>'
+              + '  <div class="flow-msg-finding-body">'
+              + '    <div class="flow-msg-finding-title">' + escapeHtml(d.finding || d.title || 'Finding') + ' <span class="flow-msg-finding-sev">' + escapeHtml(sevLabel) + '</span></div>'
+              + (d.recommendation ? '    <div class="flow-msg-finding-rec">' + escapeHtml(d.recommendation) + '</div>' : '')
+              + '  </div>'
+              + '  <div class="flow-msg-finding-actions">' + fixBtn + '</div>'
+              + '</div>';
+          }).join('')
+        + '</div>';
+    } else {
+      findingsHtml = '<div class="flow-msg-no-findings">No diagnostic findings on this message.</div>';
+    }
+
+    return '<div class="flow-msg-row ' + statusClass + '">'
+      + '  <div class="flow-msg-head">'
+      + '    <span class="flow-msg-dot ' + statusClass + '"></span>'
+      + '    <div class="flow-msg-head-body">'
+      + '      <div class="flow-msg-subject">' + escapeHtml(subjectText) + '</div>'
+      + '      <div class="flow-msg-meta">' + posLabel + '<span class="flow-msg-delivered">' + Math.round(Number(m.delivered) || 0).toLocaleString() + ' delivered</span></div>'
+      + '    </div>'
+      + '    <div class="flow-msg-actions">'
+      + '      <button class="flow-msg-improve-btn" onclick="openFlowImproveFromHealth(' + m.id + ', null)">Draft improvement</button>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="flow-msg-metrics">'
+      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Open</span> <span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span></div>'
+      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Click</span> <span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span></div>'
+      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
+      + '  </div>'
+      + findingsHtml
+      + '</div>';
+  }).join('');
+
+  return '<div class="flow-msg-list">' + rows + '</div>';
+}
 
 async function loadFlowBrowserData() {
   if (flowMessagesCache && (Date.now() - flowMessagesLoadedAt) < 60000) return;
