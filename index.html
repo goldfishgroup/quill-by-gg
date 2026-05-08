@@ -5477,12 +5477,44 @@ async function callSlotChatClaude() {
   var idx = currentFlowSlots.indexOf(slot);
   var pos = idx + 1;
 
-  // Make sure inputs are loaded
+  // Load the SAME brand context Campaign Drafter uses, so Flow Drafter
+  // produces equivalently grounded copy. Voice + buckets + products +
+  // patterns + top winning subjects.
   if (!voiceCache) await loadVoiceBrief(true);
-  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).eq('starred', true).order('extracted_at', { ascending: false }).limit(8);
-  var patterns = patternsRes.data || [];
+  if (!bucketsCache) await loadBuckets(true);
+  if (!productsCache) await loadProducts(true);
+  if (!insightsData.campaigns) {
+    try { await loadInsightsIfNeeded(); } catch (err) { /* soft fail */ }
+  }
 
-  var systemPrompt = buildSlotChatSystemPrompt(slot, pos, voiceCache || {}, patterns);
+  var patternsRes = await db.from('quill_patterns').select('*').eq('active', true).order('extracted_at', { ascending: false });
+  var allPatterns = patternsRes.data || [];
+  var starredPatterns = allPatterns.filter(function(p){ return p.starred; });
+  var patterns = starredPatterns.length ? starredPatterns : allPatterns.slice(0, 8);
+
+  // Voice sanity check: warn if voice brief is essentially empty so the user
+  // knows the prompt will be weak.
+  var voice = voiceCache || {};
+  var voiceHasContent = voice.brand_snapshot || voice.customer_profile || voice.differentiation
+    || voice.tone_nuances || voice.pov || voice.signature_phrases || voice.voice_adjectives;
+  if (!voiceHasContent) {
+    showToast('Voice brief is empty. Drafts will be generic. Fill it in: AI Studio > Voice.', true);
+  }
+
+  var topSubjects = (typeof getTopWinningSubjects === 'function') ? getTopWinningSubjects() : [];
+
+  var systemPrompt = buildSlotChatSystemPrompt({
+    slot: slot,
+    position: pos,
+    totalSlots: currentFlowSlots.length,
+    flowDraft: currentFlowDraft,
+    voice: voice,
+    products: productsCache || [],
+    buckets: bucketsCache || [],
+    patterns: patterns,
+    starredPatternsCount: starredPatterns.length,
+    topSubjects: topSubjects
+  });
   var userMessages = (slotChatHistoryCache[openSlotChatId] || []).slice(-12).map(function(m){
     return { role: m.role, content: m.content };
   });
@@ -5531,70 +5563,152 @@ async function callSlotChatClaude() {
   };
 }
 
-function buildSlotChatSystemPrompt(slot, position, voice, patterns) {
+function buildSlotChatSystemPrompt(ctx) {
+  var slot = ctx.slot;
+  var position = ctx.position;
+  var totalSlots = ctx.totalSlots;
+  var flowDraft = ctx.flowDraft;
+  var voice = ctx.voice || {};
+  var products = ctx.products || [];
+  var patterns = ctx.patterns || [];
+  var topSubjects = ctx.topSubjects || [];
+
   var lines = [];
-  lines.push('You are Quill, an AI agent for SFH email marketing. You are drafting Email ' + position + ' in a multi-message flow.');
+  lines.push('You are Quill, Goldfish Group\u0027s senior email copywriter for SFH, a premium supplement brand. You are drafting Email ' + position + ' of ' + totalSlots + ' in a multi-message flow.');
+  lines.push('You write production-ready email drafts that sound like SFH actually sounds: calm, confident, clinical-lite, direct. You never use hype.');
   lines.push('');
   lines.push('YOUR LANE: pattern intelligence, diagnostics, and copy production. You are doing copy production here.');
   lines.push('');
-  lines.push('FLOW CONTEXT:');
-  if (currentFlowDraft) {
-    if (currentFlowDraft.name) lines.push('Flow name: ' + currentFlowDraft.name);
-    if (currentFlowDraft.brief) {
+
+  // Flow context
+  lines.push('=== FLOW CONTEXT ===');
+  if (flowDraft) {
+    if (flowDraft.name) lines.push('Flow name: ' + flowDraft.name);
+    if (flowDraft.brief) {
       lines.push('Flow brief:');
-      lines.push(currentFlowDraft.brief);
+      lines.push(flowDraft.brief);
     }
   }
   lines.push('');
-  lines.push('THIS MESSAGE:');
-  lines.push('Position in flow: Email ' + position + ' of ' + currentFlowSlots.length);
+
+  // This message
+  lines.push('=== THIS MESSAGE ===');
+  lines.push('Position: Email ' + position + ' of ' + totalSlots);
   if (slot.recommended_delay) lines.push('Send timing: ' + slot.recommended_delay);
   if (slot.source_content && slot.source_content.trim()) {
     lines.push('');
-    lines.push('EXISTING SOURCE COPY (this is what is being improved):');
-    lines.push(slot.source_content);
+    lines.push('EXISTING SOURCE COPY (this is what is being improved, the rewrite must respect the message\u0027s strategic role in the sequence):');
+    lines.push(String(slot.source_content).slice(0, 3000));
   }
   lines.push('');
 
-  // Voice constraints
-  lines.push('VOICE CONSTRAINTS (apply to all generated copy):');
-  lines.push('- NEVER use em dashes. Use commas, periods, or parentheses instead.');
-  lines.push('- NEVER use hyperbolic words: critical, massive, exceptional, remarkable, phenomenal, concerning, severe, alarming, plummeting.');
-  lines.push('- American English. Apostrophes use ASCII single quotes.');
-  lines.push('- Warm, sharp, no fluff. Senior consultant energy, never tech bro.');
-  if (voice.pov) lines.push('- POV: ' + voice.pov);
-  if (voice.formality) lines.push('- Formality: ' + voice.formality);
-  if (voice.dos && voice.dos.length) {
-    lines.push('- Voice DOs:');
-    voice.dos.slice(0, 8).forEach(function(d){ lines.push('  - ' + d); });
-  }
-  if (voice.donts && voice.donts.length) {
-    lines.push('- Voice DON\u0027Ts:');
-    voice.donts.slice(0, 8).forEach(function(d){ lines.push('  - ' + d); });
-  }
+  // Voice (full hard constraints, mirrors Campaign Drafter)
+  lines.push('=== VOICE: HARD CONSTRAINTS ===');
+  var voiceAdjectives = parseSlotVoiceField(voice.voice_adjectives);
+  if (voiceAdjectives.length) lines.push('Voice adjectives: ' + voiceAdjectives.join(', '));
+  var signaturePhrases = parseSlotVoiceField(voice.signature_phrases);
+  if (signaturePhrases.length) lines.push('Signature phrases to reach for (use when they fit, do not force): ' + signaturePhrases.map(function(p){ return '"' + p + '"'; }).join(', '));
+  var bannedWords = parseSlotVoiceField(voice.banned_words);
+  if (bannedWords.length) lines.push('BANNED WORDS (never use): ' + bannedWords.join(', '));
+  var bannedClaims = parseSlotVoiceField(voice.banned_claims);
+  if (bannedClaims.length) lines.push('BANNED CLAIM TYPES (never do): ' + bannedClaims.join(', '));
+  if (voice.pov) lines.push('POV: ' + voice.pov);
+  if (voice.formality) lines.push('Formality: ' + voice.formality);
+  lines.push('');
+
+  // Voice context
+  lines.push('=== VOICE: CONTEXT ===');
+  if (voice.brand_snapshot) lines.push('Brand snapshot: ' + voice.brand_snapshot);
+  if (voice.customer_profile) lines.push('Customer: ' + voice.customer_profile);
+  if (voice.differentiation) lines.push('Differentiation: ' + voice.differentiation);
+  if (voice.tone_nuances) lines.push('Tone nuances: ' + voice.tone_nuances);
   lines.push('');
 
   // Patterns
   if (patterns.length) {
-    lines.push('STARRED PATTERNS (proven angles for this brand):');
-    patterns.slice(0, 6).forEach(function(p){
-      lines.push('- ' + (p.title || '') + (p.summary ? ': ' + p.summary : ''));
+    var ptnHeader = ctx.starredPatternsCount
+      ? '=== STARRED PATTERNS (user-validated rules from historical SFH performance, respect these) ==='
+      : '=== LEARNED PATTERNS (top extracted from SFH performance, use as guidance) ===';
+    lines.push(ptnHeader);
+    patterns.slice(0, 8).forEach(function(p){
+      var line = '- ' + (p.rule || p.title || 'Pattern');
+      if (p.category) line += ' [' + p.category + ']';
+      if (p.evidence) line += '. Evidence: ' + p.evidence;
+      if (p.confidence) line += ' (confidence: ' + p.confidence + ')';
+      lines.push(line);
     });
+    lines.push('');
+    lines.push('How to apply patterns: let them shape structural decisions (subject format, intro style, CTA framing) and angle choices. Do not quote them back. Just write a draft that honors them.');
     lines.push('');
   }
 
-  lines.push('RESPONSE FORMAT:');
+  // Product catalog
+  if (products.length) {
+    var inStock = products.filter(function(p){ return !p.sold_out; });
+    var soldOut = products.filter(function(p){ return p.sold_out; });
+    lines.push('=== SFH PRODUCT CATALOG (use these details, do NOT invent) ===');
+    inStock.forEach(function(p){
+      var entry = '- ' + p.name;
+      if (p.category) entry += ' [' + p.category + ']';
+      if (p.short_description) entry += ': ' + p.short_description;
+      if (p.key_ingredients) entry += ' | Ingredients: ' + p.key_ingredients;
+      if (p.variants) entry += ' | Variants: ' + p.variants;
+      var claims = parseSlotVoiceField(p.signature_claims);
+      if (claims.length) entry += ' | Signature claims: ' + claims.join('; ');
+      var pairs = parseSlotVoiceField(p.stack_pairs);
+      if (pairs.length) entry += ' | Stacks with: ' + pairs.join(', ');
+      if (p.notes) entry += ' | Note: ' + p.notes;
+      lines.push(entry);
+    });
+    if (soldOut.length) {
+      lines.push('');
+      lines.push('SOLD OUT (do NOT promote or feature these products):');
+      soldOut.forEach(function(p){
+        lines.push('- ' + p.name + (p.category ? ' [' + p.category + ']' : ''));
+      });
+    }
+    lines.push('');
+  }
+
+  // Top winning subjects (voice anchor)
+  if (topSubjects.length) {
+    lines.push('=== TOP WINNING SFH SUBJECT LINES (voice anchor, do NOT copy verbatim, learn the cadence) ===');
+    topSubjects.slice(0, 8).forEach(function(s){ lines.push('- "' + s + '"'); });
+    lines.push('');
+  }
+
+  // Hard rules
+  lines.push('=== HARD RULES (apply to all generated copy) ===');
+  lines.push('- NEVER use em dashes. Use commas, periods, or parentheses instead.');
+  lines.push('- NEVER use hyperbolic words: critical, massive, exceptional, remarkable, phenomenal, concerning, severe, alarming, plummeting.');
+  lines.push('- American English. Apostrophes use ASCII single quotes (here\u0027s, don\u0027t, you\u0027re), never drop them.');
+  lines.push('- No Klaviyo merge tags, no first-name placeholders, no "Hi {{ first_name }}" syntax. Just plain copy.');
+  lines.push('- FACTUAL FRAMING: Do not invent biochemical mechanisms or absorption claims. When suggesting stacking or routines, frame strategically (daily routine, behavioral consistency) not biochemically (absorption, uptake, synergistic effect). Do not cite specific percentages or study results you cannot verify.');
+  lines.push('- PRODUCT GROUNDING: Product mentions must use ONLY products from the SFH catalog above. Do NOT invent product names, dose numbers, ingredient breakdowns beyond what the catalog provides.');
+  lines.push('');
+
+  // BREVITY (Ines\u0027s feedback)
+  lines.push('=== BREVITY (CRITICAL, INES\u0027S DIRECT FEEDBACK) ===');
+  lines.push('Body should be tight. Aim for 80-150 words for body copy. Never more than 250 unless context truly demands it.');
+  lines.push('Cut every sentence that is not earning its place. SFH does not pad. Every line should do work.');
+  lines.push('Subject lines: short and curious, not exclamatory. Aim 40-65 characters.');
+  lines.push('Preview text: complement the subject, do not repeat it. Aim 50-90 characters.');
+  lines.push('Paragraphs short and skimmable: 1-3 sentences each. White space matters.');
+  lines.push('');
+
+  // Response format
+  lines.push('=== RESPONSE FORMAT ===');
   lines.push('You can respond in two modes:');
   lines.push('');
   lines.push('1. CONVERSATIONAL MODE (default): when the user asks a question, requests options, or has not yet asked for a draft. Respond with plain text. No JSON.');
   lines.push('');
   lines.push('2. DRAFT MODE: when the user asks for a draft, asks you to write/draft/give them the email, or says things like "draft it", "write it", "give me the email". Respond with JSON in this exact shape:');
   lines.push('{');
-  lines.push('  "commentary": "<1-2 sentences explaining the draft choices>",');
+  lines.push('  "commentary": "<1-2 sentences explaining the draft choices, brief>",');
   lines.push('  "draft": {');
   lines.push('    "subject": "<subject line>",');
   lines.push('    "preview": "<preview text>",');
-  lines.push('    "body": "<full email body>"');
+  lines.push('    "body": "<full email body, tight, 80-150 words>"');
   lines.push('  }');
   lines.push('}');
   lines.push('');
@@ -5602,6 +5716,24 @@ function buildSlotChatSystemPrompt(slot, position, voice, patterns) {
   lines.push('Default to conversational mode if uncertain. Drafting is the higher-effort path; only do it when clearly requested.');
 
   return lines.join('\n');
+}
+
+// Parse a JSON-or-CSV-or-already-array field from voice/products. Mirrors
+// the parser used by Campaign Drafter so behavior is consistent.
+function parseSlotVoiceField(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(function(x){ return !!x; });
+  if (typeof val === 'string') {
+    var trimmed = val.trim();
+    if (trimmed.charAt(0) === '[') {
+      try {
+        var parsed = JSON.parse(trimmed);
+        return Array.isArray(parsed) ? parsed.filter(function(x){ return !!x; }) : [];
+      } catch (e) { /* fall through */ }
+    }
+    return trimmed.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return !!s; });
+  }
+  return [];
 }
 
 window.applyDraftToSlot = async function(msgId) {
