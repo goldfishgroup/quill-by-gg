@@ -411,6 +411,51 @@
 
     /* FLOW MESSAGES BROWSER */
     .flow-browser-section { margin-top: 18px; }
+
+    /* FLOW HEALTH (Phase A) */
+    .flow-health-section { margin-top: 18px; padding-bottom: 24px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 24px; }
+    .flow-health-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
+    .flow-health-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .flow-health-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 620px; }
+    .flow-health-baselines { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; }
+    .flow-health-baseline-item { font-size: 10px; }
+    .flow-health-baseline-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+    .flow-health-baseline-val { font-size: 12px; color: var(--gg-charcoal); font-weight: 600; margin-left: 4px; }
+    .flow-health-baseline-sfh { color: var(--gg-olive); }
+
+    .flow-health-cards { display: flex; flex-direction: column; gap: 10px; }
+    .flow-health-empty { padding: 24px; text-align: center; color: var(--q-muted); font-size: 12px; font-style: italic; background: #fff; border: 0.5px dashed var(--q-line); border-radius: var(--radius); }
+
+    .flow-health-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px 18px; transition: border-color 0.12s; }
+    .flow-health-card:hover { border-color: var(--gg-olive); }
+    .flow-health-card.healthy { border-left: 3px solid #5d8a3a; }
+    .flow-health-card.needs-improvement { border-left: 3px solid #d68d2a; }
+    .flow-health-card.critical { border-left: 3px solid #a83232; }
+    .flow-health-card.unknown { border-left: 3px solid #b8b6ad; }
+
+    .flow-health-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+    .flow-health-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
+    .flow-health-card-meta { font-size: 10px; color: var(--q-muted); }
+    .flow-health-badge { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .flow-health-badge.healthy { background: #e6efd9; color: #3d6022; }
+    .flow-health-badge.needs-improvement { background: #fbe9cc; color: #8c5713; }
+    .flow-health-badge.critical { background: #f5d5d5; color: #7a1f1f; }
+    .flow-health-badge.unknown { background: #ecebe6; color: #5e5d59; }
+
+    .flow-health-card-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; padding: 10px 12px; background: var(--gg-offwhite); border-radius: 6px; }
+    .flow-health-metric { display: flex; flex-direction: column; gap: 2px; }
+    .flow-health-metric-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+    .flow-health-metric-val { font-size: 14px; color: var(--gg-charcoal); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .flow-health-metric-val.bad { color: #a83232; }
+    .flow-health-metric-val.warn { color: #b8741f; }
+    .flow-health-metric-val.good { color: #3d6022; }
+    .flow-health-metric-sub { font-size: 9px; color: var(--q-muted); }
+
+    .flow-health-reasons { margin-top: 10px; font-size: 11px; color: var(--gg-charcoal); line-height: 1.5; }
+    .flow-health-reasons-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+    .flow-health-reason { padding: 2px 0; }
+    .flow-health-reason-marker { color: #a83232; font-weight: 700; }
+    .flow-health-reason-marker.warn { color: #b8741f; }
     .flow-browser-head { margin-bottom: 14px; }
     .flow-browser-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-browser-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 720px; }
@@ -1528,6 +1573,17 @@
               </ul>
             </div>
           </div>
+          <div class="flow-health-section">
+            <div class="flow-health-head">
+              <div>
+                <div class="flow-health-title">Flow health</div>
+                <div class="flow-health-sub">Live flows grouped by overall health. Compares against industry defaults; SFH baseline shown alongside. Click a flow to expand its messages (Phase B).</div>
+              </div>
+              <div class="flow-health-baselines" id="flow-health-baselines"></div>
+            </div>
+            <div class="flow-health-cards" id="flow-health-cards"></div>
+          </div>
+
           <div class="flow-browser-section">
             <div class="flow-browser-head">
               <div class="flow-browser-title">Flow messages</div>
@@ -4402,6 +4458,8 @@ async function showFlowDiagnosticsOnOpen() {
   renderFlowDiagnostics();
   // Also load the flow message browser for the panel below diagnostics
   await loadFlowBrowserData();
+  // Render flow health cards (Phase A) using both diagnostics + flow messages
+  renderFlowHealthCards();
   renderFlowBrowser();
 }
 
@@ -4914,6 +4972,7 @@ window.extractFlowDiagnostics = async function() {
     status.textContent = 'Extracted ' + rows.length + ' diagnoses across ' + flows.length + ' flows.';
     await loadFlowDiagnostics(true);
     renderFlowDiagnostics();
+    if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
     showToast('Diagnosis complete');
   } catch (err) {
     console.error('Flow diagnosis error', err);
@@ -4934,6 +4993,315 @@ window.extractFlowDiagnostics = async function() {
 var flowMessagesCache = null;
 var flowMessagesLoadedAt = 0;
 var flowImprovePending = null; // { flowMessage, attachedDiagnostic } during modal use
+
+// ── FLOW HEALTH (Phase A) ────────────────────────────────────────────────
+// Rolls up quill_flow_messages by flow_name into health-classified cards.
+// Industry-default thresholds with SFH overall baselines shown alongside.
+// Phase B will add inline expand to messages. Phase C will fold per-message
+// diagnostic findings + draft actions into the expanded view.
+
+// Industry rule-of-thumb thresholds (for consumer flows). Adjust later as
+// SFH-specific benchmarks emerge.
+var FLOW_HEALTH_THRESHOLDS = {
+  open_rate: { critical: 15, warn: 25 },        // % below 15 critical, 15-25 warn
+  click_rate: { warn: 1, good: 2.5 },           // % below 1 warn, 1-2.5 ok, 2.5+ good
+  unsubscribe_rate: { critical: 0.5, warn: 0.3 },// % above 0.5 critical, 0.3-0.5 warn
+  complaint_rate: { critical: 0.1, warn: 0.05 } // % above 0.1 critical (deliverability emergency)
+};
+
+function aggregateFlowHealthData(messages) {
+  // Group consumer-facing messages by flow_name, compute delivered-weighted
+  // averages so a flow with one viral message and many small ones doesn't
+  // get falsely averaged.
+  var byFlow = {};
+  (messages || []).forEach(function(m){
+    if ((m.audience_type || 'consumer') !== 'consumer') return;
+    var name = m.flow_name || 'Unnamed flow';
+    if (!byFlow[name]) {
+      byFlow[name] = {
+        flow_name: name,
+        message_count: 0,
+        total_delivered: 0,
+        total_unique_opens: 0,
+        total_unique_clicks: 0,
+        total_unsubscribes: 0,
+        total_complaints: 0,
+        total_revenue: 0,
+        messages: []
+      };
+    }
+    var f = byFlow[name];
+    f.message_count++;
+    f.messages.push(m);
+    var delivered = Number(m.delivered) || 0;
+    f.total_delivered += delivered;
+    f.total_unique_opens += Number(m.unique_opens) || 0;
+    f.total_unique_clicks += Number(m.unique_clicks) || 0;
+    f.total_revenue += Number(m.revenue) || 0;
+    // Klaviyo unsubscribe_rate is stored as percent. Reverse to count via delivered.
+    if (delivered > 0 && m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined) {
+      f.total_unsubscribes += (Number(m.unsubscribe_rate) / 100) * delivered;
+    }
+    if (delivered > 0 && m.complaint_rate !== null && m.complaint_rate !== undefined) {
+      f.total_complaints += (Number(m.complaint_rate) / 100) * delivered;
+    }
+  });
+
+  // Compute weighted averages
+  var flows = Object.keys(byFlow).map(function(name){
+    var f = byFlow[name];
+    var delivered = f.total_delivered;
+    f.avg_open_rate = delivered > 0 ? (f.total_unique_opens / delivered) * 100 : null;
+    f.avg_click_rate = delivered > 0 ? (f.total_unique_clicks / delivered) * 100 : null;
+    f.avg_unsub_rate = delivered > 0 ? (f.total_unsubscribes / delivered) * 100 : null;
+    f.avg_complaint_rate = delivered > 0 ? (f.total_complaints / delivered) * 100 : null;
+    return f;
+  });
+
+  // Sort: critical first, then needs-improvement, then healthy, then unknown
+  return flows;
+}
+
+function classifyFlowHealth(flow, activeDiagnosticsForFlow) {
+  // activeDiagnosticsForFlow is a list of diagnostic findings (active=true,
+  // not dismissed) matched by flow_name.
+  var t = FLOW_HEALTH_THRESHOLDS;
+  var reasons = [];
+  var status = 'healthy';
+
+  // Edge case: no delivery data at all
+  if (!flow.total_delivered || flow.total_delivered === 0) {
+    return { status: 'unknown', reasons: [{ severity: 'unknown', text: 'No delivery data yet for this flow.' }] };
+  }
+
+  // Critical checks
+  if (flow.avg_complaint_rate !== null && flow.avg_complaint_rate > t.complaint_rate.critical) {
+    status = 'critical';
+    reasons.push({ severity: 'critical', text: 'Spam complaint rate ' + flow.avg_complaint_rate.toFixed(2) + '% is above the ' + t.complaint_rate.critical + '% deliverability threshold.' });
+  }
+  if (flow.avg_unsub_rate !== null && flow.avg_unsub_rate > t.unsubscribe_rate.critical) {
+    status = 'critical';
+    reasons.push({ severity: 'critical', text: 'Unsubscribe rate ' + flow.avg_unsub_rate.toFixed(2) + '% is above the ' + t.unsubscribe_rate.critical + '% threshold. List health risk.' });
+  }
+  if (flow.avg_open_rate !== null && flow.avg_open_rate < t.open_rate.critical) {
+    status = 'critical';
+    reasons.push({ severity: 'critical', text: 'Open rate ' + flow.avg_open_rate.toFixed(1) + '% is below the ' + t.open_rate.critical + '% threshold.' });
+  }
+  // Diagnostic findings of severity fix_now
+  var fixNowFindings = (activeDiagnosticsForFlow || []).filter(function(d){ return d.severity === 'fix_now'; });
+  if (fixNowFindings.length) {
+    status = 'critical';
+    reasons.push({ severity: 'critical', text: fixNowFindings.length + ' active fix-now diagnostic finding' + (fixNowFindings.length > 1 ? 's' : '') + ' on this flow.' });
+  }
+
+  // Needs-improvement checks (only if not already critical)
+  if (status === 'healthy') {
+    if (flow.avg_unsub_rate !== null && flow.avg_unsub_rate > t.unsubscribe_rate.warn) {
+      status = 'needs-improvement';
+      reasons.push({ severity: 'warn', text: 'Unsubscribe rate ' + flow.avg_unsub_rate.toFixed(2) + '% is elevated (above ' + t.unsubscribe_rate.warn + '%).' });
+    }
+    if (flow.avg_open_rate !== null && flow.avg_open_rate < t.open_rate.warn) {
+      status = 'needs-improvement';
+      reasons.push({ severity: 'warn', text: 'Open rate ' + flow.avg_open_rate.toFixed(1) + '% is below the ' + t.open_rate.warn + '% target.' });
+    }
+    if (flow.avg_click_rate !== null && flow.avg_click_rate < t.click_rate.warn) {
+      status = 'needs-improvement';
+      reasons.push({ severity: 'warn', text: 'Click rate ' + flow.avg_click_rate.toFixed(2) + '% is below the ' + t.click_rate.warn + '% target.' });
+    }
+    var oppFindings = (activeDiagnosticsForFlow || []).filter(function(d){ return d.severity === 'opportunity'; });
+    if (oppFindings.length) {
+      status = 'needs-improvement';
+      reasons.push({ severity: 'warn', text: oppFindings.length + ' active opportunity diagnostic finding' + (oppFindings.length > 1 ? 's' : '') + ' on this flow.' });
+    }
+  }
+
+  if (!reasons.length) {
+    reasons.push({ severity: 'good', text: 'Metrics within healthy ranges. No active diagnostic findings.' });
+  }
+
+  return { status: status, reasons: reasons };
+}
+
+function computeSFHBaselines(messages) {
+  // SFH-overall averages computed from all consumer flow messages with delivery data.
+  // This is the strategist's true SFH baseline, useful as a sanity check against industry defaults.
+  var totalDelivered = 0;
+  var totalOpens = 0;
+  var totalClicks = 0;
+  var totalUnsubs = 0;
+  (messages || []).forEach(function(m){
+    if ((m.audience_type || 'consumer') !== 'consumer') return;
+    var d = Number(m.delivered) || 0;
+    if (d <= 0) return;
+    totalDelivered += d;
+    totalOpens += Number(m.unique_opens) || 0;
+    totalClicks += Number(m.unique_clicks) || 0;
+    if (m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined) {
+      totalUnsubs += (Number(m.unsubscribe_rate) / 100) * d;
+    }
+  });
+  if (totalDelivered === 0) return null;
+  return {
+    open_rate: (totalOpens / totalDelivered) * 100,
+    click_rate: (totalClicks / totalDelivered) * 100,
+    unsubscribe_rate: (totalUnsubs / totalDelivered) * 100
+  };
+}
+
+function metricColorClass(metricKey, value) {
+  // Returns 'good' / 'warn' / 'bad' / '' based on threshold comparison
+  if (value === null || value === undefined || isNaN(value)) return '';
+  var t = FLOW_HEALTH_THRESHOLDS[metricKey];
+  if (!t) return '';
+  if (metricKey === 'unsubscribe_rate' || metricKey === 'complaint_rate') {
+    // higher = worse
+    if (value > t.critical) return 'bad';
+    if (value > t.warn) return 'warn';
+    return 'good';
+  } else {
+    // higher = better (open_rate, click_rate)
+    if (t.critical !== undefined && value < t.critical) return 'bad';
+    if (t.warn !== undefined && value < t.warn) return 'warn';
+    return 'good';
+  }
+}
+
+function fmtPct(v, decimals) {
+  if (v === null || v === undefined || isNaN(v)) return '\u2014';
+  return Number(v).toFixed(decimals === undefined ? 1 : decimals) + '%';
+}
+
+function fmtCurrency(v) {
+  if (v === null || v === undefined || isNaN(v)) return '\u2014';
+  return '$' + Math.round(Number(v)).toLocaleString();
+}
+
+function renderFlowHealthBaselines(baselines) {
+  var el = document.getElementById('flow-health-baselines');
+  if (!el) return;
+  var t = FLOW_HEALTH_THRESHOLDS;
+  var parts = [];
+  // Open rate
+  parts.push('<div class="flow-health-baseline-item">'
+    + '<div class="flow-health-baseline-label">Open rate</div>'
+    + '<span class="flow-health-baseline-val">Industry warn ' + t.open_rate.warn + '%</span>'
+    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.open_rate) + '</span>' : '')
+    + '</div>');
+  // Click rate
+  parts.push('<div class="flow-health-baseline-item">'
+    + '<div class="flow-health-baseline-label">Click rate</div>'
+    + '<span class="flow-health-baseline-val">Industry warn ' + t.click_rate.warn + '%</span>'
+    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.click_rate, 2) + '</span>' : '')
+    + '</div>');
+  // Unsub rate
+  parts.push('<div class="flow-health-baseline-item">'
+    + '<div class="flow-health-baseline-label">Unsub rate</div>'
+    + '<span class="flow-health-baseline-val">Industry critical ' + t.unsubscribe_rate.critical + '%</span>'
+    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.unsubscribe_rate, 2) + '</span>' : '')
+    + '</div>');
+  el.innerHTML = parts.join('');
+}
+
+window.renderFlowHealthCards = function() {
+  var container = document.getElementById('flow-health-cards');
+  if (!container) return;
+  if (!flowMessagesCache) {
+    container.innerHTML = '<div class="flow-health-empty">Loading flow data...</div>';
+    return;
+  }
+  if (!flowMessagesCache.length) {
+    container.innerHTML = '<div class="flow-health-empty">No flow messages yet. Upload Klaviyo flow CSV in the Insights tab.</div>';
+    return;
+  }
+  var flows = aggregateFlowHealthData(flowMessagesCache);
+  if (!flows.length) {
+    container.innerHTML = '<div class="flow-health-empty">No active consumer flows in the data.</div>';
+    return;
+  }
+
+  // Build a lookup of active diagnostics by flow_name
+  var diagsByFlow = {};
+  (diagnosticsCache || []).forEach(function(d){
+    if (!d.active) return;
+    var key = (d.flow_name || '').trim();
+    if (!key) return;
+    if (!diagsByFlow[key]) diagsByFlow[key] = [];
+    diagsByFlow[key].push(d);
+  });
+
+  // Classify each flow
+  flows.forEach(function(f){
+    f.health = classifyFlowHealth(f, diagsByFlow[f.flow_name] || []);
+  });
+
+  // Sort: critical > needs-improvement > healthy > unknown
+  var sevOrder = { 'critical': 0, 'needs-improvement': 1, 'healthy': 2, 'unknown': 3 };
+  flows.sort(function(a, b){
+    var diff = sevOrder[a.health.status] - sevOrder[b.health.status];
+    if (diff !== 0) return diff;
+    return (b.total_delivered || 0) - (a.total_delivered || 0);
+  });
+
+  // Render baselines header
+  var baselines = computeSFHBaselines(flowMessagesCache);
+  renderFlowHealthBaselines(baselines);
+
+  // Render cards
+  var html = flows.map(function(f){
+    var h = f.health;
+    var statusLabel = h.status === 'needs-improvement' ? 'Needs improvement'
+      : h.status === 'critical' ? 'Critical'
+      : h.status === 'unknown' ? 'No data'
+      : 'Healthy';
+
+    var openCls = metricColorClass('open_rate', f.avg_open_rate);
+    var clickCls = metricColorClass('click_rate', f.avg_click_rate);
+    var unsubCls = metricColorClass('unsubscribe_rate', f.avg_unsub_rate);
+
+    var reasonsHtml = '';
+    if (h.reasons && h.reasons.length) {
+      reasonsHtml = '<div class="flow-health-reasons">'
+        + '<div class="flow-health-reasons-label">Why this status</div>'
+        + h.reasons.map(function(r){
+            var marker = r.severity === 'critical' ? '<span class="flow-health-reason-marker">!</span>'
+              : r.severity === 'warn' ? '<span class="flow-health-reason-marker warn">!</span>'
+              : '<span style="color:#3d6022;font-weight:700;">\u2713</span>';
+            return '<div class="flow-health-reason">' + marker + ' ' + escapeHtml(r.text) + '</div>';
+          }).join('')
+        + '</div>';
+    }
+
+    return '<div class="flow-health-card ' + h.status + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
+      + '  <div class="flow-health-card-head">'
+      + '    <div>'
+      + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + '</div>'
+      + '      <div class="flow-health-card-meta">' + f.message_count + ' message' + (f.message_count !== 1 ? 's' : '') + ' &middot; ' + Math.round(f.total_delivered).toLocaleString() + ' delivered total</div>'
+      + '    </div>'
+      + '    <div class="flow-health-badge ' + h.status + '">' + statusLabel + '</div>'
+      + '  </div>'
+      + '  <div class="flow-health-card-metrics">'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Avg open rate</div>'
+      + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Avg click rate</div>'
+      + '      <div class="flow-health-metric-val ' + clickCls + '">' + fmtPct(f.avg_click_rate, 2) + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Avg unsub rate</div>'
+      + '      <div class="flow-health-metric-val ' + unsubCls + '">' + fmtPct(f.avg_unsub_rate, 2) + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Total revenue</div>'
+      + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
+      + '    </div>'
+      + '  </div>'
+      + reasonsHtml
+      + '</div>';
+  }).join('');
+  container.innerHTML = html;
+};
 
 async function loadFlowBrowserData() {
   if (flowMessagesCache && (Date.now() - flowMessagesLoadedAt) < 60000) return;
