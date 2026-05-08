@@ -1516,7 +1516,7 @@
           <div class="patterns-head">
             <div class="patterns-head-left">
               <div class="patterns-title">Flow Diagnostics</div>
-              <div class="patterns-sub">Learned diagnoses for each active flow. Severity tags show what to fix now, grow, monitor, or test.</div>
+              <div class="patterns-sub">Live flows by health, with diagnostic findings underneath. Scan the top, drill into a critical flow, fix the worst messages.</div>
             </div>
             <div class="patterns-head-right">
               <div class="patterns-filter-toggle" style="flex-wrap:wrap">
@@ -1532,44 +1532,43 @@
           </div>
           <div class="tip-widget" id="tip-flows">
             <div class="tip-widget-head" onclick="toggleTipWidget('tip-flows')">
-              <div class="tip-widget-title">How to read flow diagnostics</div>
+              <div class="tip-widget-title">How to use this page</div>
               <button class="tip-widget-toggle" id="tip-flows-toggle">Hide</button>
             </div>
             <div class="tip-widget-body">
-              <div class="tip-section-title">Severity categories</div>
+              <div class="tip-section-title">The workflow</div>
+              <ol>
+                <li><strong>Scan Flow Health (top of page).</strong> Each live flow is graded healthy / needs improvement / critical. Sorted with worst at the top so the leaks are obvious.</li>
+                <li><strong>Drill into a flagged flow.</strong> Click a flow card to expand its messages (Phase B, coming next session). Each message will show its specific stats and the issues found in it.</li>
+                <li><strong>Read the issues for the worst messages.</strong> Each message will list specific findings (subject too generic, body too long, no clear CTA, etc.) with severity dots.</li>
+                <li><strong>Take action.</strong> Each message will have "Draft improvement" (rewrite this single message) and "Draft as flow" (rebuild the whole flow from scratch) buttons.</li>
+              </ol>
+              <div class="tip-section-title" style="margin-top:14px;">Reading the Flow Health badge</div>
               <ul>
-                <li><strong>Fix now.</strong> The flow or message is leaking revenue or reputation. Action this week.</li>
-                <li><strong>Opportunity.</strong> Room to grow this flow meaningfully. Schedule in the next sprint.</li>
-                <li><strong>Monitor.</strong> Worth watching. Not urgent but keep an eye on the trend.</li>
-                <li><strong>A/B test.</strong> A specific hypothesis worth testing. See the test hint inside the card.</li>
+                <li><strong>Critical (red).</strong> One or more of: open rate below 15%, unsubscribe rate above 0.5%, complaint rate above 0.1%, or an active fix-now diagnostic finding. Address this week.</li>
+                <li><strong>Needs improvement (amber).</strong> One or more of: open rate 15-25%, click rate below 1%, unsub rate 0.3-0.5%, or an active opportunity finding. Schedule next sprint.</li>
+                <li><strong>Healthy (green).</strong> Metrics within target ranges and no active findings. Keep watching.</li>
+                <li><strong>No data (grey).</strong> No delivery data yet for this flow. Either freshly imported or never triggered.</li>
               </ul>
-              <div class="tip-section-title">Confidence badges explained</div>
+              <div class="tip-section-title" style="margin-top:14px;">Industry thresholds vs SFH baselines</div>
               <ul>
-                <li><strong>Message-scope.</strong> High needs 5,000+ deliveries. Medium needs 1,000 to 5,000. Below 1,000 is exploratory.</li>
-                <li><strong>Flow-scope.</strong> High needs 10,000+ total deliveries. Medium needs 2,000 to 10,000. Below is exploratory.</li>
-                <li><strong>Cross-flow or structural.</strong> High needs 15,000+ combined deliveries. Medium needs 3,000 to 15,000.</li>
-                <li><strong>Calibration note.</strong> Badges are computed deterministically from sample size, not self-assessed. A thin-sample diagnosis labeled exploratory may still have a correct observation, but the magnitude is not trustworthy.</li>
+                <li><strong>Industry defaults are conservative rules of thumb.</strong> 25% open as a "warn" line; 0.5% unsub as a "critical" line. These work as a sanity check, not a verdict.</li>
+                <li><strong>SFH baseline (shown in the Flow Health header).</strong> The actual delivered-weighted average across all your consumer flow messages. If SFH consistently runs above the industry warn line, your real bar is higher than the default; trust the SFH baseline.</li>
+                <li><strong>Welcome flows and recovery flows have different real benchmarks.</strong> A 60% open welcome series is normal; a 30% open win-back series is normal. The mixed SFH baseline is a starting point, not the final word for any single flow type.</li>
               </ul>
-              <div class="tip-section-title">Status and freshness pills</div>
+              <div class="tip-section-title" style="margin-top:14px;">Flow Diagnostics findings (the detail layer)</div>
               <ul>
-                <li><strong>Live.</strong> Flow is auto-triggered and actively running.</li>
-                <li><strong>Manual.</strong> Flow requires someone to trigger it. Useful for seasonal or campaign-tied flows.</li>
-                <li><strong>Worth revisiting (orange).</strong> Flow name or messages suggest a newer version exists. Data may mix old and new. Check with SFH before acting.</li>
+                <li><strong>Findings live below the Flow Health cards</strong> in the diagnostic findings grid. They feed the health classification (a fix-now finding will mark the flow critical).</li>
+                <li><strong>Severity tags.</strong> Fix now (leaking revenue or reputation, action this week). Opportunity (room to grow, schedule next sprint). Monitor (worth watching). A/B test (specific hypothesis to test).</li>
+                <li><strong>Confidence badges.</strong> High needs 5,000+ message deliveries (or 10,000+ flow / 15,000+ structural). Medium and Exploratory have lower thresholds. Computed from sample size, not self-assessed.</li>
+                <li><strong>Predicted lifts are decorative.</strong> "Lifts conversion from 0 to 0.3%" sounds precise but is an educated guess. Trust the direction, treat the magnitude as approximate.</li>
               </ul>
-              <div class="tip-section-title">Assessing a diagnosis</div>
+              <div class="tip-section-title" style="margin-top:14px;">When to re-run diagnosis</div>
               <ul>
-                <li><strong>Compare the recommendation to SFH voice.</strong> Dismiss if the fix suggests tactics that conflict with brand.</li>
-                <li><strong>A/B test predicted effects are often decorative.</strong> "Lifts conversion from 0 to 0.3%" sounds precise but is an educated guess. Trust the direction, treat the magnitude as approximate.</li>
-                <li><strong>Worth-revisiting flows may be mid-migration.</strong> Check with the SFH team before restructuring.</li>
-                <li><strong>Structural recommendations need team review.</strong> Audits like "archive variants under 500 deliveries" may remove intentional segment-specific variants. Validate before auto-applying.</li>
-                <li><strong>Star what you will act on.</strong> Session 3 idea and copy generators will use starred diagnoses as priorities.</li>
-              </ul>
-              <div class="tip-section-title">When to re-run diagnosis</div>
-              <ul>
-                <li><strong>After monthly Klaviyo flow uploads.</strong> New data can surface new issues or strengthen existing ones.</li>
-                <li><strong>After you act on a recommendation.</strong> Wait for new data to accumulate, re-upload, then re-diagnose to see if the fix worked.</li>
-                <li><strong>After launching a new flow or restructuring.</strong> Once the new version has 2 to 3 weeks of data.</li>
-                <li><strong>Once is enough otherwise.</strong> Diagnoses save permanently. Re-running on unchanged data produces similar findings.</li>
+                <li><strong>After monthly Klaviyo uploads.</strong> Fresh data refines the findings.</li>
+                <li><strong>After acting on a fix.</strong> Wait for new data, re-upload, re-diagnose.</li>
+                <li><strong>After launching or restructuring a flow.</strong> Once 2-3 weeks of new data exists.</li>
+                <li><strong>Once is enough otherwise.</strong> Diagnoses persist. Re-running on unchanged data produces similar findings.</li>
               </ul>
             </div>
           </div>
@@ -1577,7 +1576,7 @@
             <div class="flow-health-head">
               <div>
                 <div class="flow-health-title">Flow health</div>
-                <div class="flow-health-sub">Live flows grouped by overall health. Compares against industry defaults; SFH baseline shown alongside. Click a flow to expand its messages (Phase B).</div>
+                <div class="flow-health-sub">Live consumer flows ranked by health. Worst at the top. Industry defaults shown alongside SFH baselines for context.</div>
               </div>
               <div class="flow-health-baselines" id="flow-health-baselines"></div>
             </div>
