@@ -448,13 +448,20 @@
     .manage-flows-bulk-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--gg-charcoal); border-radius: 5px; font-size: 11px; font-weight: 500; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .manage-flows-bulk-btn:hover { background: var(--gg-offwhite); border-color: var(--gg-olive); }
     .manage-flows-list { flex: 1; overflow-y: auto; padding: 12px 22px; }
-    .manage-flows-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0.5px solid var(--q-line); border-radius: 6px; margin-bottom: 8px; background: #fff; }
+    .manage-flows-progress { padding: 8px 22px; font-size: 11px; color: var(--q-muted); background: var(--gg-offwhite); border-bottom: 0.5px solid var(--q-line); flex-shrink: 0; }
+    .manage-flows-progress:empty { display: none; }
+    .manage-flows-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 0.5px solid var(--q-line); border-radius: 6px; margin-bottom: 8px; background: #fff; }
     .manage-flows-row.legacy { background: #fafaf6; border-color: #e6e3d8; }
-    .manage-flows-row-checkbox { flex-shrink: 0; cursor: pointer; }
+    .manage-flows-row-checkbox { flex-shrink: 0; cursor: pointer; margin-top: 4px; }
     .manage-flows-row-body { flex: 1; min-width: 0; }
-    .manage-flows-row-name { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; word-break: break-word; }
-    .manage-flows-row-meta { font-size: 10px; color: var(--q-muted); display: flex; gap: 12px; flex-wrap: wrap; }
-    .manage-flows-row-pill { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+    .manage-flows-row-name { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; word-break: break-word; }
+    .manage-flows-row-meta { font-size: 10px; color: var(--q-muted); display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .manage-flows-row-months { color: var(--gg-olive); font-weight: 600; }
+    .manage-flows-row-date { display: flex; align-items: center; gap: 8px; }
+    .manage-flows-row-date-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+    .manage-flows-row-date-input { padding: 5px 8px; border: 0.5px solid var(--q-line); border-radius: 4px; font-size: 11px; font-family: var(--font-body); color: var(--gg-charcoal); }
+    .manage-flows-row-date-input:focus { outline: none; border-color: var(--gg-olive); }
+    .manage-flows-row-pill { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-top: 2px; }
     .manage-flows-row-pill.active { background: #e6efd9; color: #3d6022; }
     .manage-flows-row-pill.legacy { background: #ecebe6; color: #5e5d59; }
     .manage-flows-list-empty { padding: 30px; text-align: center; color: var(--q-muted); font-size: 12px; font-style: italic; }
@@ -476,6 +483,7 @@
     .flow-health-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
     .flow-health-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
     .flow-health-card-meta { font-size: 10px; color: var(--q-muted); }
+    .flow-health-card-meta-missing { color: var(--gg-orange); font-style: italic; }
     .flow-health-badge { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
     .flow-health-badge.healthy { background: #e6efd9; color: #3d6022; }
     .flow-health-badge.needs-improvement { background: #fbe9cc; color: #8c5713; }
@@ -1669,7 +1677,7 @@
             <div class="flow-health-head">
               <div>
                 <div class="flow-health-title">Flow health</div>
-                <div class="flow-health-sub">Live consumer flows ranked by health. Worst at the top. Industry defaults shown alongside SFH baselines for context.</div>
+                <div class="flow-health-sub">Live consumer flows ranked by health. Worst at the top. Metrics are all-time aggregates from Klaviyo. Months active is shown alongside so you can read metrics in context (a 3-year-old flow with declining numbers tells a different story than a 3-month-old one).</div>
               </div>
               <div class="flow-health-baselines" id="flow-health-baselines"></div>
             </div>
@@ -2293,6 +2301,7 @@
       <button class="manage-flows-bulk-btn" onclick="markFlowsActive(true)">Mark selected as active</button>
       <button class="manage-flows-bulk-btn" onclick="markFlowsActive(false)">Mark selected as legacy</button>
     </div>
+    <div class="manage-flows-progress" id="manage-flows-progress"></div>
     <div class="manage-flows-list" id="manage-flows-list"></div>
     <div class="manage-flows-footer">
       <div class="manage-flows-footer-status" id="manage-flows-status">&nbsp;</div>
@@ -5156,8 +5165,13 @@ var includeLegacyMessagesBrowser = false;
 var includeLegacyDiagnostics = false;
 
 // Manage Flows modal state
-var manageFlowsList = []; // [{ flow_name, message_count, total_delivered, is_active }]
+var manageFlowsList = []; // [{ flow_name, message_count, total_delivered, is_active, date_first_fired, notes }]
 var manageFlowsSelected = {}; // flow_name → true
+
+// Flow metadata cache (Session 7.2). Loaded on demand from quill_flow_metadata.
+// Keyed by flow_name. Used by both Manage Flows and Flow Health rendering.
+var flowMetadataCache = null;
+var flowMetadataDateSaveTimers = {};
 
 function aggregateFlowHealthData(messages) {
   // Group consumer-facing messages by flow_name, compute delivered-weighted
@@ -5446,7 +5460,7 @@ function renderFlowHealthBaselines(baselines) {
   el.innerHTML = parts.join('');
 }
 
-window.renderFlowHealthCards = function() {
+window.renderFlowHealthCards = async function() {
   var container = document.getElementById('flow-health-cards');
   if (!container) return;
   if (!flowMessagesCache) {
@@ -5457,11 +5471,22 @@ window.renderFlowHealthCards = function() {
     container.innerHTML = '<div class="flow-health-empty">No flow messages yet. Upload Klaviyo flow CSV in the Insights tab.</div>';
     return;
   }
+  // Ensure flow metadata is loaded so we can show months active per flow
+  await loadFlowMetadata(false);
+
   var flows = aggregateFlowHealthData(flowMessagesCache);
   if (!flows.length) {
     container.innerHTML = '<div class="flow-health-empty">No active consumer flows in the data.</div>';
     return;
   }
+
+  // Attach metadata + computed months active + revenue per message to each flow
+  flows.forEach(function(f){
+    var meta = (flowMetadataCache || {})[f.flow_name] || {};
+    f.date_first_fired = meta.date_first_fired || null;
+    f.months_active = computeMonthsActive(f.date_first_fired);
+    f.revenue_per_msg = (f.total_delivered > 0) ? (f.total_revenue / f.total_delivered) : null;
+  });
 
   // Build a lookup of active diagnostics by flow_name
   var diagsByFlow = {};
@@ -5542,30 +5567,51 @@ window.renderFlowHealthCards = function() {
       expandedHtml = renderFlowExpandedPanel(f, flowDiags);
     }
 
+    var monthsLabel = formatMonthsActive(f.months_active);
+    var metaParts = [];
+    metaParts.push(f.message_count + ' message' + (f.message_count !== 1 ? 's' : ''));
+    metaParts.push(Math.round(f.total_delivered).toLocaleString() + ' delivered');
+    if (monthsLabel) metaParts.push(monthsLabel);
+    else metaParts.push('<span class="flow-health-card-meta-missing">First-fired date not set</span>');
+
+    var rpmCls = '';
+    var rpmDisplay = '\u2014';
+    if (f.revenue_per_msg !== null) {
+      rpmDisplay = '$' + Number(f.revenue_per_msg).toFixed(2);
+    }
+
     return '<div class="flow-health-card ' + h.status + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
       + '  <div class="flow-health-card-head">'
       + '    <div>'
       + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + '</div>'
-      + '      <div class="flow-health-card-meta">' + f.message_count + ' message' + (f.message_count !== 1 ? 's' : '') + ' &middot; ' + Math.round(f.total_delivered).toLocaleString() + ' delivered total</div>'
+      + '      <div class="flow-health-card-meta">' + metaParts.join(' &middot; ') + '</div>'
       + '    </div>'
       + '    <div class="flow-health-badge ' + h.status + '">' + statusLabel + '</div>'
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Avg open rate</div>'
+      + '      <div class="flow-health-metric-label">Delivered</div>'
+      + '      <div class="flow-health-metric-val">' + Math.round(f.total_delivered).toLocaleString() + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Revenue</div>'
+      + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Revenue / msg</div>'
+      + '      <div class="flow-health-metric-val ' + rpmCls + '">' + rpmDisplay + '</div>'
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Open rate</div>'
       + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Avg click rate</div>'
+      + '      <div class="flow-health-metric-label">Click rate</div>'
       + '      <div class="flow-health-metric-val ' + clickCls + '">' + fmtPct(f.avg_click_rate, 2) + '</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Avg unsub rate</div>'
+      + '      <div class="flow-health-metric-label">Unsub rate</div>'
       + '      <div class="flow-health-metric-val ' + unsubCls + '">' + fmtPct(f.avg_unsub_rate, 2) + '</div>'
-      + '    </div>'
-      + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Total revenue</div>'
-      + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
       + '    </div>'
       + '  </div>'
       + reasonsHtml
@@ -5671,6 +5717,9 @@ window.openManageFlowsModal = async function() {
     showToast('Could not load flows: ' + res.error.message, true);
     return;
   }
+  // Also load flow metadata so we can show date_first_fired alongside each flow
+  await loadFlowMetadata(true);
+
   var byFlow = {};
   (res.data || []).forEach(function(m){
     var name = (m.flow_name || '').trim();
@@ -5683,6 +5732,9 @@ window.openManageFlowsModal = async function() {
   manageFlowsList = Object.keys(byFlow).map(function(name){
     var f = byFlow[name];
     f.is_active = f.active_count > 0;
+    var meta = (flowMetadataCache || {})[name] || {};
+    f.date_first_fired = meta.date_first_fired || '';
+    f.notes = meta.notes || '';
     return f;
   });
   // Sort: active first (so legacy is at the bottom and easy to see what's been moved)
@@ -5693,9 +5745,59 @@ window.openManageFlowsModal = async function() {
   manageFlowsSelected = {};
   document.getElementById('manage-flows-search').value = '';
   setManageFlowsStatus('', '');
+  renderManageFlowsProgress();
   renderManageFlowsList();
   document.getElementById('manage-flows-overlay').classList.add('open');
 };
+
+// Loads or reloads the per-flow metadata cache. Used by Manage Flows AND by
+// Flow Health card rendering, so this is shared.
+async function loadFlowMetadata(force) {
+  if (!force && flowMetadataCache !== null) return;
+  var res = await db.from('quill_flow_metadata').select('*').limit(2000);
+  if (res.error) {
+    console.error('loadFlowMetadata error', res.error);
+    flowMetadataCache = {};
+    return;
+  }
+  flowMetadataCache = {};
+  (res.data || []).forEach(function(m){
+    if (m.flow_name) flowMetadataCache[m.flow_name] = m;
+  });
+}
+
+// Computes months active given a date_first_fired string. Returns a number
+// (rounded down) or null if no date.
+function computeMonthsActive(dateStr) {
+  if (!dateStr) return null;
+  var firstFired;
+  try { firstFired = new Date(dateStr); } catch (e) { return null; }
+  if (!firstFired || isNaN(firstFired.getTime())) return null;
+  var now = new Date();
+  var months = (now.getFullYear() - firstFired.getFullYear()) * 12 + (now.getMonth() - firstFired.getMonth());
+  // Add partial month based on day-of-month
+  if (now.getDate() < firstFired.getDate()) months -= 1;
+  return Math.max(0, months);
+}
+
+// Format months active as a human label
+function formatMonthsActive(months) {
+  if (months === null || months === undefined) return null;
+  if (months === 0) return 'Active < 1 month';
+  if (months < 12) return 'Active ' + months + ' month' + (months !== 1 ? 's' : '');
+  var years = Math.floor(months / 12);
+  var rem = months % 12;
+  if (rem === 0) return 'Active ' + years + ' year' + (years !== 1 ? 's' : '');
+  return 'Active ' + years + 'y ' + rem + 'm';
+}
+
+function renderManageFlowsProgress() {
+  var el = document.getElementById('manage-flows-progress');
+  if (!el) return;
+  if (!manageFlowsList.length) { el.textContent = ''; return; }
+  var withDates = manageFlowsList.filter(function(f){ return !!f.date_first_fired; }).length;
+  el.textContent = withDates + ' of ' + manageFlowsList.length + ' flows have first-fired dates set.';
+}
 
 window.closeManageFlowsModal = function() {
   document.getElementById('manage-flows-overlay').classList.remove('open');
@@ -5719,6 +5821,9 @@ window.renderManageFlowsList = function() {
     var rowClass = f.is_active ? 'manage-flows-row' : 'manage-flows-row legacy';
     var pillClass = f.is_active ? 'manage-flows-row-pill active' : 'manage-flows-row-pill legacy';
     var pillLabel = f.is_active ? 'Active' : 'Legacy';
+    var months = computeMonthsActive(f.date_first_fired);
+    var monthsLabel = formatMonthsActive(months);
+    var safeName = String(f.flow_name).replace(/'/g, '\\\u0027').replace(/"/g, '&quot;');
     return '<div class="' + rowClass + '">'
       + '  <input type="checkbox" class="manage-flows-row-checkbox" data-flow="' + escapeHtml(f.flow_name) + '" onchange="onManageFlowsCheckChange(this)" ' + (checked ? 'checked' : '') + '>'
       + '  <div class="manage-flows-row-body">'
@@ -5726,6 +5831,11 @@ window.renderManageFlowsList = function() {
       + '    <div class="manage-flows-row-meta">'
       + '      <span>' + f.message_count + ' message' + (f.message_count !== 1 ? 's' : '') + '</span>'
       + '      <span>' + Math.round(f.total_delivered).toLocaleString() + ' delivered total</span>'
+      + (monthsLabel ? '      <span class="manage-flows-row-months">' + escapeHtml(monthsLabel) + '</span>' : '')
+      + '    </div>'
+      + '    <div class="manage-flows-row-date">'
+      + '      <label class="manage-flows-row-date-label">Date first fired</label>'
+      + '      <input type="date" class="manage-flows-row-date-input" value="' + escapeHtml(f.date_first_fired || '') + '" onchange="onManageFlowsDateChange(\u0027' + safeName + '\u0027, this.value)">'
       + '    </div>'
       + '  </div>'
       + '  <div class="' + pillClass + '">' + pillLabel + '</div>'
@@ -5733,6 +5843,41 @@ window.renderManageFlowsList = function() {
   }).join('');
   container.innerHTML = html;
 };
+
+window.onManageFlowsDateChange = function(flowName, dateValue) {
+  // Find the flow in our list and update locally
+  var f = manageFlowsList.find(function(x){ return x.flow_name === flowName; });
+  if (f) f.date_first_fired = dateValue || '';
+  // Debounce-save
+  if (flowMetadataDateSaveTimers[flowName]) clearTimeout(flowMetadataDateSaveTimers[flowName]);
+  flowMetadataDateSaveTimers[flowName] = setTimeout(function(){
+    saveFlowMetadataDate(flowName, dateValue);
+  }, 600);
+  // Update progress label
+  renderManageFlowsProgress();
+};
+
+async function saveFlowMetadataDate(flowName, dateValue) {
+  // Upsert the metadata row. dateValue empty string means "clear"
+  var payload = {
+    flow_name: flowName,
+    date_first_fired: dateValue && dateValue.length ? dateValue : null,
+    updated_at: new Date().toISOString()
+  };
+  var res = await db.from('quill_flow_metadata').upsert(payload, { onConflict: 'flow_name' }).select().single();
+  if (res.error) {
+    setManageFlowsStatus('Failed to save date for "' + flowName + '": ' + res.error.message, 'error');
+    console.error('saveFlowMetadataDate', res.error);
+    return;
+  }
+  // Update local cache
+  if (!flowMetadataCache) flowMetadataCache = {};
+  flowMetadataCache[flowName] = res.data;
+  setManageFlowsStatus('Saved.', 'success');
+  // Re-render months-active label on the row + Flow Health if open
+  renderManageFlowsList();
+  if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
+}
 
 window.onManageFlowsCheckChange = function(input) {
   var name = input.getAttribute('data-flow');
