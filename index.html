@@ -342,6 +342,19 @@
     .patterns-sub { font-size: 12px; color: var(--q-muted); margin-top: 4px; line-height: 1.5; }
     .patterns-head-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .patterns-range-select { padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 7px; font-size: 12px; background: #fff; font-family: var(--font-body); color: var(--gg-charcoal); }
+
+    /* Flow Diagnostics snapshot controls (Session 9.2) */
+    .diag-snapshot-controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .diag-snapshot-row { display: flex; align-items: center; gap: 8px; }
+    .diag-snapshot-label { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .diag-snapshot-select { padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 6px; font-size: 12px; background: #fff; font-family: var(--font-body); color: var(--gg-charcoal); cursor: pointer; min-width: 180px; }
+    .diag-snapshot-select:focus { outline: none; border-color: var(--gg-olive); }
+    .diag-snapshot-select.archived { color: var(--gg-orange); font-style: italic; }
+
+    /* Snapshot indicator on finding cards */
+    .pattern-card-snapshot { font-size: 9px; color: var(--q-muted); padding: 2px 7px; background: var(--gg-offwhite); border-radius: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pattern-card-snapshot.archived { background: #f3eee5; color: var(--gg-orange); }
+    .pattern-card-snapshot.legacy { background: #ebe8e0; color: #5e5d59; }
     .patterns-filter-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; }
     .patterns-filter-btn { padding: 6px 12px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
     .patterns-filter-btn.active { background: var(--gg-olive); color: #fff; }
@@ -1673,7 +1686,19 @@
                 <button class="patterns-filter-btn" onclick="setFlowView('starred')" id="fv-starred">Starred</button>
                 <button class="patterns-filter-btn" onclick="setFlowView('dismissed')" id="fv-dismissed">Dismissed</button>
               </div>
-              <button class="extract-btn" id="diag-extract-btn" onclick="extractFlowDiagnostics()">Diagnose flows</button>
+              <div class="diag-snapshot-controls">
+                <div class="diag-snapshot-row">
+                  <label class="diag-snapshot-label">Viewing snapshot</label>
+                  <select id="diag-snapshot-picker" class="diag-snapshot-select" onchange="onDiagSnapshotChange()">
+                    <option value="">Loading...</option>
+                  </select>
+                </div>
+                <div class="diag-snapshot-row">
+                  <label class="diag-snapshot-label">Diagnose for month</label>
+                  <select id="diag-month-picker" class="diag-snapshot-select"></select>
+                  <button class="extract-btn" id="diag-extract-btn" onclick="extractFlowDiagnostics()">Diagnose flows</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="tip-widget" id="tip-flows">
@@ -4814,8 +4839,133 @@ async function loadFlowDiagnostics(force) {
   diagnosticsLoadedAt = Date.now();
 }
 
+// ── DIAGNOSTIC SNAPSHOTS (Session 9.2) ────────────────────────────────
+// Each diagnose-run is tied to a snapshot for a specific month. Re-running
+// for the same month archives the prior snapshot and writes a new current
+// one. View snapshot picker lets strategist see past month diagnoses for
+// comparison.
+
+var snapshotsCache = null;
+var snapshotsLoadedAt = 0;
+var viewingSnapshotId = null;  // id of snapshot currently being viewed, or null = "all current"
+
+async function loadSnapshots(force) {
+  if (!force && snapshotsCache && (Date.now() - snapshotsLoadedAt) < 30000) return;
+  var res = await db.from('quill_flow_diagnostic_snapshots')
+    .select('*')
+    .order('snapshot_month', { ascending: false })
+    .order('taken_at', { ascending: false });
+  if (res.error) {
+    console.error('loadSnapshots error', res.error);
+    snapshotsCache = [];
+    return;
+  }
+  snapshotsCache = res.data || [];
+  snapshotsLoadedAt = Date.now();
+}
+
+// Populate the "Viewing snapshot" picker. Default selection is the latest
+// current snapshot (newest non-archived). Falls back to "Most recent" sentinel.
+function populateSnapshotPicker() {
+  var sel = document.getElementById('diag-snapshot-picker');
+  if (!sel) return;
+  var current = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+  var archived = (snapshotsCache || []).filter(function(s){ return !s.is_current; });
+  var html = '';
+  if (!current.length && !archived.length) {
+    html = '<option value="">No snapshots yet</option>';
+  } else {
+    html = '<option value="latest">Latest snapshot</option>';
+    if (current.length) {
+      html += '<optgroup label="Current snapshots">';
+      current.forEach(function(s){
+        html += '<option value="' + s.id + '">' + escapeHtml(humanizeSnapshotMonth(s.snapshot_month)) + ' (' + s.total_findings + ' findings)</option>';
+      });
+      html += '</optgroup>';
+    }
+    if (archived.length) {
+      html += '<optgroup label="Archived">';
+      archived.forEach(function(s){
+        var dateLabel = '';
+        if (s.taken_at) {
+          var d = new Date(s.taken_at);
+          dateLabel = ' \u00b7 ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        html += '<option value="' + s.id + '">' + escapeHtml(humanizeSnapshotMonth(s.snapshot_month)) + dateLabel + ' (archived)</option>';
+      });
+      html += '</optgroup>';
+    }
+  }
+  sel.innerHTML = html;
+  // Default to latest
+  sel.value = 'latest';
+  applySnapshotSelection('latest');
+}
+
+// Populate the "Diagnose for month" picker. Defaults to current month.
+function populateDiagnoseMonthPicker() {
+  var sel = document.getElementById('diag-month-picker');
+  if (!sel) return;
+  var now = new Date();
+  var months = [];
+  // Generate last 12 months options
+  for (var i = 0; i < 12; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    var label = ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + ' ' + d.getFullYear();
+    months.push({ value: ym, label: label });
+  }
+  var html = months.map(function(m){
+    return '<option value="' + m.value + '">' + m.label + '</option>';
+  }).join('');
+  sel.innerHTML = html;
+}
+
+// Translate snapshot_month code ('2026-04' or 'pre-2026-04') to a label.
+function humanizeSnapshotMonth(code) {
+  if (!code) return 'Unknown';
+  if (code === 'pre-2026-04') return 'Pre-April 2026 (legacy)';
+  var m = code.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return code;
+  var year = m[1];
+  var monthIdx = Number(m[2]) - 1;
+  var monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][monthIdx];
+  return monthName + ' ' + year;
+}
+
+window.onDiagSnapshotChange = function() {
+  var sel = document.getElementById('diag-snapshot-picker');
+  if (!sel) return;
+  applySnapshotSelection(sel.value);
+};
+
+function applySnapshotSelection(val) {
+  if (val === 'latest' || val === '') {
+    // Find the most recent current snapshot
+    var current = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+    if (current.length) {
+      viewingSnapshotId = current[0].id;
+    } else {
+      viewingSnapshotId = null;
+    }
+  } else {
+    viewingSnapshotId = Number(val) || null;
+  }
+  // Re-render diagnostics with the selection applied
+  if (typeof renderFlowDiagnostics === 'function') renderFlowDiagnostics();
+}
+
+// Get the current snapshot record (the one being viewed)
+function getCurrentSnapshot() {
+  if (!viewingSnapshotId || !snapshotsCache) return null;
+  return snapshotsCache.find(function(s){ return s.id === viewingSnapshotId; }) || null;
+}
+
 async function showFlowDiagnosticsOnOpen() {
   await loadFlowDiagnostics(false);
+  await loadSnapshots(false);
+  populateSnapshotPicker();
+  populateDiagnoseMonthPicker();
   renderFlowDiagnostics();
   // Also load the flow message browser for the panel below diagnostics
   await loadFlowBrowserData();
@@ -5258,6 +5408,10 @@ function renderFlowDiagnostics() {
     return;
   }
   var filtered = diagnosticsCache.slice();
+  // Session 9.2: filter to the currently-viewed snapshot if one is selected
+  if (viewingSnapshotId) {
+    filtered = filtered.filter(function(d){ return d.snapshot_id === viewingSnapshotId; });
+  }
   // Hide diagnostics about archived flows unless includeLegacy is on
   if (!includeLegacyDiagnostics) {
     filtered = filtered.filter(function(d){ return d.is_active !== false; });
@@ -5307,6 +5461,20 @@ function buildDiagnosticCard(d) {
     scope.className = 'scope-chip';
     scope.textContent = d.scope;
     leftGroup.appendChild(scope);
+  }
+  // Snapshot label (Session 9.2). Helps strategist see which snapshot a finding belongs to.
+  if (d.snapshot_month) {
+    var snap = document.createElement('span');
+    var snapClasses = 'pattern-card-snapshot';
+    if (d.snapshot_month === 'pre-2026-04') snapClasses += ' legacy';
+    else {
+      // Mark archived if this finding's snapshot is no longer current
+      var ownerSnap = (snapshotsCache || []).find(function(s){ return s.id === d.snapshot_id; });
+      if (ownerSnap && !ownerSnap.is_current) snapClasses += ' archived';
+    }
+    snap.className = snapClasses;
+    snap.textContent = humanizeSnapshotMonth(d.snapshot_month);
+    leftGroup.appendChild(snap);
   }
   head.appendChild(leftGroup);
   if (d.confidence) {
@@ -5731,7 +5899,53 @@ window.extractFlowDiagnostics = async function() {
     }
     if (!Array.isArray(diagnoses) || !diagnoses.length) throw new Error('Response had no diagnoses');
 
-    status.textContent = 'Parsed ' + diagnoses.length + ' diagnoses. Saving to Supabase...';
+    status.textContent = 'Parsed ' + diagnoses.length + ' diagnoses. Saving as snapshot...';
+
+    // Session 9.2: snapshot architecture. Get the selected month, archive any
+    // prior current snapshot for that month, create new current snapshot, tag
+    // all findings with it.
+    var monthPicker = document.getElementById('diag-month-picker');
+    var selectedMonth = monthPicker ? monthPicker.value : null;
+    if (!selectedMonth) {
+      var now = new Date();
+      selectedMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    }
+
+    // Archive prior current snapshots for this month
+    var archiveRes = await db.from('quill_flow_diagnostic_snapshots')
+      .update({ is_current: false })
+      .eq('snapshot_month', selectedMonth)
+      .eq('is_current', true);
+    if (archiveRes.error) {
+      console.warn('Could not archive prior snapshot', archiveRes.error);
+    }
+
+    // Compute severity counts for the snapshot metadata
+    var fixNowCount = 0, oppCount = 0, testCount = 0, monitorCount = 0;
+    diagnoses.forEach(function(d){
+      var sev = d.severity || 'monitor';
+      if (sev === 'fix_now') fixNowCount++;
+      else if (sev === 'opportunity') oppCount++;
+      else if (sev === 'test') testCount++;
+      else monitorCount++;
+    });
+
+    // Create the new current snapshot
+    var snapRes = await db.from('quill_flow_diagnostic_snapshots')
+      .insert([{
+        snapshot_month: selectedMonth,
+        is_current: true,
+        total_findings: diagnoses.length,
+        fix_now_count: fixNowCount,
+        opportunity_count: oppCount,
+        test_count: testCount,
+        monitor_count: monitorCount
+      }])
+      .select()
+      .single();
+    if (snapRes.error) throw new Error('Snapshot creation failed: ' + snapRes.error.message);
+    var newSnapshotId = snapRes.data.id;
+
     var rows = diagnoses.map(function(d){
       var cal = calibrateFlowConfidence(d);
       return {
@@ -5748,18 +5962,22 @@ window.extractFlowDiagnostics = async function() {
         ab_test_hint: d.ab_test_hint ? String(d.ab_test_hint).slice(0, 500) : null,
         sample_messages: Array.isArray(d.sample_messages) ? d.sample_messages.slice(0, 5) : [],
         active: true,
-        starred: false
+        starred: false,
+        snapshot_id: newSnapshotId,
+        snapshot_month: selectedMonth
       };
     });
     var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
     if (ins.error) throw new Error('Supabase insert failed: ' + ins.error.message);
 
     status.className = 'extract-status success';
-    status.textContent = 'Extracted ' + rows.length + ' diagnoses across ' + flows.length + ' flows.';
+    status.textContent = 'Saved ' + rows.length + ' findings as ' + humanizeSnapshotMonth(selectedMonth) + ' snapshot. Across ' + flows.length + ' flows.';
     await loadFlowDiagnostics(true);
+    await loadSnapshots(true);
+    populateSnapshotPicker();
     renderFlowDiagnostics();
     if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
-    showToast('Diagnosis complete');
+    showToast('Snapshot saved');
   } catch (err) {
     console.error('Flow diagnosis error', err);
     status.className = 'extract-status error';
