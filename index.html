@@ -4324,11 +4324,13 @@ function buildPatternCard(p) {
     var footer = document.createElement('div');
     footer.className = 'pattern-meta-footer';
     var left = document.createElement('span');
-    left.textContent = 'From ' + (p.source_range || 'unknown range');
+    left.textContent = 'From ' + humanizeRangeCode(p.source_range);
     var right = document.createElement('span');
     if (p.extracted_at) {
       var d = new Date(p.extracted_at);
-      right.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      var dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      var rel = humanRelativeTime(d);
+      right.textContent = 'Generated ' + dateLabel + (rel ? ' (' + rel + ')' : '');
     }
     footer.appendChild(left);
     footer.appendChild(right);
@@ -4336,6 +4338,42 @@ function buildPatternCard(p) {
   }
 
   return card;
+}
+
+// Translate range code (e.g. '12mo') to a strategist-readable label.
+function humanizeRangeCode(code) {
+  if (!code) return 'unknown range';
+  var map = {
+    'all': 'all time',
+    'ytd': 'year to date',
+    '12mo': 'last 12 months',
+    '90d': 'last 90 days',
+    '30d': 'last 30 days'
+  };
+  return map[code] || code;
+}
+
+// Relative time label: "3 days ago", "2 weeks ago", "6 months ago".
+// Used so stale patterns are visually obvious without date math.
+function humanRelativeTime(d) {
+  if (!d || isNaN(d.getTime())) return '';
+  var now = new Date();
+  var diffMs = now.getTime() - d.getTime();
+  if (diffMs < 0) return '';
+  var sec = Math.floor(diffMs / 1000);
+  var min = Math.floor(sec / 60);
+  var hr = Math.floor(min / 60);
+  var day = Math.floor(hr / 24);
+  var wk = Math.floor(day / 7);
+  var mo = Math.floor(day / 30);
+  var yr = Math.floor(day / 365);
+  if (yr >= 1) return yr + ' year' + (yr === 1 ? '' : 's') + ' ago';
+  if (mo >= 1) return mo + ' month' + (mo === 1 ? '' : 's') + ' ago';
+  if (wk >= 1) return wk + ' week' + (wk === 1 ? '' : 's') + ' ago';
+  if (day >= 1) return day + ' day' + (day === 1 ? '' : 's') + ' ago';
+  if (hr >= 1) return hr + ' hour' + (hr === 1 ? '' : 's') + ' ago';
+  if (min >= 1) return min + ' minute' + (min === 1 ? '' : 's') + ' ago';
+  return 'just now';
 }
 
 function escapeHtml(s) {
