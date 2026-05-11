@@ -5765,15 +5765,22 @@ window.extractFlowDiagnostics = async function() {
     status.textContent = 'Loading flow data...';
     await loadInsightsIfNeeded();
   }
+  // Session 9.2 fix: scope to current-period flows only. insightsData.flows
+  // includes historical after the Session 9.1 partition flip, but diagnostic
+  // generation should only analyze the live (current) flows. Historical flows
+  // are noise here and were causing the LLM payload to exceed Vercel's
+  // 504-timeout window.
   var rawFlows = (insightsData.flows || []).filter(function(f){
+    if (f.data_period && f.data_period !== 'current') return false;
     if ((f.audience_type || 'consumer') !== 'consumer') return false;
     var st = (f.status || '').toLowerCase();
     if (st === 'draft') return false;
     return Number(f.delivered || 0) > 0;
   });
+  console.log('[diagnose] Filtered to ' + rawFlows.length + ' current-period consumer flow messages (from ' + (insightsData.flows || []).length + ' total in insightsData)');
   if (rawFlows.length < 5) {
     status.className = 'extract-status error';
-    status.textContent = 'Only ' + rawFlows.length + ' active flow messages available. Need more data to diagnose.';
+    status.textContent = 'Only ' + rawFlows.length + ' current-period consumer flow messages available. Need more data to diagnose. (Make sure April flows are imported.)';
     btn.disabled = false; btn.textContent = prevLabel;
     return;
   }
