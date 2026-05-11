@@ -3543,10 +3543,16 @@ async function loadInsightsIfNeeded() {
   if (sub) sub.textContent = 'Loading campaigns and flow messages...';
   try {
     // Pull campaigns and flows in parallel. Use select limit to be safe.
-    // Session 9.1: filter to current period; historical data is queried separately
-    // by report generation and Talk-Back context loaders.
-    var campRes = await db.from('quill_campaigns').select('*').eq('data_period', 'current').limit(2000);
-    var flowRes = await db.from('quill_flow_messages').select('*').eq('data_period', 'current').limit(2000);
+    // Session 9.1: was filtered to data_period='current' only.
+    // Session 9.2 reverts that for insightsData specifically because Insights,
+    // pattern extraction, top winning subjects, gaps look-back, and other
+    // retrospective surfaces benefit from the full historical dataset.
+    // Pulse CSV still filters by month so historical campaigns from other
+    // months don't pollute the report. Flow Health (which uses
+    // flowMessagesCache from loadFlowBrowserData, NOT insightsData.flows)
+    // still filters to current and stays correct.
+    var campRes = await db.from('quill_campaigns').select('*').limit(5000);
+    var flowRes = await db.from('quill_flow_messages').select('*').limit(5000);
     if (campRes.error) throw new Error('Campaigns: ' + campRes.error.message);
     if (flowRes.error) throw new Error('Flows: ' + flowRes.error.message);
     insightsData.campaigns = campRes.data || [];
