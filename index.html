@@ -412,6 +412,42 @@
     /* FLOW MESSAGES BROWSER */
     .flow-browser-section { margin-top: 18px; }
 
+    /* REPORTS (Session 9: Pulse CSV) */
+    .reports-section { margin-top: 18px; }
+    .reports-head { margin-bottom: 18px; }
+    .reports-card-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 6px; }
+    .reports-card-sub { font-size: 12px; color: var(--q-muted); line-height: 1.55; max-width: 720px; }
+    .reports-card-sub code { background: var(--gg-offwhite); padding: 1px 5px; border-radius: 3px; font-size: 11px; font-family: ui-monospace, monospace; }
+    .reports-controls { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; padding: 18px 20px; background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); margin-bottom: 14px; }
+    .reports-control { display: flex; flex-direction: column; gap: 5px; }
+    .reports-label { font-size: 10px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .reports-input { padding: 8px 12px; border: 0.5px solid var(--q-line); border-radius: 5px; font-size: 13px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; min-width: 180px; }
+    .reports-input:focus { outline: none; border-color: var(--gg-olive); }
+    .reports-generate-btn { padding: 10px 18px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .reports-generate-btn:hover { background: #2f3214; }
+    .reports-generate-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .reports-preview { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 18px 20px; min-height: 80px; }
+    .reports-preview-empty { color: var(--q-muted); font-size: 12px; font-style: italic; text-align: center; padding: 14px; }
+    .reports-preview-status { padding: 8px 12px; background: var(--gg-offwhite); border-radius: 5px; font-size: 12px; color: var(--gg-charcoal); margin-bottom: 14px; }
+    .reports-preview-status.error { background: #fce4e4; color: #a32d2d; }
+    .reports-preview-status.success { background: #e6efd9; color: #3d6022; }
+
+    .reports-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .reports-summary-tile { background: var(--gg-offwhite); border-radius: 6px; padding: 10px 12px; }
+    .reports-summary-tile-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 3px; }
+    .reports-summary-tile-val { font-size: 16px; color: var(--gg-charcoal); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .reports-summary-tile-sub { font-size: 10px; color: var(--q-muted); }
+
+    .reports-download-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; background: #f7f9f1; border: 0.5px solid #d9e3c0; border-radius: 6px; }
+    .reports-download-info { flex: 1; min-width: 200px; font-size: 12px; color: var(--gg-charcoal); }
+    .reports-download-info-fname { font-family: ui-monospace, monospace; color: var(--gg-olive); font-weight: 600; }
+    .reports-download-btn { padding: 8px 14px; background: var(--gg-olive); color: #fff; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-body); }
+    .reports-download-btn:hover { background: #2f3214; }
+    .reports-preview-detail { margin-top: 16px; }
+    .reports-preview-detail-title { font-size: 11px; font-weight: 700; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .reports-preview-csv { background: var(--gg-offwhite); border-radius: 5px; padding: 12px; font-family: ui-monospace, monospace; font-size: 10px; color: var(--gg-charcoal); white-space: pre; overflow-x: auto; max-height: 220px; overflow-y: auto; line-height: 1.7; }
+
     /* FLOW HEALTH (Phase A) */
     .flow-health-section { margin-top: 18px; padding-bottom: 24px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 24px; }
     .flow-health-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -1440,6 +1476,7 @@
         <button class="studio-nav-btn active" onclick="setStudioSection('insights')" id="snav-insights">Insights</button>
         <button class="studio-nav-btn" onclick="setStudioSection('patterns')" id="snav-patterns">Patterns</button>
         <button class="studio-nav-btn" onclick="setStudioSection('flows')" id="snav-flows">Flow Diagnostics</button>
+        <button class="studio-nav-btn" onclick="setStudioSection('reports')" id="snav-reports">Reports</button>
 
         <div class="studio-nav-section-label">Copy Corner</div>
         <button class="studio-nav-btn" onclick="setStudioSection('ideas')" id="snav-ideas">Ideas</button>
@@ -1720,6 +1757,41 @@
             </div>
             <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
             <div class="pattern-grid" id="diag-grid"></div>
+          </div>
+        </div>
+
+        <div class="studio-section" id="studio-reports">
+          <div class="patterns-head">
+            <div class="patterns-head-left">
+              <div class="patterns-title">Reports</div>
+              <div class="patterns-sub">Generate exports for Ray, our consolidated client intelligence tool. Pulse CSV feeds Ray's raw data sheet (one row per month). Super Report (coming soon) is the strategist's interpretive analysis. Phase 1 ships Pulse CSV only.</div>
+            </div>
+          </div>
+
+          <div class="reports-section">
+            <div class="reports-head">
+              <div class="reports-card-title">Pulse CSV export</div>
+              <div class="reports-card-sub">Machine-readable data export for Ray. One row per month with campaign engagement, revenue, flow data, intelligence counts, and calendar coverage. All-time flow data flagged with <code>_alltime</code> suffix. Reserved columns for list growth / segments / deliverability provider data (null until those land).</div>
+            </div>
+            <div class="reports-controls">
+              <div class="reports-control">
+                <label class="reports-label">Report month</label>
+                <input type="month" id="report-month-picker" class="reports-input">
+              </div>
+              <div class="reports-control">
+                <label class="reports-label">Audience</label>
+                <select id="report-audience-picker" class="reports-input">
+                  <option value="consumer" selected>Consumer only</option>
+                  <option value="all">All (consumer + wholesale)</option>
+                  <option value="wholesale">Wholesale only</option>
+                </select>
+              </div>
+              <div class="reports-control">
+                <label class="reports-label">&nbsp;</label>
+                <button class="reports-generate-btn" onclick="generatePulseReport()">Generate Pulse CSV</button>
+              </div>
+            </div>
+            <div class="reports-preview" id="report-preview"></div>
           </div>
         </div>
 
@@ -3391,7 +3463,7 @@ var insightsInFlight = false;
 
 window.setStudioSection = function(section) {
   currentStudioSection = section;
-  ['insights','patterns','flows','buckets','voice','products','ideas','draft','flow-drafter','gaps','refs'].forEach(function(s){
+  ['insights','patterns','flows','reports','buckets','voice','products','ideas','draft','flow-drafter','gaps','refs'].forEach(function(s){
     var el = document.getElementById('studio-' + s);
     var nav = document.getElementById('snav-' + s);
     if (el) el.classList.toggle('active', s === section);
@@ -3400,6 +3472,7 @@ window.setStudioSection = function(section) {
   if (section === 'insights') loadInsightsIfNeeded();
   if (section === 'patterns') showPatternsOnOpen();
   if (section === 'flows') showFlowDiagnosticsOnOpen();
+  if (section === 'reports') showReportsOnOpen();
   if (section === 'buckets') showBucketsOnOpen();
   if (section === 'voice') showVoiceOnOpen();
   if (section === 'products') showProductsOnOpen();
@@ -4600,6 +4673,427 @@ async function showFlowDiagnosticsOnOpen() {
 
 async function showFlowDrafterOnOpen() {
   await ensureFlowDraftsLoaded();
+}
+
+// ── REPORTS (Session 9 Phase 1: Pulse CSV) ──────────────────────────────
+// Generates a single-row CSV per month with every quantitative metric Quill
+// tracks. Feeds Ray's raw data sheet. Spec lives in Quill_Reports_Spec.md.
+//
+// All-time flow data is flagged with _alltime suffix on column names because
+// Klaviyo flow CSV exports are lifetime aggregates with no per-month breakdown.
+// Reserved (null) columns left in place for future data (subscriber, segment,
+// deliverability) so Ray's parser doesn't need to change when those land.
+
+async function showReportsOnOpen() {
+  // Default month picker to last complete month
+  var picker = document.getElementById('report-month-picker');
+  if (picker && !picker.value) {
+    var now = new Date();
+    // Last COMPLETE month: month index is 0-based, so today - 1 month
+    var d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    var ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    picker.value = ym;
+  }
+  var preview = document.getElementById('report-preview');
+  if (preview && !preview.innerHTML.trim()) {
+    preview.innerHTML = '<div class="reports-preview-empty">Pick a month and click Generate. Quill will aggregate the month\u0027s data and produce a CSV ready to feed Ray.</div>';
+  }
+  // Make sure the data caches we depend on are warm
+  await loadInsightsIfNeeded();
+  if (typeof loadFlowDiagnostics === 'function') await loadFlowDiagnostics(false);
+  if (typeof loadFlowBrowserData === 'function') await loadFlowBrowserData();
+  if (typeof loadFlowMetadata === 'function') await loadFlowMetadata(false);
+}
+
+// Parse a campaign send_time into a Date. Klaviyo exports inconsistent formats;
+// handle the common ones. Returns null if unparseable.
+function parseSendTime(s) {
+  if (!s) return null;
+  if (s instanceof Date) return s;
+  // Common formats: "2026-04-15T08:00:00Z", "2026-04-15 08:00:00", "Apr 15, 2026 8:00 AM"
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+  // Try alternative parsing
+  var m = String(s).match(/(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})/);
+  if (m) {
+    var alt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (!isNaN(alt.getTime())) return alt;
+  }
+  return null;
+}
+
+function isCampaignInMonth(c, year, month) {
+  // month is 0-indexed (Jan=0)
+  var d = parseSendTime(c.send_time);
+  if (!d) return false;
+  return d.getFullYear() === year && d.getMonth() === month;
+}
+
+// Weighted average of a rate field given a list of rows. Each row contributes
+// rate * weight where weight is delivered/recipients (whichever applies).
+// Returns null if total weight is zero.
+function weightedAvg(rows, rateField, weightField) {
+  var weightSum = 0;
+  var weighted = 0;
+  rows.forEach(function(r){
+    var rate = Number(r[rateField]);
+    var weight = Number(r[weightField]);
+    if (isNaN(rate) || isNaN(weight) || weight <= 0) return;
+    weighted += rate * weight;
+    weightSum += weight;
+  });
+  if (weightSum === 0) return null;
+  return weighted / weightSum;
+}
+
+function sumField(rows, field) {
+  var total = 0;
+  rows.forEach(function(r){
+    var v = Number(r[field]);
+    if (!isNaN(v)) total += v;
+  });
+  return total;
+}
+
+// Find the max-rated row by some field. Returns the row or null.
+function findBest(rows, field, mode) {
+  if (!rows.length) return null;
+  var best = null;
+  var bestVal = mode === 'min' ? Infinity : -Infinity;
+  rows.forEach(function(r){
+    var v = Number(r[field]);
+    if (isNaN(v)) return;
+    if (mode === 'min' ? v < bestVal : v > bestVal) {
+      bestVal = v;
+      best = r;
+    }
+  });
+  return best;
+}
+
+window.generatePulseReport = async function() {
+  var monthPicker = document.getElementById('report-month-picker');
+  var audiencePicker = document.getElementById('report-audience-picker');
+  var preview = document.getElementById('report-preview');
+  var btn = document.querySelector('.reports-generate-btn');
+
+  var ym = monthPicker.value;
+  if (!ym || !/^\d{4}-\d{2}$/.test(ym)) {
+    preview.innerHTML = '<div class="reports-preview-status error">Pick a valid month first.</div>';
+    return;
+  }
+  var audience = audiencePicker.value || 'consumer';
+
+  var parts = ym.split('-');
+  var year = Number(parts[0]);
+  var monthIdx = Number(parts[1]) - 1; // 0-indexed
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  preview.innerHTML = '<div class="reports-preview-status">Aggregating data for ' + ym + '...</div>';
+
+  try {
+    // Load fresh data
+    await loadInsightsIfNeeded();
+    if (typeof loadFlowBrowserData === 'function') await loadFlowBrowserData();
+    if (typeof loadFlowDiagnostics === 'function') await loadFlowDiagnostics(false);
+    if (typeof loadFlowMetadata === 'function') await loadFlowMetadata(false);
+
+    // Pull campaigns + filter by audience first
+    var allCampaigns = (insightsData.campaigns || []).filter(function(c){
+      if (audience === 'all') return true;
+      return (c.audience_type || 'consumer') === audience;
+    });
+
+    // Then filter to the report month
+    var monthCampaigns = allCampaigns.filter(function(c){
+      return isCampaignInMonth(c, year, monthIdx);
+    });
+
+    // Pull flows similarly (note: flow data is all-time, so audience filter applies but month filter does not)
+    var allFlowMessages = (flowMessagesCache || []).filter(function(m){
+      if (audience === 'all') return true;
+      return (m.audience_type || 'consumer') === audience;
+    });
+    var activeFlowMessages = allFlowMessages.filter(function(m){ return m.is_active !== false; });
+
+    // Pull active patterns and diagnostics
+    var monthStart = new Date(year, monthIdx, 1);
+    var monthEnd = new Date(year, monthIdx + 1, 1);
+    var activePatterns = await db.from('quill_patterns').select('*').eq('active', true);
+    activePatterns = activePatterns.data || [];
+    var starredPatterns = activePatterns.filter(function(p){ return p.starred; });
+    var patternsThisMonth = activePatterns.filter(function(p){
+      if (!p.extracted_at) return false;
+      var d = new Date(p.extracted_at);
+      return d >= monthStart && d < monthEnd;
+    });
+
+    var activeDiags = (diagnosticsCache || []).filter(function(d){ return d.active; });
+    var diagsFixNow = activeDiags.filter(function(d){ return d.severity === 'fix_now'; });
+    var diagsOpp = activeDiags.filter(function(d){ return d.severity === 'opportunity'; });
+    var diagsTest = activeDiags.filter(function(d){ return d.severity === 'test'; });
+    var diagsMonitor = activeDiags.filter(function(d){ return d.severity === 'monitor'; });
+    var diagsThisMonth = activeDiags.filter(function(d){
+      if (!d.extracted_at) return false;
+      var dt = new Date(d.extracted_at);
+      return dt >= monthStart && dt < monthEnd;
+    });
+
+    // Pull calendar coverage for the month
+    var calRes = await db.from('quill_calendar').select('*')
+      .gte('send_date', year + '-' + String(monthIdx + 1).padStart(2, '0') + '-01')
+      .lt('send_date', (monthIdx === 11 ? (year + 1) : year) + '-' + String(((monthIdx + 1) % 12) + 1).padStart(2, '0') + '-01');
+    var calendarRows = calRes.data || [];
+    var calendarSentRows = calendarRows.filter(function(r){ return (r.status || '').toLowerCase() === 'sent'; });
+
+    // Pull active themes for the month (overlapping intervals)
+    var themesRes = await db.from('quill_calendar_themes').select('*');
+    var monthThemes = (themesRes.data || []).filter(function(t){
+      if (!t.date_start || !t.date_end) return false;
+      var s = new Date(t.date_start);
+      var e = new Date(t.date_end);
+      return s < monthEnd && e >= monthStart;
+    });
+
+    // Now build the row. Long but flat.
+    var row = {};
+
+    // Identity
+    row.client = 'SFH';
+    row.report_month = ym;
+    row.generated_at = new Date().toISOString();
+    row.audience_scope = audience;
+
+    // Campaign volume + engagement
+    row.campaigns_sent = monthCampaigns.length;
+    row.campaign_recipients_total = Math.round(sumField(monthCampaigns, 'recipients'));
+    row.campaign_unique_opens_total = Math.round(sumField(monthCampaigns, 'unique_opens'));
+    row.campaign_open_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'open_rate', 'recipients'));
+    row.campaign_unique_clicks_total = Math.round(sumField(monthCampaigns, 'unique_clicks'));
+    row.campaign_click_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'click_rate', 'recipients'));
+    row.campaign_click_to_open_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'click_to_open_rate', 'recipients'));
+    row.campaign_unsubscribes_total = Math.round(sumField(monthCampaigns, 'unsubscribes'));
+    row.campaign_unsubscribe_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'unsubscribe_rate', 'recipients'));
+    row.campaign_spam_complaints_total = Math.round(sumField(monthCampaigns, 'spam_complaints'));
+    row.campaign_spam_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'spam_complaints_rate', 'recipients'));
+    row.campaign_bounces_total = Math.round(sumField(monthCampaigns, 'bounces'));
+    row.campaign_bounce_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'bounce_rate', 'recipients'));
+
+    // Campaign revenue
+    row.campaign_revenue_total = formatCurrency(sumField(monthCampaigns, 'revenue'));
+    row.campaign_placed_orders_total = Math.round(sumField(monthCampaigns, 'unique_placed_order'));
+    row.campaign_placed_order_rate_weighted = formatRate(weightedAvg(monthCampaigns, 'placed_order_rate', 'recipients'));
+    row.campaign_revenue_per_recipient_weighted = formatDecimal(weightedAvg(monthCampaigns, 'revenue_per_recipient', 'recipients'), 4);
+
+    // Best/worst (by names)
+    var bestOpen = findBest(monthCampaigns, 'open_rate', 'max');
+    row.campaign_best_by_open_rate = bestOpen ? (bestOpen.campaign_name || '') : '';
+    var bestRev = findBest(monthCampaigns, 'revenue', 'max');
+    row.campaign_best_by_revenue = bestRev ? (bestRev.campaign_name || '') : '';
+    var worstUnsub = findBest(monthCampaigns, 'unsubscribe_rate', 'max'); // highest = worst
+    row.campaign_worst_by_unsub_rate = worstUnsub ? (worstUnsub.campaign_name || '') : '';
+
+    // Per-bucket campaign counts + revenue
+    // Use active buckets from cache if available; otherwise infer from the month's data
+    var bucketsRes = await db.from('quill_content_buckets').select('*').eq('active', true);
+    var bucketList = (bucketsRes.data || []).map(function(b){ return b.name; });
+    // Make sure we include any bucket that appears in the data even if not in the active list
+    monthCampaigns.forEach(function(c){
+      var b = (c.bucket || '').trim();
+      if (b && bucketList.indexOf(b) === -1) bucketList.push(b);
+    });
+    bucketList.forEach(function(bname){
+      var bucketRows = monthCampaigns.filter(function(c){ return (c.bucket || '').trim() === bname; });
+      var key = sanitizeForColumn(bname);
+      row['campaign_count_' + key] = bucketRows.length;
+      row['campaign_revenue_' + key] = formatCurrency(sumField(bucketRows, 'revenue'));
+    });
+
+    // Flow data (all-time as of this export, flagged with _alltime)
+    var byFlow = {};
+    activeFlowMessages.forEach(function(m){
+      var name = (m.flow_name || '').trim();
+      if (!name) return;
+      if (!byFlow[name]) byFlow[name] = { messages: [] };
+      byFlow[name].messages.push(m);
+    });
+    var activeFlows = Object.keys(byFlow);
+    row.flow_count_active = activeFlows.length;
+    row.flow_messages_active = activeFlowMessages.length;
+    row.flow_deliveries_total_alltime = Math.round(sumField(activeFlowMessages, 'delivered'));
+    row.flow_revenue_total_alltime = formatCurrency(sumField(activeFlowMessages, 'revenue'));
+    row.flow_open_rate_weighted_alltime = formatRate(weightedAvg(activeFlowMessages, 'open_rate', 'delivered'));
+    row.flow_click_rate_weighted_alltime = formatRate(weightedAvg(activeFlowMessages, 'click_rate', 'delivered'));
+    row.flow_unsubscribe_rate_weighted_alltime = formatRate(weightedAvg(activeFlowMessages, 'unsubscribe_rate', 'delivered'));
+    var flowRevTotal = sumField(activeFlowMessages, 'revenue');
+    var flowDeliveredTotal = sumField(activeFlowMessages, 'delivered');
+    row.flow_revenue_per_msg_alltime = flowDeliveredTotal > 0 ? formatDecimal(flowRevTotal / flowDeliveredTotal, 4) : '';
+
+    // Flow health counts: use the same classification logic as Flow Health cards
+    var flowHealthCounts = computeFlowHealthCounts(activeFlowMessages, activeDiags);
+    row.flow_count_critical = flowHealthCounts.critical;
+    row.flow_count_needs_improvement = flowHealthCounts.needs_improvement;
+    row.flow_count_healthy = flowHealthCounts.healthy;
+
+    // Intelligence layer
+    row.patterns_total_active = activePatterns.length;
+    row.patterns_starred = starredPatterns.length;
+    row.patterns_extracted_this_month = patternsThisMonth.length;
+    row.diagnostics_total_active = activeDiags.length;
+    row.diagnostics_fix_now = diagsFixNow.length;
+    row.diagnostics_opportunity = diagsOpp.length;
+    row.diagnostics_test = diagsTest.length;
+    row.diagnostics_monitor = diagsMonitor.length;
+    row.diagnostics_extracted_this_month = diagsThisMonth.length;
+
+    // Planning
+    row.calendar_emails_planned_this_month = calendarRows.length;
+    row.calendar_emails_sent_this_month = calendarSentRows.length;
+    row.calendar_themes_active_this_month = monthThemes.length;
+
+    // Reserved (null) columns
+    row.list_total_subscribers_active = '';
+    row.list_net_growth_month = '';
+    row.list_new_subscribers_month = '';
+    row.segment_top_by_revenue = '';
+    row.deliverability_inbox_placement_rate = '';
+
+    // Build CSV
+    var headers = Object.keys(row);
+    var csvHeader = headers.join(',');
+    var csvRow = headers.map(function(h){ return csvEscape(row[h]); }).join(',');
+    var csv = csvHeader + '\n' + csvRow + '\n';
+
+    // Render preview
+    var fname = 'quill-pulse-' + ym + '-' + audience + '.csv';
+    renderPulsePreview(row, csv, fname, monthCampaigns.length);
+  } catch (err) {
+    console.error('Pulse generation error', err);
+    preview.innerHTML = '<div class="reports-preview-status error">Generation failed: ' + escapeHtml(err.message || String(err)) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Pulse CSV';
+  }
+};
+
+function renderPulsePreview(row, csv, fname, campaignCount) {
+  var preview = document.getElementById('report-preview');
+  if (!preview) return;
+
+  // Build summary tiles
+  var tiles = [
+    { label: 'Campaigns sent', val: row.campaigns_sent, sub: '' },
+    { label: 'Campaign revenue', val: row.campaign_revenue_total ? '$' + row.campaign_revenue_total : '$0', sub: '' },
+    { label: 'Avg open rate', val: row.campaign_open_rate_weighted ? row.campaign_open_rate_weighted + '%' : '\u2014', sub: 'weighted' },
+    { label: 'Avg click rate', val: row.campaign_click_rate_weighted ? row.campaign_click_rate_weighted + '%' : '\u2014', sub: 'weighted' },
+    { label: 'Avg unsub rate', val: row.campaign_unsubscribe_rate_weighted ? row.campaign_unsubscribe_rate_weighted + '%' : '\u2014', sub: 'weighted' },
+    { label: 'Active flows', val: row.flow_count_active, sub: row.flow_count_critical + ' critical' },
+    { label: 'Flow revenue', val: row.flow_revenue_total_alltime ? '$' + row.flow_revenue_total_alltime : '$0', sub: 'all-time' },
+    { label: 'Active diagnostics', val: row.diagnostics_total_active, sub: row.diagnostics_fix_now + ' fix-now' }
+  ];
+
+  var tilesHtml = tiles.map(function(t){
+    return '<div class="reports-summary-tile">'
+      + '<div class="reports-summary-tile-label">' + escapeHtml(t.label) + '</div>'
+      + '<div class="reports-summary-tile-val">' + escapeHtml(String(t.val)) + '</div>'
+      + (t.sub ? '<div class="reports-summary-tile-sub">' + escapeHtml(t.sub) + '</div>' : '')
+      + '</div>';
+  }).join('');
+
+  // Show first 3 lines of CSV in preview (header + the row, with line breaks for legibility)
+  var csvPreviewLines = csv.split('\n').filter(function(l){ return l.length > 0; });
+  var formattedCsv = '';
+  csvPreviewLines.forEach(function(line, i){
+    // Show line type
+    var label = i === 0 ? '# headers (' + line.split(',').length + ' columns)' : '# data row';
+    formattedCsv += label + '\n' + line + '\n\n';
+  });
+
+  // Store CSV on the button for download
+  window._pendingPulseCsv = csv;
+  window._pendingPulseFname = fname;
+
+  preview.innerHTML = '<div class="reports-preview-status success">CSV generated for ' + escapeHtml(row.report_month) + '. ' + campaignCount + ' campaign' + (campaignCount !== 1 ? 's' : '') + ' aggregated.</div>'
+    + '<div class="reports-summary-grid">' + tilesHtml + '</div>'
+    + '<div class="reports-download-row">'
+    + '  <div class="reports-download-info">File: <span class="reports-download-info-fname">' + escapeHtml(fname) + '</span></div>'
+    + '  <button class="reports-download-btn" onclick="downloadPendingPulse()">Download CSV</button>'
+    + '</div>'
+    + '<div class="reports-preview-detail">'
+    + '  <div class="reports-preview-detail-title">CSV preview (first row only)</div>'
+    + '  <pre class="reports-preview-csv">' + escapeHtml(formattedCsv) + '</pre>'
+    + '</div>';
+}
+
+window.downloadPendingPulse = function() {
+  var csv = window._pendingPulseCsv;
+  var fname = window._pendingPulseFname;
+  if (!csv || !fname) { showToast('Nothing to download. Generate first.', true); return; }
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  showToast('CSV downloaded');
+};
+
+// Helpers
+function formatRate(v) {
+  if (v === null || v === undefined || isNaN(v)) return '';
+  return Number(v).toFixed(2);
+}
+function formatCurrency(v) {
+  if (v === null || v === undefined || isNaN(v)) return '';
+  return Number(v).toFixed(2);
+}
+function formatDecimal(v, decimals) {
+  if (v === null || v === undefined || isNaN(v)) return '';
+  return Number(v).toFixed(decimals === undefined ? 2 : decimals);
+}
+function csvEscape(v) {
+  if (v === null || v === undefined) return '';
+  var s = String(v);
+  if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+function sanitizeForColumn(name) {
+  // Convert bucket names like "Product launch" → "product_launch"
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+// Helper that uses the same classification as Flow Health cards.
+// Returns counts of critical / needs_improvement / healthy / unknown flows.
+function computeFlowHealthCounts(messages, allActiveDiags) {
+  // Reuse the existing aggregateFlowHealthData + classifyFlowHealth helpers
+  // from the Flow Health module. They are defined in the Flow Health section.
+  if (typeof aggregateFlowHealthData !== 'function' || typeof classifyFlowHealth !== 'function') {
+    return { critical: 0, needs_improvement: 0, healthy: 0 };
+  }
+  // Build a temporary "messages" array filtered to active and aggregate
+  var byFlow = aggregateFlowHealthData(messages);
+  var diagsByFlow = {};
+  (allActiveDiags || []).forEach(function(d){
+    var key = (d.flow_name || '').trim();
+    if (!key) return;
+    if (!diagsByFlow[key]) diagsByFlow[key] = [];
+    diagsByFlow[key].push(d);
+  });
+  var counts = { critical: 0, needs_improvement: 0, healthy: 0 };
+  byFlow.forEach(function(f){
+    var health = classifyFlowHealth(f, diagsByFlow[f.flow_name] || []);
+    if (health.status === 'critical') counts.critical++;
+    else if (health.status === 'needs-improvement') counts.needs_improvement++;
+    else if (health.status === 'healthy') counts.healthy++;
+    // 'unknown' not counted
+  });
+  return counts;
 }
 
 function renderFlowDiagnostics() {
