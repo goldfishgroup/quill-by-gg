@@ -3346,13 +3346,17 @@ async function processCSVFile(slot, file) {
     statusEl.textContent = 'Parsed ' + mapped.length + ' rows. Uploading to Supabase...';
 
     var table = slot === 'campaigns' ? 'quill_campaigns' : 'quill_flow_messages';
-    // Replace strategy: clear then insert in batches
-    var del = await db.from(table).delete().neq('id', 0);
+    // Session 9.1: only wipe CURRENT period rows. Historical rows preserved
+    // so the strategist can compare against pre-cleanup performance.
+    var del = await db.from(table).delete().eq('data_period', 'current');
     if (del.error) {
       statusEl.className = 'upload-status error';
-      statusEl.textContent = 'Could not clear existing rows. ' + del.error.message;
+      statusEl.textContent = 'Could not clear existing current rows. ' + del.error.message;
       return;
     }
+    // Tag all incoming rows as 'current' so the wipe-on-next-import works correctly
+    mapped.forEach(function(row){ row.data_period = 'current'; });
+
     var batchSize = 200;
     var inserted = 0;
     for (var i = 0; i < mapped.length; i += batchSize) {
@@ -3388,24 +3392,32 @@ async function refreshUploadCounts() {
   var slots = [{ slot: 'campaigns', table: 'quill_campaigns' }, { slot: 'flows', table: 'quill_flow_messages' }];
   for (var i = 0; i < slots.length; i++) {
     var s = slots[i];
-    var r = await db.from(s.table).select('id', { count: 'exact', head: true });
+    // Show both counts: current and historical, so user knows what's there
+    var currentRes = await db.from(s.table).select('id', { count: 'exact', head: true }).eq('data_period', 'current');
+    var historicalRes = await db.from(s.table).select('id', { count: 'exact', head: true }).eq('data_period', 'historical');
     var countEl = document.getElementById(s.slot + 'Count');
     if (!countEl) continue;
-    if (r.error) {
+    if (currentRes.error || historicalRes.error) {
       countEl.textContent = '? rows';
       countEl.classList.add('empty');
       continue;
     }
-    var c = r.count || 0;
-    countEl.textContent = c + ' rows';
-    if (c === 0) countEl.classList.add('empty'); else countEl.classList.remove('empty');
+    var cur = currentRes.count || 0;
+    var hist = historicalRes.count || 0;
+    if (hist > 0) {
+      countEl.textContent = cur + ' current, ' + hist + ' historical';
+    } else {
+      countEl.textContent = cur + ' rows';
+    }
+    if (cur === 0) countEl.classList.add('empty'); else countEl.classList.remove('empty');
   }
 }
 
 window.clearUpload = async function(slot) {
-  if (!confirm('Clear all uploaded rows for ' + slot + '? This cannot be undone.')) return;
+  if (!confirm('Clear current-period rows for ' + slot + '? Historical rows (from before April 2026 Klaviyo cleanup) are preserved. This cannot be undone.')) return;
   var table = slot === 'campaigns' ? 'quill_campaigns' : 'quill_flow_messages';
-  var del = await db.from(table).delete().neq('id', 0);
+  // Session 9.1: only clear current period; historical data stays
+  var del = await db.from(table).delete().eq('data_period', 'current');
   var statusEl = document.getElementById(slot + 'Status');
   if (del.error) {
     statusEl.className = 'upload-status error';
@@ -3413,9 +3425,9 @@ window.clearUpload = async function(slot) {
     return;
   }
   statusEl.className = 'upload-status';
-  statusEl.textContent = 'Cleared.';
+  statusEl.textContent = 'Cleared current-period rows. Historical preserved.';
   refreshUploadCounts();
-  showToast('Cleared');
+  showToast('Cleared current period');
 };
 
 function wireUploadSlot(slot) {
@@ -3531,8 +3543,10 @@ async function loadInsightsIfNeeded() {
   if (sub) sub.textContent = 'Loading campaigns and flow messages...';
   try {
     // Pull campaigns and flows in parallel. Use select limit to be safe.
-    var campRes = await db.from('quill_campaigns').select('*').limit(2000);
-    var flowRes = await db.from('quill_flow_messages').select('*').limit(2000);
+    // Session 9.1: filter to current period; historical data is queried separately
+    // by report generation and Talk-Back context loaders.
+    var campRes = await db.from('quill_campaigns').select('*').eq('data_period', 'current').limit(2000);
+    var flowRes = await db.from('quill_flow_messages').select('*').eq('data_period', 'current').limit(2000);
     if (campRes.error) throw new Error('Campaigns: ' + campRes.error.message);
     if (flowRes.error) throw new Error('Flows: ' + flowRes.error.message);
     insightsData.campaigns = campRes.data || [];
@@ -6204,8 +6218,10 @@ window.openManageFlowsModal = async function() {
   // Aggregate distinct flow names from quill_flow_messages with their
   // is_active state (taken from any message in the flow; if any message is
   // active the flow is considered active for display purposes).
+  // Session 9.1: filter to current period (don't manage legacy historical flows).
   var res = await db.from('quill_flow_messages')
     .select('flow_name,is_active,delivered')
+    .eq('data_period', 'current')
     .limit(5000);
   if (res.error) {
     showToast('Could not load flows: ' + res.error.message, true);
@@ -6386,10 +6402,11 @@ window.markFlowsActive = async function(setActive) {
     return;
   }
   setManageFlowsStatus('Updating ' + selected.length + ' flow' + (selected.length !== 1 ? 's' : '') + '...', '');
-  // Update flow messages
+  // Update flow messages (current period only; historical rows aren't manageable from this UI)
   var res = await db.from('quill_flow_messages')
     .update({ is_active: setActive })
-    .in('flow_name', selected);
+    .in('flow_name', selected)
+    .eq('data_period', 'current');
   if (res.error) {
     setManageFlowsStatus('Failed: ' + res.error.message, 'error');
     return;
@@ -6463,8 +6480,10 @@ async function loadFlowBrowserData() {
   // Note: Klaviyo flow exports do NOT include email body content. The body
   // field on quill_flow_messages stays null. Users paste the existing copy
   // into the improve modal manually when generating an improvement.
+  // Session 9.1: filter to current period; historical data is not browsable in UI.
   var res = await db.from('quill_flow_messages')
     .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,unsubscribe_rate,complaint_rate,revenue,revenue_per_recipient,audience_type,is_active,last_improved_at,last_improved_from_draft_id')
+    .eq('data_period', 'current')
     .order('flow_name', { ascending: true })
     .limit(2000);
   if (res.error) {
