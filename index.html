@@ -5876,11 +5876,36 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     console.log('[diagnose-single] ' + flowName + ': ' + messages.length + ' messages');
 
     // Determine target snapshot month from the picker, default to current month
-    var monthPicker = document.getElementById('diag-month-picker');
-    var selectedMonth = monthPicker ? monthPicker.value : null;
+    // Session 10 fix: Determine target snapshot month from the snapshot picker
+    // (so new findings get tagged to whatever month the strategist is viewing,
+    // matching the data they're analyzing). Falls back to previous calendar
+    // month, which is the typical "I'm reporting on last month" workflow.
+    // The old behavior of "default to current calendar month" caused new
+    // findings to be tagged May while the data was April.
+    var selectedMonth = null;
+    var picker = document.getElementById('diag-snapshot-picker');
+    if (picker && picker.value) {
+      if (picker.value === 'latest') {
+        // Latest = most recent current snapshot
+        var currentSnaps = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+        if (currentSnaps.length) {
+          selectedMonth = currentSnaps[0].snapshot_month;
+        }
+      } else {
+        // Specific snapshot id selected; look up its month
+        var pickedId = Number(picker.value);
+        var picked = (snapshotsCache || []).find(function(s){ return s.id === pickedId; });
+        if (picked && picked.snapshot_month && picked.snapshot_month !== 'pre-2026-04') {
+          selectedMonth = picked.snapshot_month;
+        }
+      }
+    }
+    // Fallback: previous calendar month. Strategists typically diagnose last
+    // month's complete data, not the current in-progress month.
     if (!selectedMonth) {
       var now = new Date();
-      selectedMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      var prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      selectedMonth = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
     }
 
     // Find-or-create the current snapshot for the selected month
@@ -6301,11 +6326,26 @@ window.extractFlowDiagnostics = async function() {
     // Session 9.2: snapshot architecture. Get the selected month, archive any
     // prior current snapshot for that month, create new current snapshot, tag
     // all findings with it.
-    var monthPicker = document.getElementById('diag-month-picker');
-    var selectedMonth = monthPicker ? monthPicker.value : null;
+    // Session 10 fix: same logic as diagnoseSingleFlow. Read from snapshot
+    // picker (what user is viewing), fall back to previous calendar month.
+    var selectedMonth = null;
+    var picker = document.getElementById('diag-snapshot-picker');
+    if (picker && picker.value) {
+      if (picker.value === 'latest') {
+        var currentSnaps = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+        if (currentSnaps.length) selectedMonth = currentSnaps[0].snapshot_month;
+      } else {
+        var pickedId = Number(picker.value);
+        var picked = (snapshotsCache || []).find(function(s){ return s.id === pickedId; });
+        if (picked && picked.snapshot_month && picked.snapshot_month !== 'pre-2026-04') {
+          selectedMonth = picked.snapshot_month;
+        }
+      }
+    }
     if (!selectedMonth) {
       var now = new Date();
-      selectedMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      var prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      selectedMonth = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
     }
 
     // Archive prior current snapshots for this month
