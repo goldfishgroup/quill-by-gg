@@ -5846,6 +5846,273 @@ function formatFlowPayloadForPrompt(flows) {
 // Each per-flow call appends findings to the current month's snapshot,
 // creating the snapshot if it doesnt exist yet.
 
+// ── DETERMINISTIC FLOW DIAGNOSTIC RULES (Session 10 sourced benchmarks) ──
+// Rule-based findings run BEFORE the LLM call. They guarantee that red-flag
+// metrics get surfaced without relying on LLM compliance. Sourced thresholds
+// from Klaviyo_Benchmarks_Sourced.md (Klaviyo 2025 + Klaviyo 2026 benchmark
+// reports, Klaviyo Abandoned Cart Benchmark Report, DTC Wellness Benchmark
+// Report 2025).
+//
+// Each rule produces a finding object in the same shape the LLM produces.
+// Rule findings carry a citation line in their evidence field.
+
+var FLOW_BENCHMARK_SOURCE = 'Klaviyo 2025 + 2026 Benchmark Reports (Health & Wellness vertical)';
+
+// Per-message rules. Each returns a finding object or null if not triggered.
+function ruleHighUnsubRate(m, flowName) {
+  var unsub = Number(m.unsubscribe_rate);
+  if (isNaN(unsub) || unsub <= 0.5) return null;
+  var severity = unsub > 1 ? 'fix_now' : 'opportunity';
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: severity,
+    category: 'deliverability',
+    confidence: 'high',
+    diagnosis: (m.message_name || 'Message') + ' has ' + unsub.toFixed(2) + '% unsubscribe rate, above the 0.5% benchmark threshold.',
+    evidence: unsub.toFixed(2) + '% unsub on ' + Math.round(Number(m.delivered) || 0) + ' deliveries. Source: ' + FLOW_BENCHMARK_SOURCE + '. Healthy is under 0.2%, warn at 0.5%, critical above 1%.',
+    recommendation: 'Review the flow trigger filters and message frequency. This message may be reaching the wrong audience or arriving at a frequency that feels intrusive. Consider tightening the trigger condition or extending the time delay before this send.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+function ruleHighSpamComplaint(m, flowName) {
+  var spam = Number(m.complaint_rate);
+  if (isNaN(spam) || spam <= 0.1) return null;
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: 'fix_now',
+    category: 'deliverability',
+    confidence: 'high',
+    diagnosis: (m.message_name || 'Message') + ' has ' + spam.toFixed(3) + '% spam complaint rate, above the 0.1% deliverability threshold.',
+    evidence: spam.toFixed(3) + '% spam complaints on ' + Math.round(Number(m.delivered) || 0) + ' deliveries. Source: ' + FLOW_BENCHMARK_SOURCE + '. Above 0.1% puts inbox placement at risk for the entire sending domain.',
+    recommendation: 'Pause this message and review the subject line, sender name, and audience targeting. Spam complaints at this rate can damage deliverability for all SFH sends.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+function ruleLowOpenRate(m, flowName) {
+  var open = Number(m.open_rate);
+  var delivered = Number(m.delivered) || 0;
+  if (isNaN(open) || delivered < 50) return null;
+  if (open >= 30) return null;
+  var severity = open < 20 ? 'fix_now' : 'opportunity';
+  var benchmarkContext = severity === 'fix_now'
+    ? 'Industry average for Health & Wellness flows is 50%. Below 20% suggests significant subject line or send timing issues.'
+    : 'Industry average for Health & Wellness flows is 50%. This message is well below that benchmark.';
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: severity,
+    category: 'hook',
+    confidence: 'high',
+    diagnosis: (m.message_name || 'Message') + ' has ' + open.toFixed(1) + '% open rate, below the benchmark for flow messages.',
+    evidence: open.toFixed(2) + '% open rate on ' + Math.round(delivered) + ' deliveries. Source: ' + FLOW_BENCHMARK_SOURCE + '. ' + benchmarkContext,
+    recommendation: 'Review the subject line for this message in Klaviyo. Test a problem-first angle, shorter length, or personalization. Also verify send timing relative to the trigger event.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+function ruleLowClickRate(m, flowName) {
+  var click = Number(m.click_rate);
+  var open = Number(m.open_rate);
+  var delivered = Number(m.delivered) || 0;
+  if (isNaN(click) || delivered < 50) return null;
+  if (click >= 1.5) return null;
+  // Skip if open rate is also low (covered by low-open rule)
+  if (!isNaN(open) && open < 25) return null;
+  var severity = click < 1 ? 'fix_now' : 'opportunity';
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: severity,
+    category: 'body',
+    confidence: 'high',
+    diagnosis: (m.message_name || 'Message') + ' has ' + click.toFixed(2) + '% click rate despite ' + (isNaN(open) ? 'n/a' : open.toFixed(1) + '%') + ' open rate, indicating a body content or CTA problem.',
+    evidence: click.toFixed(2) + '% click on ' + Math.round(delivered) + ' deliveries. Source: ' + FLOW_BENCHMARK_SOURCE + '. Industry average for flow click rate is 1.5 to 3%. The hook is working but the body is not converting attention to action.',
+    recommendation: 'Review body copy clarity, CTA placement, and offer relevance. Subscribers are opening but not finding a clear next action. Consider simplifying to a single CTA above the fold.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+function ruleHighOpenZeroRevenue(m, flowName) {
+  var open = Number(m.open_rate);
+  var rev = Number(m.revenue) || 0;
+  var delivered = Number(m.delivered) || 0;
+  if (delivered < 100 || isNaN(open) || open < 30 || rev > 0) return null;
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: 'opportunity',
+    category: 'revenue_leak',
+    confidence: 'high',
+    diagnosis: (m.message_name || 'Message') + ' generated $0 revenue despite ' + Math.round(delivered) + ' deliveries and ' + open.toFixed(1) + '% open rate.',
+    evidence: 'No revenue from ' + Math.round(delivered) + ' deliveries with ' + open.toFixed(2) + '% open rate. Source: ' + FLOW_BENCHMARK_SOURCE + '. Engaged audience without conversion suggests an offer-audience mismatch at this sequence stage.',
+    recommendation: 'Review the offer in this message. The hook is reaching subscribers but the offer is not aligned with intent at this point in the flow. Consider product recommendations matched to the trigger event, time-bound incentives, or content that addresses the most common objection at this stage.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+function ruleOpenRateCliff(m, prevM, flowName) {
+  if (!prevM) return null;
+  var open = Number(m.open_rate);
+  var prevOpen = Number(prevM.open_rate);
+  if (isNaN(open) || isNaN(prevOpen)) return null;
+  var drop = prevOpen - open;
+  if (drop < 15) return null;
+  return {
+    flow_name: flowName,
+    scope: 'message',
+    severity: 'opportunity',
+    category: 'sequencing',
+    confidence: 'medium',
+    diagnosis: (m.message_name || 'This message') + ' open rate drops ' + drop.toFixed(0) + ' points from the previous message in the sequence.',
+    evidence: prevOpen.toFixed(1) + '% to ' + open.toFixed(1) + '% drop. Source: ' + FLOW_BENCHMARK_SOURCE + '. A drop of 15+ points between consecutive messages suggests fatigue or unclear angle differentiation.',
+    recommendation: 'Review whether this message offers a meaningfully different angle from the previous one. Subscribers who opened the prior message may be tuning out because the topic feels redundant. Consider adjusting the subject line angle or extending the time delay.',
+    sample_messages: [m.message_name || ''],
+    ab_test_hint: null,
+    worth_revisiting: true
+  };
+}
+
+// Structural rules. These look at flow-level patterns, not individual messages.
+function ruleFlowStructure(messages, flowName) {
+  var findings = [];
+  var count = messages.length;
+  var nameLc = (flowName || '').toLowerCase();
+  var totalRev = messages.reduce(function(s, m){ return s + (Number(m.revenue) || 0); }, 0);
+  var totalDel = messages.reduce(function(s, m){ return s + (Number(m.delivered) || 0); }, 0);
+
+  // Welcome series: 3 to 5 messages is optimal
+  if ((nameLc.indexOf('welcome') !== -1) && count > 0) {
+    if (count <= 2) {
+      findings.push({
+        flow_name: flowName,
+        scope: 'structure',
+        severity: 'opportunity',
+        category: 'structure',
+        confidence: 'high',
+        diagnosis: 'Welcome flow has only ' + count + ' message' + (count === 1 ? '' : 's') + '. Industry benchmark is 3 to 5.',
+        evidence: count + ' messages in the welcome sequence. Source: ' + FLOW_BENCHMARK_SOURCE + '. Klaviyo recommends 3 to 5 emails for welcome flows to capitalize on the highest-engagement window.',
+        recommendation: 'Add 2 to 3 more messages to introduce the brand story, social proof, and a first-purchase incentive. The welcome window is the highest-engagement period in the customer lifecycle.',
+        sample_messages: [],
+        ab_test_hint: null,
+        worth_revisiting: true
+      });
+    } else if (count >= 7) {
+      findings.push({
+        flow_name: flowName,
+        scope: 'structure',
+        severity: 'opportunity',
+        category: 'structure',
+        confidence: 'medium',
+        diagnosis: 'Welcome flow has ' + count + ' messages. Industry benchmark is 3 to 5.',
+        evidence: count + ' messages in the welcome sequence. Source: ' + FLOW_BENCHMARK_SOURCE + '. Welcome flows with 7+ messages typically see rising unsub rates on later sends.',
+        recommendation: 'Consider trimming to 4 or 5 messages. Audit which messages carry meaningful revenue versus filling space. Trim or convert weakest-performing messages into one-off campaigns.',
+        sample_messages: [],
+        ab_test_hint: null,
+        worth_revisiting: true
+      });
+    }
+  }
+
+  // Abandoned cart: 2 to 3 messages is optimal
+  if ((nameLc.indexOf('abandoned cart') !== -1 || nameLc.indexOf('abandoned checkout') !== -1) && count > 0) {
+    if (count === 1) {
+      findings.push({
+        flow_name: flowName,
+        scope: 'structure',
+        severity: 'opportunity',
+        category: 'structure',
+        confidence: 'high',
+        diagnosis: 'Abandoned cart flow has only 1 message. Industry benchmark is 2 to 3.',
+        evidence: 'Single-message abandoned cart sequence. Source: ' + FLOW_BENCHMARK_SOURCE + '. Klaviyos research across 143K abandoned cart flows shows 2 to 3 messages is optimal.',
+        recommendation: 'Add a second message 20 to 48 hours after the first. Consider adding incentive escalation in the second or third message (free shipping, then small discount).',
+        sample_messages: [],
+        ab_test_hint: null,
+        worth_revisiting: true
+      });
+    } else if (count >= 5) {
+      findings.push({
+        flow_name: flowName,
+        scope: 'structure',
+        severity: 'opportunity',
+        category: 'structure',
+        confidence: 'medium',
+        diagnosis: 'Abandoned cart flow has ' + count + ' messages. Industry benchmark is 2 to 3.',
+        evidence: count + ' messages in the abandoned cart sequence. Source: ' + FLOW_BENCHMARK_SOURCE + '. Beyond 3 messages, unsub risk typically outweighs incremental conversion.',
+        recommendation: 'Trim to 2 or 3 messages. Most conversion happens in the first two sends.',
+        sample_messages: [],
+        ab_test_hint: null,
+        worth_revisiting: true
+      });
+    }
+  }
+
+  // Single-message flow with zero revenue
+  if (count === 1 && totalRev === 0 && totalDel >= 100) {
+    findings.push({
+      flow_name: flowName,
+      scope: 'structure',
+      severity: 'opportunity',
+      category: 'revenue_leak',
+      confidence: 'high',
+      diagnosis: 'Single-message flow with ' + Math.round(totalDel) + ' deliveries generated $0 revenue.',
+      evidence: 'One message, $0 revenue across ' + Math.round(totalDel) + ' deliveries. Source: ' + FLOW_BENCHMARK_SOURCE + '. Single-message flows often miss the conversion window. Industry shows multi-message sequences convert 2 to 3 times higher.',
+      recommendation: 'Consider extending this flow with 2 or 3 follow-up messages. A single touchpoint is rarely enough to drive conversion for engaged audiences.',
+      sample_messages: [],
+      ab_test_hint: null,
+      worth_revisiting: true
+    });
+  }
+
+  return findings;
+}
+
+// Master rule runner. Returns an array of findings produced by all applicable
+// rules. Per-message rules run on each message; structural rules run once per
+// flow. The cliff rule needs ordered context.
+function runFlowDiagnosticRules(messages, flowName) {
+  var findings = [];
+
+  // Sort messages by send_position for cliff detection
+  var sortedMessages = messages.slice().sort(function(a, b){
+    var ap = Number(a.send_position) || 999;
+    var bp = Number(b.send_position) || 999;
+    if (ap !== bp) return ap - bp;
+    return (a.message_name || '').localeCompare(b.message_name || '');
+  });
+
+  // Per-message rules
+  sortedMessages.forEach(function(m, idx){
+    var f;
+    f = ruleHighUnsubRate(m, flowName); if (f) findings.push(f);
+    f = ruleHighSpamComplaint(m, flowName); if (f) findings.push(f);
+    f = ruleLowOpenRate(m, flowName); if (f) findings.push(f);
+    f = ruleLowClickRate(m, flowName); if (f) findings.push(f);
+    f = ruleHighOpenZeroRevenue(m, flowName); if (f) findings.push(f);
+    var prev = idx > 0 ? sortedMessages[idx - 1] : null;
+    f = ruleOpenRateCliff(m, prev, flowName); if (f) findings.push(f);
+  });
+
+  // Structural rules
+  var structural = ruleFlowStructure(messages, flowName);
+  structural.forEach(function(f){ findings.push(f); });
+
+  return findings;
+}
+
 window.diagnoseSingleFlow = async function(flowName, btnEl) {
   if (!flowName) return;
   if (!btnEl) btnEl = document.querySelector('.flow-health-diagnose-btn[data-flow="' + flowName.replace(/"/g, '\\"') + '"]');
@@ -5874,6 +6141,12 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     }
 
     console.log('[diagnose-single] ' + flowName + ': ' + messages.length + ' messages');
+
+    // Session 10: Run deterministic rule engine BEFORE the LLM call.
+    // Rule findings are guaranteed (not LLM-dependent). LLM adds interpretive
+    // findings on top. Both write to the same snapshot.
+    var ruleFindings = runFlowDiagnosticRules(messages, flowName);
+    console.log('[diagnose-single] Rule engine produced ' + ruleFindings.length + ' findings');
 
     // Determine target snapshot month from the picker, default to current month
     // Session 10 fix: Determine target snapshot month from the snapshot picker
@@ -5918,9 +6191,21 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
 
     // Build a focused prompt for just this one flow
     var formatted = formatSingleFlowForPrompt(flowName, messages);
-    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven. You work with the data available and never complain about missing fields. If subject lines or preview text are not in the data, you apply principles to the metrics that ARE available (engagement gaps, revenue patterns, sequence behavior) and recommend revisiting those untested fields where the metrics suggest a problem.';
-    var userPrompt = 'Analyze this one flow and produce 2 to 4 diagnoses.\n\n'
-      + 'DATA:\n' + formatted + '\n\n'
+
+    // Summarize what rule engine already covered so LLM doesn't duplicate
+    var ruleFindingsSummary = '';
+    if (ruleFindings.length) {
+      ruleFindingsSummary = '\n\nALREADY COVERED BY DETERMINISTIC RULES (do NOT duplicate these):\n'
+        + ruleFindings.map(function(rf, i){
+            return (i + 1) + '. [' + rf.severity + ' / ' + rf.category + '] ' + rf.diagnosis;
+          }).join('\n')
+        + '\n\nYour job is to add INTERPRETIVE findings on top of these. Focus on patterns the rules cannot see: sequence relationships, audience-message fit, content gaps, A/B test opportunities, cross-message themes.\n';
+    }
+
+    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven. You work with the data available and never complain about missing fields. If subject lines or preview text are not in the data, you apply principles to the metrics that ARE available (engagement gaps, revenue patterns, sequence behavior) and recommend revisiting those untested fields where the metrics suggest a problem. A deterministic rule engine has ALREADY produced findings for red-flag metrics like high unsub rate, low open rate, low click rate, and zero-revenue patterns. Your job is to ADD INTERPRETIVE findings, not duplicate the rules.';
+    var userPrompt = 'Analyze this one flow and produce 2 to 4 INTERPRETIVE diagnoses.\n\n'
+      + 'DATA:\n' + formatted
+      + ruleFindingsSummary + '\n\n'
       + 'DATA AVAILABILITY:\n'
       + '- You have: flow name, message names, send position, delivered counts, open rates, click rates, unsubscribe rates, revenue, revenue per recipient, A/B test winning variant flags.\n'
       + '- You do NOT have: subject line text, preview text, body copy, trigger filters, time delays. Do not ask for these. Do not say they are missing. Infer recommendations from the metrics you have.\n\n'
@@ -6066,6 +6351,34 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
         snapshot_month: selectedMonth
       };
     });
+
+    // Session 10: Prepend rule-based findings. These are deterministic and
+    // guaranteed; we never want them missing. Shape matches what the LLM rows
+    // produce so they coexist cleanly in the same insert.
+    var ruleRows = ruleFindings.map(function(d){
+      return {
+        flow_name: String(d.flow_name || flowName).slice(0, 200),
+        flow_status: null,
+        worth_revisiting: !!d.worth_revisiting,
+        scope: String(d.scope || 'message').slice(0, 20),
+        diagnosis: String(d.diagnosis || '').slice(0, 500),
+        category: String(d.category || 'overall').slice(0, 50),
+        confidence: String(d.confidence || 'high').slice(0, 20),
+        severity: String(d.severity || 'monitor').slice(0, 20),
+        evidence: String(d.evidence || '').slice(0, 1000),
+        recommendation: String(d.recommendation || '').slice(0, 500),
+        ab_test_hint: d.ab_test_hint ? String(d.ab_test_hint).slice(0, 500) : null,
+        sample_messages: Array.isArray(d.sample_messages) ? d.sample_messages.slice(0, 5) : [],
+        active: true,
+        starred: false,
+        snapshot_id: snapshotId,
+        snapshot_month: selectedMonth
+      };
+    });
+
+    // Combine: rule findings first (deterministic foundation), LLM findings after
+    rows = ruleRows.concat(rows);
+    console.log('[diagnose-single] Saving ' + ruleRows.length + ' rule findings + ' + (rows.length - ruleRows.length) + ' LLM findings = ' + rows.length + ' total');
 
     var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
     if (ins.error) throw new Error('Insert failed: ' + ins.error.message);
