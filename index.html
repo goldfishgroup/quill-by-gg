@@ -279,10 +279,11 @@
     .audience-toggle { display: flex; border: 0.5px solid var(--q-line); border-radius: 7px; overflow: hidden; align-items: stretch; flex-wrap: wrap; }
     .audience-btn { padding: 6px 14px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
     .audience-btn.active { background: var(--gg-olive); color: #fff; }
-    .insights-month-divider { width: 0.5px; background: var(--q-line); margin: 0 2px; }
-    .insights-month-select { padding: 6px 10px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--gg-charcoal); font-family: var(--font-body); border-left: 0.5px solid var(--q-line); }
-    .insights-month-select:focus { outline: none; }
-    .insights-month-select.active { background: var(--gg-olive); color: #fff; }
+    .insights-range-controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .insights-custom-range { display: flex; gap: 8px; align-items: center; }
+    .insights-custom-input { padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 6px; font-size: 12px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
+    .insights-custom-input:focus { outline: none; border-color: var(--gg-olive); }
+    .insights-custom-sep { font-size: 11px; color: var(--q-muted); }
 
     /* INSIGHTS CARDS */
     .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
@@ -1539,19 +1540,22 @@
         <div class="studio-section active" id="studio-insights">
           <div class="insights-head">
             <div>
-              <div class="insights-title">Insights</div>
+              <div class="insights-title">Campaign Insights</div>
               <div class="insights-sub" id="insights-sub">Reading from your uploaded Klaviyo data</div>
             </div>
-            <div class="audience-toggle">
-              <button class="audience-btn active" onclick="setTimeRange('all')" id="tr-all">All time</button>
-              <button class="audience-btn" onclick="setTimeRange('ytd')" id="tr-ytd">YTD</button>
-              <button class="audience-btn" onclick="setTimeRange('12mo')" id="tr-12mo">12 months</button>
-              <button class="audience-btn" onclick="setTimeRange('90d')" id="tr-90d">90 days</button>
-              <button class="audience-btn" onclick="setTimeRange('30d')" id="tr-30d">30 days</button>
-              <div class="insights-month-divider"></div>
-              <select class="insights-month-select" id="insights-month-select" onchange="onInsightsMonthChange()">
-                <option value="">Specific month...</option>
-              </select>
+            <div class="insights-range-controls">
+              <div class="audience-toggle">
+                <button class="audience-btn" onclick="setTimeRange('last-month')" id="tr-last-month">Last Month</button>
+                <button class="audience-btn" onclick="setTimeRange('3mo')" id="tr-3mo">Last 3 Months</button>
+                <button class="audience-btn" onclick="setTimeRange('6mo')" id="tr-6mo">Last 6 Months</button>
+                <button class="audience-btn active" onclick="setTimeRange('12mo')" id="tr-12mo">Last 12 Months</button>
+                <button class="audience-btn" onclick="toggleCustomRange()" id="tr-custom">Custom</button>
+              </div>
+              <div class="insights-custom-range" id="insights-custom-range" style="display:none;">
+                <input type="date" id="insights-custom-start" class="insights-custom-input" onchange="onCustomRangeChange()">
+                <span class="insights-custom-sep">to</span>
+                <input type="date" id="insights-custom-end" class="insights-custom-input" onchange="onCustomRangeChange()">
+              </div>
             </div>
           </div>
 
@@ -1618,25 +1622,6 @@
                   <div class="trend-chart" id="trend-rpr"></div>
                   <div class="trend-labels" id="trend-rpr-labels"></div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel" id="panel-flows">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">Flow health</div>
-                <div class="panel-hint">Active flow messages, all time. Drafts and zero-activity messages hidden.</div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-              <div>
-                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Highest revenue</div>
-                <div class="top-list" id="flow-top"></div>
-              </div>
-              <div>
-                <div style="font-size:11px;color:var(--q-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Lowest open rate (fix candidates)</div>
-                <div class="top-list" id="flow-bottom"></div>
               </div>
             </div>
           </div>
@@ -3494,8 +3479,9 @@ document.addEventListener('keydown', function(e){
 
 var currentStudioSection = 'insights';
 var audienceFilter = 'consumer';  // Hard-coded to consumer for v1; wholesale toggle removed from UI
-var timeRange = 'all';  // all | ytd | 12mo | 90d | 30d
-var selectedMonth = null;  // 'YYYY-MM' or null. When set, overrides timeRange.
+var timeRange = '12mo';  // last-month | 3mo | 6mo | 12mo | custom
+var selectedMonth = null;  // Legacy: kept as null; month picker was removed
+var customRange = null;  // { start: 'YYYY-MM-DD', end: 'YYYY-MM-DD' } when timeRange === 'custom'
 var insightsData = { campaigns: null, flows: null, loadedAt: null };
 var insightsInFlight = false;
 
@@ -3524,12 +3510,11 @@ window.setTimeRange = function(val) {
   timeRange = val;
   // Clear month selection. Windows and specific-month are mutually exclusive.
   selectedMonth = null;
-  var monthSel = document.getElementById('insights-month-select');
-  if (monthSel) {
-    monthSel.value = '';
-    monthSel.classList.remove('active');
-  }
-  ['all','ytd','12mo','90d','30d'].forEach(function(v){
+  customRange = null;
+  // Hide custom range picker if not in custom mode
+  var customWrap = document.getElementById('insights-custom-range');
+  if (customWrap) customWrap.style.display = 'none';
+  ['last-month','3mo','6mo','12mo','custom'].forEach(function(v){
     var el = document.getElementById('tr-' + v);
     if (el) el.classList.toggle('active', v === val);
   });
@@ -3542,31 +3527,48 @@ window.setTimeRange = function(val) {
   }
 };
 
-window.onInsightsMonthChange = function() {
-  var sel = document.getElementById('insights-month-select');
-  if (!sel) return;
-  var val = sel.value;
-  if (!val) {
-    selectedMonth = null;
-    sel.classList.remove('active');
-    // Fall back to whatever window button was last active; nothing to do beyond re-render
-    renderInsights();
-    return;
-  }
-  selectedMonth = val;
-  sel.classList.add('active');
-  // Clear window button active state since month overrides
-  ['all','ytd','12mo','90d','30d'].forEach(function(v){
+// Show/hide the custom date range picker. Inputs default to last 3 months when opened.
+window.toggleCustomRange = function() {
+  var wrap = document.getElementById('insights-custom-range');
+  var startEl = document.getElementById('insights-custom-start');
+  var endEl = document.getElementById('insights-custom-end');
+  if (!wrap || !startEl || !endEl) return;
+  ['last-month','3mo','6mo','12mo','custom'].forEach(function(v){
     var el = document.getElementById('tr-' + v);
-    if (el) el.classList.remove('active');
+    if (el) el.classList.toggle('active', v === 'custom');
   });
+  timeRange = 'custom';
+  wrap.style.display = 'flex';
+  // Set sensible defaults if not already set
+  if (!startEl.value || !endEl.value) {
+    var now = new Date();
+    var end = now.toISOString().slice(0, 10);
+    var startD = new Date(now);
+    startD.setMonth(startD.getMonth() - 3);
+    var start = startD.toISOString().slice(0, 10);
+    startEl.value = start;
+    endEl.value = end;
+  }
+  onCustomRangeChange();
+};
+
+window.onCustomRangeChange = function() {
+  var startEl = document.getElementById('insights-custom-start');
+  var endEl = document.getElementById('insights-custom-end');
+  if (!startEl || !endEl || !startEl.value || !endEl.value) return;
+  customRange = { start: startEl.value, end: endEl.value };
   renderInsights();
-  // Invalidate narrative as with window changes
   var nar = document.getElementById('patterns-narrative');
   if (nar) {
     nar.className = 'panel-narrative loading';
     nar.textContent = 'Time range changed. Click Regenerate narrative to refresh.';
   }
+};
+
+window.onInsightsMonthChange = function() {
+  // Legacy handler: kept as no-op since the specific-month dropdown was removed.
+  // If month picker is ever added back, this can be reused.
+  return;
 };
 
 // Populate the month picker with months that have campaign data. Called after
@@ -3601,33 +3603,52 @@ function populateInsightsMonthPicker() {
 }
 
 function getTimeRangeCutoff() {
-  // Specific month mode: return null here, filteredCampaigns handles month separately
-  if (selectedMonth) return null;
-  if (timeRange === 'all') return null;
+  // Custom range and last-month return both endpoints; handled via getTimeRangeWindow.
+  // This function returns only the start cutoff for backward compatibility with callers
+  // that filter by `send_time >= cutoff`. Callers that need both bounds use getTimeRangeWindow.
+  var win = getTimeRangeWindow();
+  return win.start;
+}
+
+// Returns { start: Date|null, end: Date|null } for the active time range.
+// null means no bound on that side.
+function getTimeRangeWindow() {
   var now = new Date();
-  if (timeRange === 'ytd') {
-    return new Date(now.getFullYear(), 0, 1);
+  if (timeRange === 'custom' && customRange) {
+    return {
+      start: customRange.start ? new Date(customRange.start + 'T00:00:00') : null,
+      end: customRange.end ? new Date(customRange.end + 'T23:59:59') : null
+    };
   }
-  var days = { '30d': 30, '90d': 90, '12mo': 365 }[timeRange];
-  if (!days) return null;
-  var d = new Date(now);
-  d.setDate(d.getDate() - days);
-  return d;
+  if (timeRange === 'last-month') {
+    // First and last day of the previous calendar month
+    var y = now.getFullYear();
+    var m = now.getMonth(); // 0-indexed current month
+    // Previous month: if m === 0 (January), previous is December of prior year
+    var prevMonthStart = new Date(y, m - 1, 1);
+    var prevMonthEnd = new Date(y, m, 0, 23, 59, 59);
+    return { start: prevMonthStart, end: prevMonthEnd };
+  }
+  var months = { '3mo': 3, '6mo': 6, '12mo': 12 }[timeRange];
+  if (months) {
+    var d = new Date(now);
+    d.setMonth(d.getMonth() - months);
+    return { start: d, end: null };
+  }
+  return { start: null, end: null };
 }
 
 function getTimeRangeLabel() {
-  if (selectedMonth) {
-    var parts = selectedMonth.split('-');
-    var monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][Number(parts[1]) - 1];
-    return monthName + ' ' + parts[0];
+  if (timeRange === 'custom' && customRange && customRange.start && customRange.end) {
+    return 'custom range ' + customRange.start + ' to ' + customRange.end;
   }
   return {
-    'all': 'all time',
-    'ytd': 'year to date',
+    'last-month': 'last month',
+    '3mo': 'last 3 months',
+    '6mo': 'last 6 months',
     '12mo': 'last 12 months',
-    '90d': 'last 90 days',
-    '30d': 'last 30 days'
-  }[timeRange] || 'all time';
+    'custom': 'custom range'
+  }[timeRange] || 'last 12 months';
 }
 
 async function loadInsightsIfNeeded() {
@@ -3670,27 +3691,16 @@ function filteredCampaigns() {
   var rows = insightsData.campaigns || [];
   // Always filter to consumer for v1
   rows = rows.filter(function(c){ return (c.audience_type || 'consumer') === audienceFilter; });
-  // Specific month mode (overrides window)
-  if (selectedMonth) {
-    var parts = selectedMonth.split('-');
-    var year = Number(parts[0]);
-    var monthIdx = Number(parts[1]) - 1;
+  // Window mode (handles start + end bounds for last-month + custom range)
+  var win = getTimeRangeWindow();
+  if (win.start || win.end) {
     rows = rows.filter(function(c){
       if (!c.send_time) return false;
       var d = new Date(c.send_time);
       if (isNaN(d.getTime())) return false;
-      return d.getFullYear() === year && d.getMonth() === monthIdx;
-    });
-    return rows;
-  }
-  // Window mode
-  var cutoff = getTimeRangeCutoff();
-  if (cutoff) {
-    rows = rows.filter(function(c){
-      if (!c.send_time) return false;
-      var d = new Date(c.send_time);
-      if (isNaN(d.getTime())) return false;
-      return d >= cutoff;
+      if (win.start && d < win.start) return false;
+      if (win.end && d > win.end) return false;
+      return true;
     });
   }
   return rows;
