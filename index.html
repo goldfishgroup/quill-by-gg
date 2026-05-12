@@ -280,6 +280,7 @@
     .audience-btn { padding: 6px 14px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--q-muted); font-family: var(--font-body); }
     .audience-btn.active { background: var(--gg-olive); color: #fff; }
     .insights-range-controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .insights-range-label { font-size: 11px; color: var(--q-muted); font-style: italic; }
     .insights-custom-range { display: flex; gap: 8px; align-items: center; }
     .insights-custom-input { padding: 6px 10px; border: 0.5px solid var(--q-line); border-radius: 6px; font-size: 12px; font-family: var(--font-body); color: var(--gg-charcoal); background: #fff; }
     .insights-custom-input:focus { outline: none; border-color: var(--gg-olive); }
@@ -1556,6 +1557,7 @@
                 <span class="insights-custom-sep">to</span>
                 <input type="date" id="insights-custom-end" class="insights-custom-input" onchange="onCustomRangeChange()">
               </div>
+              <div class="insights-range-label" id="insights-range-label"></div>
             </div>
           </div>
 
@@ -3519,6 +3521,7 @@ window.setTimeRange = function(val) {
     if (el) el.classList.toggle('active', v === val);
   });
   renderInsights();
+  updateInsightsRangeLabel();
   // Invalidate narrative so it regenerates against the new time range
   var nar = document.getElementById('patterns-narrative');
   if (nar) {
@@ -3558,6 +3561,7 @@ window.onCustomRangeChange = function() {
   if (!startEl || !endEl || !startEl.value || !endEl.value) return;
   customRange = { start: startEl.value, end: endEl.value };
   renderInsights();
+  updateInsightsRangeLabel();
   var nar = document.getElementById('patterns-narrative');
   if (nar) {
     nar.className = 'panel-narrative loading';
@@ -3649,6 +3653,30 @@ function getTimeRangeLabel() {
     '12mo': 'last 12 months',
     'custom': 'custom range'
   }[timeRange] || 'last 12 months';
+}
+
+// Human-readable label showing the actual month span the active range covers.
+// Updates the label below the range buttons after any range change.
+function updateInsightsRangeLabel() {
+  var el = document.getElementById('insights-range-label');
+  if (!el) return;
+  var win = getTimeRangeWindow();
+  if (!win.start && !win.end) { el.textContent = ''; return; }
+  var fmt = function(d){
+    var monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    return monthName + ' ' + d.getFullYear();
+  };
+  if (win.start && win.end) {
+    var s = fmt(win.start);
+    var e = fmt(win.end);
+    if (s === e) el.textContent = s;
+    else el.textContent = s + ' to ' + e;
+  } else if (win.start) {
+    var startLabel = fmt(win.start);
+    var nowLabel = fmt(new Date());
+    if (startLabel === nowLabel) el.textContent = nowLabel;
+    else el.textContent = startLabel + ' to ' + nowLabel;
+  }
 }
 
 async function loadInsightsIfNeeded() {
@@ -3763,6 +3791,7 @@ function renderInsights() {
     sub.textContent = camps.length + ' campaigns (' + getTimeRangeLabel() + ')  |  ' + flows.length + ' active flow messages (all time)';
   }
 
+  updateInsightsRangeLabel();
   renderStatCards(camps);
   renderWeekdayChart(camps);
   renderSegmentsChart(camps);
