@@ -5932,9 +5932,10 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       + '}\n\n'
       + 'VOICE RULES:\n'
       + '- No em dashes\n'
-      + '- No hyperbolic words (critical, massive, exceptional, remarkable, severe, alarming)\n'
+      + '- No hyperbolic words. Banned word list: critical, massive, exceptional, remarkable, severe, alarming, disaster, catastrophic, devastating, urgent, emergency, dire, dangerous, terrible, horrible, awful, broken, failing.\n'
       + '- American English\n'
-      + '- Warm, sharp, senior consultant tone\n\n'
+      + '- Warm, sharp, senior consultant tone. Never dramatic. Never alarming. State problems calmly with numbers.\n'
+      + '- ABSOLUTELY FORBIDDEN: any finding whose diagnosis or recommendation references missing data, blank fields, "no subject", "no preview", data export issues, or reporting errors. The data you have is what is available. If a metric pattern is unclear, write a different finding. There are no exceptions to this rule.\n\n'
       + 'Return ONLY the JSON array. Start with [ and end with ].';
 
     var res = await fetch('/api/diagnose', {
@@ -5964,6 +5965,42 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
     var diagnoses = JSON.parse(text.substring(first, last + 1));
     if (!Array.isArray(diagnoses) || !diagnoses.length) throw new Error('No diagnoses returned');
+
+    // Safety net: filter out any finding that mentions missing data or hyperbolic
+    // language. The prompt forbids these, but LLMs occasionally slip. Better to
+    // drop a bad finding silently than show "no subject" or "disaster" findings.
+    var bannedPatterns = [
+      /\bno subject\b/i,
+      /\bno preview\b/i,
+      /\bmissing subject/i,
+      /\bmissing preview/i,
+      /\bdata export issue/i,
+      /\bdata reporting error/i,
+      /\bblank field/i,
+      /\bdisaster/i,
+      /\bcatastrophic/i,
+      /\bdevastating/i,
+      /\bemergency/i,
+      /\bdire\b/i,
+      /\bterrible\b/i,
+      /\bhorrible\b/i,
+      /\bawful\b/i
+    ];
+    var beforeCount = diagnoses.length;
+    diagnoses = diagnoses.filter(function(d){
+      var combined = ((d.diagnosis || '') + ' ' + (d.recommendation || '') + ' ' + (d.evidence || '')).toLowerCase();
+      for (var i = 0; i < bannedPatterns.length; i++) {
+        if (bannedPatterns[i].test(combined)) {
+          console.log('[diagnose-single] Filtered out finding for banned phrase:', d.diagnosis);
+          return false;
+        }
+      }
+      return true;
+    });
+    if (diagnoses.length === 0) throw new Error('All returned findings contained banned phrases or missing-data complaints. Re-run to try again.');
+    if (beforeCount !== diagnoses.length) {
+      console.log('[diagnose-single] Filtered ' + (beforeCount - diagnoses.length) + ' findings; ' + diagnoses.length + ' remain.');
+    }
 
     // Build rows for insert. Same shape as the batch extractor uses.
     var rows = diagnoses.map(function(d){
