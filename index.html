@@ -5893,16 +5893,27 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
 
     // Build a focused prompt for just this one flow
     var formatted = formatSingleFlowForPrompt(flowName, messages);
-    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven.';
+    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven. You work with the data available and never complain about missing fields. If subject lines or preview text are not in the data, you apply principles to the metrics that ARE available (engagement gaps, revenue patterns, sequence behavior) and recommend revisiting those untested fields where the metrics suggest a problem.';
     var userPrompt = 'Analyze this one flow and produce 2 to 4 diagnoses.\n\n'
       + 'DATA:\n' + formatted + '\n\n'
+      + 'DATA AVAILABILITY:\n'
+      + '- You have: flow name, message names, send position, delivered counts, open rates, click rates, unsubscribe rates, revenue, revenue per recipient, A/B test winning variant flags.\n'
+      + '- You do NOT have: subject line text, preview text, body copy, trigger filters, time delays. Do not ask for these. Do not say they are missing. Infer recommendations from the metrics you have.\n\n'
+      + 'PRINCIPLES TO APPLY (use these as your diagnostic lens):\n'
+      + '- Low open rate (under 25 percent) on a flow message: subject line or send timing is likely the issue. Recommend reviewing subject line angle, length, and personalization. The strategist will fetch the actual subject from Klaviyo.\n'
+      + '- High open rate but low click rate (CTR under 2 percent): body content or CTA is the issue, not the hook. Recommend reviewing body copy, CTA placement, and offer clarity.\n'
+      + '- Low revenue per recipient with high delivery: the message is being seen but not converting. Recommend reviewing offer alignment with audience intent at this flow stage.\n'
+      + '- Declining engagement across the sequence (each message worse than the prior): sequence may be too long, or later messages may feel redundant. Recommend reviewing message-to-message angle differentiation.\n'
+      + '- Sequence length issues: too short for the flow type (e.g., single-message post-purchase when 3-4 typical) or too long (sub-30 percent open on later messages).\n'
+      + '- Missing A/B test on high-traffic messages: if a message has 1000+ deliveries and no winning variant flag, recommend A/B testing the subject line angle.\n'
+      + '- Unusually high unsubscribe rate (over 0.5 percent): audience-message fit problem. Recommend reviewing flow trigger filters or message frequency.\n\n'
       + 'REQUIREMENTS:\n'
       + '- Return a JSON array of 2 to 4 diagnosis objects. No preamble, no markdown, no code fences. Just the array.\n'
       + '- Findings must be specific to this flows messages.\n'
       + '- Mix severity. At least one should be actionable now (fix_now or opportunity).\n'
-      + '- Look for: revenue leaks (high traffic low revenue), declining engagement across sequence, messages with high opens but low clicks (body problem), missing A/B tests on high-traffic messages, sequence length issues.\n'
       + '- Be evidence-driven. Reference specific message names and numbers.\n'
-      + '- Avoid vague advice. "Test subject lines" is useless. "Test problem-first subject vs current benefit-first" is useful.\n\n'
+      + '- When recommending a subject line review, frame it as "review the subject line for [specific message]" not "test subject lines generically." The strategist will pull the actual subject from Klaviyo to review.\n'
+      + '- Never write findings that simply say data is missing. If the metric pattern is unclear, choose a different finding.\n\n'
       + 'EACH OBJECT MUST HAVE:\n'
       + '{\n'
       + '  "flow_name": "' + flowName.replace(/"/g, '\\"') + '",\n'
@@ -6071,8 +6082,14 @@ function formatSingleFlowForPrompt(flowName, messages) {
     lines.push('---');
     lines.push('Position ' + pos + ' of ' + messages.length);
     lines.push('Name: ' + (m.message_name || 'Untitled'));
-    lines.push('Subject: ' + (m.subject || 'no subject'));
-    lines.push('Preview: ' + (m.preview || 'no preview'));
+    // Only include subject and preview if they have real values. Empty
+    // placeholders prime the LLM to flag missing fields.
+    if (m.subject && String(m.subject).trim()) {
+      lines.push('Subject: ' + m.subject);
+    }
+    if (m.preview && String(m.preview).trim()) {
+      lines.push('Preview: ' + m.preview);
+    }
     lines.push('Status: ' + (m.status || 'unknown'));
     lines.push('Delivered: ' + Math.round(Number(m.delivered) || 0));
     lines.push('Open rate: ' + (m.open_rate !== null && m.open_rate !== undefined ? Number(m.open_rate).toFixed(2) + '%' : 'n/a'));
@@ -6080,6 +6097,10 @@ function formatSingleFlowForPrompt(flowName, messages) {
     lines.push('Unsub rate: ' + (m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined ? Number(m.unsubscribe_rate).toFixed(2) + '%' : 'n/a'));
     lines.push('Revenue: $' + Number(m.revenue || 0).toFixed(2));
     lines.push('Revenue per recipient: $' + Number(m.revenue_per_recipient || 0).toFixed(4));
+    // Note A/B test winner if present (helps LLM see which messages have been tested)
+    if (m.ab_test_name || m.winning_variant === 'Y' || m.winning_variant === true) {
+      lines.push('A/B test: yes (winning variant flagged)');
+    }
   });
   return lines.join('\n');
 }
