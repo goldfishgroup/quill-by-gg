@@ -5932,11 +5932,21 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       + '- Sequence length issues: too short for the flow type (e.g., single-message post-purchase when 3-4 typical) or too long (sub-30 percent open on later messages).\n'
       + '- Missing A/B test on high-traffic messages: if a message has 1000+ deliveries and no winning variant flag, recommend A/B testing the subject line angle.\n'
       + '- Unusually high unsubscribe rate (over 0.5 percent): audience-message fit problem. Recommend reviewing flow trigger filters or message frequency.\n\n'
+      + 'SCOPE RULES (this is the most important section):\n'
+      + 'Every finding has a "scope" field. Choose carefully because it controls where the finding appears in the UI.\n'
+      + '- scope: "message". Use for findings about ONE specific message. The strategist sees this inline under that message in the expanded view. Most findings should be this scope. The sample_messages array MUST contain the exact message name.\n'
+      + '- scope: "structure". Use ONLY for findings about the flow architecture (number of messages, sequence length, audience splits, trigger filters). These render at the top of the flow card.\n'
+      + '- scope: "flow". Use ONLY for findings about the flow as a whole (overall revenue patterns, overall engagement decline). These render at the top of the flow card.\n\n'
+      + 'GRANULARITY (very important):\n'
+      + '- PREFER one finding per problematic message over one aggregate finding.\n'
+      + '- If "Messages 3, 4, and 5 have low revenue," produce THREE separate scope:"message" findings (one for each message) rather than one aggregate. Each finding should call out that messages specific metrics.\n'
+      + '- Aggregate findings (multiple messages in one) are only acceptable when the insight is fundamentally about the sequence relationship between them, not about each message individually.\n'
+      + '- The sample_messages array on each message-scope finding MUST contain the exact message_name string from the data (e.g., "Welcome Email #1: Existing Customer"). Copy it letter-for-letter.\n\n'
       + 'REQUIREMENTS:\n'
-      + '- Return a JSON array of 2 to 4 diagnosis objects. No preamble, no markdown, no code fences. Just the array.\n'
-      + '- Findings must be specific to this flows messages.\n'
+      + '- Return a JSON array of 3 to 6 diagnosis objects. No preamble, no markdown, no code fences. Just the array.\n'
+      + '- Most findings (at least 2 of every 3) should be scope:"message" with a single message in sample_messages.\n'
       + '- Mix severity. At least one should be actionable now (fix_now or opportunity).\n'
-      + '- Be evidence-driven. Reference specific message names and numbers.\n'
+      + '- Be evidence-driven. Reference specific message names and exact numbers from the data.\n'
       + '- When recommending a subject line review, frame it as "review the subject line for [specific message]" not "test subject lines generically." The strategist will pull the actual subject from Klaviyo to review.\n'
       + '- Never write findings that simply say data is missing. If the metric pattern is unclear, choose a different finding.\n\n'
       + 'EACH OBJECT MUST HAVE:\n'
@@ -5945,7 +5955,7 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       + '  "flow_status": "live | manual | mixed",\n'
       + '  "worth_revisiting": true or false,\n'
       + '  "scope": "flow | message | structure",\n'
-      + '  "diagnosis": "one-sentence finding stated plainly",\n'
+      + '  "diagnosis": "one-sentence finding stated plainly. For message-scope, name the specific message in the first 6 words.",\n'
       + '  "category": "revenue_leak | engagement | sequencing | hook | body | deliverability | structure | testing",\n'
       + '  "total_deliveries": integer,\n'
       + '  "confidence": "high | medium | exploratory",\n'
@@ -5953,7 +5963,7 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       + '  "evidence": "specific numbers and message names",\n'
       + '  "recommendation": "one concrete thing to do this week or next sprint",\n'
       + '  "ab_test_hint": "specific test hypothesis - only if severity is test, else null",\n'
-      + '  "sample_messages": ["message name"]\n'
+      + '  "sample_messages": ["exact message_name from data, letter for letter"]\n'
       + '}\n\n'
       + 'VOICE RULES:\n'
       + '- No em dashes\n'
@@ -5968,7 +5978,7 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 2500,
+        max_tokens: 4000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
@@ -6689,9 +6699,24 @@ function toMessageUnsubRate(m) {
 // always have flow_name. They MAY have a message_subject too. If they do, we
 // match on subject. If they don't, the finding is flow-level and applies to
 // every message in the flow.
+// Normalize a message name for fuzzy matching. Strips common punctuation,
+// collapses whitespace, lowercases. Handles common LLM variations like:
+// "Welcome Email #1: Existing Customer" vs "welcome email 1 existing customer"
+function normalizeMessageNameForMatch(s) {
+  if (!s) return '';
+  return String(s)
+    .toLowerCase()
+    .replace(/[#:]/g, ' ')      // Strip # and : (e.g., "Email #1:" → "Email 1")
+    .replace(/[\u2013\u2014]/g, ' ')  // Strip en/em dashes
+    .replace(/[^\w\s]/g, ' ')   // Strip remaining punctuation
+    .replace(/\s+/g, ' ')       // Collapse whitespace
+    .trim();
+}
+
 function matchDiagnosticsToMessage(msg, flowDiags) {
   var msgSubject = (msg.subject || '').trim().toLowerCase();
   var msgName = (msg.message_name || '').trim().toLowerCase();
+  var msgNameNorm = normalizeMessageNameForMatch(msgName);
   return (flowDiags || []).filter(function(d){
     if (!d.active) return false;
     // Session 10 fix: only show message-scope findings inline with each
@@ -6700,25 +6725,40 @@ function matchDiagnosticsToMessage(msg, flowDiags) {
     // block), so repeating them under every message creates duplication
     // and makes the UI confusing.
     if (d.scope !== 'message') return false;
-    var ds = (d.message_subject || '').trim().toLowerCase();
-    if (!ds) {
-      // Message-scope finding without an explicit message_subject. Try to
-      // match by sample_messages array if the LLM populated it.
-      if (Array.isArray(d.sample_messages) && d.sample_messages.length) {
-        for (var i = 0; i < d.sample_messages.length; i++) {
-          var sm = String(d.sample_messages[i] || '').trim().toLowerCase();
-          if (!sm) continue;
-          if (msgName && (sm === msgName || msgName.indexOf(sm) !== -1 || sm.indexOf(msgName) !== -1)) return true;
-          if (msgSubject && (sm === msgSubject || msgSubject.indexOf(sm) !== -1 || sm.indexOf(msgSubject) !== -1)) return true;
-        }
-        return false;
+
+    // Primary match strategy: sample_messages array. The LLM populates this
+    // with the exact message name(s) the finding refers to. We normalize both
+    // sides for tolerance to formatting variations.
+    if (Array.isArray(d.sample_messages) && d.sample_messages.length) {
+      for (var i = 0; i < d.sample_messages.length; i++) {
+        var sm = String(d.sample_messages[i] || '').trim().toLowerCase();
+        if (!sm) continue;
+        var smNorm = normalizeMessageNameForMatch(sm);
+        // Exact match on normalized name
+        if (msgNameNorm && smNorm && msgNameNorm === smNorm) return true;
+        // Bidirectional substring: handles "Welcome Email 1" matching "Welcome Email #1: Existing Customer"
+        if (msgNameNorm && smNorm && (msgNameNorm.indexOf(smNorm) !== -1 || smNorm.indexOf(msgNameNorm) !== -1)) return true;
       }
-      // No identifier at all; we cannot attribute, so skip
-      return false;
     }
-    if (msgSubject && ds === msgSubject) return true;
-    if (msgName && ds === msgName) return true;
-    if (msgSubject && (msgSubject.indexOf(ds) !== -1 || ds.indexOf(msgSubject) !== -1)) return true;
+
+    // Secondary match strategy: explicit message_subject field
+    var ds = (d.message_subject || '').trim().toLowerCase();
+    if (ds) {
+      if (msgSubject && ds === msgSubject) return true;
+      if (msgName && ds === msgName) return true;
+      if (msgSubject && (msgSubject.indexOf(ds) !== -1 || ds.indexOf(msgSubject) !== -1)) return true;
+    }
+
+    // Tertiary fallback: diagnosis text references this message_name explicitly
+    // (LLM sometimes names a message in the diagnosis but forgets to populate sample_messages)
+    var diagText = (d.diagnosis || '').toLowerCase();
+    if (msgName && diagText && diagText.indexOf(msgName) !== -1) return true;
+    // Also try normalized
+    if (msgNameNorm && diagText) {
+      var diagNorm = normalizeMessageNameForMatch(diagText);
+      if (diagNorm.indexOf(msgNameNorm) !== -1) return true;
+    }
+
     return false;
   });
 }
