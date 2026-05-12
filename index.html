@@ -6694,11 +6694,30 @@ function matchDiagnosticsToMessage(msg, flowDiags) {
   var msgName = (msg.message_name || '').trim().toLowerCase();
   return (flowDiags || []).filter(function(d){
     if (!d.active) return false;
+    // Session 10 fix: only show message-scope findings inline with each
+    // expanded message row. Flow-scope and structure-scope findings are
+    // rendered ONCE at the top of the flow card (in the "What we found"
+    // block), so repeating them under every message creates duplication
+    // and makes the UI confusing.
+    if (d.scope !== 'message') return false;
     var ds = (d.message_subject || '').trim().toLowerCase();
-    if (!ds) return true; // flow-level finding: applies to all messages in this flow
+    if (!ds) {
+      // Message-scope finding without an explicit message_subject. Try to
+      // match by sample_messages array if the LLM populated it.
+      if (Array.isArray(d.sample_messages) && d.sample_messages.length) {
+        for (var i = 0; i < d.sample_messages.length; i++) {
+          var sm = String(d.sample_messages[i] || '').trim().toLowerCase();
+          if (!sm) continue;
+          if (msgName && (sm === msgName || msgName.indexOf(sm) !== -1 || sm.indexOf(msgName) !== -1)) return true;
+          if (msgSubject && (sm === msgSubject || msgSubject.indexOf(sm) !== -1 || sm.indexOf(msgSubject) !== -1)) return true;
+        }
+        return false;
+      }
+      // No identifier at all; we cannot attribute, so skip
+      return false;
+    }
     if (msgSubject && ds === msgSubject) return true;
     if (msgName && ds === msgName) return true;
-    // Fuzzy: ds contained in msgSubject or vice versa (helps when one was truncated)
     if (msgSubject && (msgSubject.indexOf(ds) !== -1 || ds.indexOf(msgSubject) !== -1)) return true;
     return false;
   });
