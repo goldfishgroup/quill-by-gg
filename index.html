@@ -304,6 +304,15 @@
     .panel-narrative { font-size: 13px; line-height: 1.7; color: var(--gg-charcoal); background: var(--gg-offwhite); padding: 14px 16px; border-radius: 8px; border-left: 3px solid var(--gg-olive); margin-bottom: 16px; white-space: pre-wrap; }
     .panel-narrative.loading { color: var(--q-muted); font-style: italic; background: var(--q-bg); border-left-color: var(--q-line); }
     .panel-narrative.error { color: #a32d2d; background: #fdf0f0; border-left-color: #a32d2d; }
+    .panel-narrative.narrative-structured { padding: 0; background: transparent; border-left: none; white-space: normal; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .narrative-section { background: var(--gg-offwhite); padding: 12px 14px; border-radius: 8px; border-left: 3px solid var(--gg-olive); }
+    .narrative-section.not-working { border-left-color: var(--gg-orange); }
+    .narrative-section.test { border-left-color: #3a4480; background: #f6f7fc; }
+    .narrative-section-label { font-size: 10px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 6px; }
+    .narrative-section-body { font-size: 12px; line-height: 1.55; color: var(--gg-charcoal); }
+    @media (max-width: 900px) {
+      .panel-narrative.narrative-structured { grid-template-columns: 1fr; }
+    }
     .narrative-refresh { margin-left: auto; padding: 4px 10px; border: 0.5px solid var(--q-line); background: #fff; border-radius: 6px; font-size: 11px; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); }
     .narrative-refresh:hover { background: var(--gg-offwhite); color: var(--gg-charcoal); }
     .narrative-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -4069,19 +4078,25 @@ window.generatePatternsNarrative = async function() {
   var summary = buildStatsSummary(camps);
   var rangeLabel = getTimeRangeLabel();
 
-  var prompt = 'You are Quill, Goldfish Groups senior email consultant voice. Write a short analytical narrative (4 to 6 sentences, no bullet points, no headers) for SFH based on the pre-computed stats below.\n\n'
+  var prompt = 'You are Quill, Goldfish Groups senior email consultant voice. Analyze the SFH campaign stats below and produce a structured insight in three labeled sections.\n\n'
     + 'Time range: ' + rangeLabel + '\n'
     + 'Campaign count: ' + camps.length + '\n\n'
     + 'Stats:\n' + summary + '\n\n'
+    + 'RETURN FORMAT (JSON only, no markdown, no preamble):\n'
+    + '{\n'
+    + '  "working": "1 to 2 sentence finding about the best-performing pattern. Reference specific numbers.",\n'
+    + '  "not_working": "1 to 2 sentence finding about an underperforming pattern. Reference specific numbers.",\n'
+    + '  "test": "1 to 2 sentence concrete test recommendation tied to the findings above."\n'
+    + '}\n\n'
     + 'Rules:\n'
-    + '- Lead with the most interesting finding, not a summary of everything\n'
+    + '- Each section: 1 to 2 sentences. Never more.\n'
     + '- Reference specific numbers from the stats\n'
     + '- SFH benchmarks: open rate 35 to 50 percent, CTR 1.5 to 3 percent\n'
     + '- Tone: warm, sharp, senior consultant\n'
     + '- No em dashes anywhere\n'
     + '- No hyperbolic words like critical, massive, exceptional\n'
     + '- American English\n'
-    + '- Prose only, no lists or headers\n';
+    + '- Return ONLY the JSON object. Start with { and end with }.';
 
   try {
     var res = await fetch('/api/diagnose', {
@@ -4100,8 +4115,31 @@ window.generatePatternsNarrative = async function() {
       data.content.forEach(function(b){ if (b.type === 'text') text += b.text; });
     }
     if (!text) throw new Error('Empty response from model');
-    nar.className = 'panel-narrative';
-    nar.textContent = text.trim();
+    // Parse JSON response. Tolerant of extra whitespace or stray markdown fences.
+    var clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    var first = clean.indexOf('{');
+    var last = clean.lastIndexOf('}');
+    if (first === -1 || last === -1) throw new Error('Response was not JSON');
+    var parsed;
+    try {
+      parsed = JSON.parse(clean.substring(first, last + 1));
+    } catch (pe) {
+      throw new Error('JSON parse failed: ' + pe.message);
+    }
+    nar.className = 'panel-narrative narrative-structured';
+    nar.innerHTML = ''
+      + '<div class="narrative-section working">'
+      +   '<div class="narrative-section-label">What is working</div>'
+      +   '<div class="narrative-section-body">' + escapeHtml(parsed.working || '') + '</div>'
+      + '</div>'
+      + '<div class="narrative-section not-working">'
+      +   '<div class="narrative-section-label">What is not</div>'
+      +   '<div class="narrative-section-body">' + escapeHtml(parsed.not_working || '') + '</div>'
+      + '</div>'
+      + '<div class="narrative-section test">'
+      +   '<div class="narrative-section-label">What to test next</div>'
+      +   '<div class="narrative-section-body">' + escapeHtml(parsed.test || '') + '</div>'
+      + '</div>';
   } catch (err) {
     console.error('narrative error', err);
     nar.className = 'panel-narrative error';
