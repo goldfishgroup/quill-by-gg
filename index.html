@@ -560,6 +560,10 @@
 
     /* B1: expand line + message rows */
     .flow-health-attention-line { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--q-line); gap: 12px; }
+    .flow-health-attention-actions { display: flex; gap: 8px; align-items: center; }
+    .flow-health-diagnose-btn { padding: 5px 12px; background: var(--gg-orange); border: none; color: #fff; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-health-diagnose-btn:hover { background: #c95e2a; }
+    .flow-health-diagnose-btn:disabled { opacity: 0.6; cursor: default; }
     .flow-health-attention-text { font-size: 12px; color: var(--gg-charcoal); }
     .flow-health-expand-btn { padding: 5px 12px; background: transparent; border: 0.5px solid var(--gg-olive); color: var(--gg-olive); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .flow-health-expand-btn:hover { background: var(--gg-olive); color: #fff; }
@@ -5752,6 +5756,250 @@ function formatFlowPayloadForPrompt(flows) {
   return lines.join('\n');
 }
 
+// ── PER-FLOW DIAGNOSIS (Session 9.3) ──────────────────────────────────
+// Diagnose ONE flow at a time. Smaller payload, faster Claude response,
+// stays under the timeout that the all-flows batch can't reliably beat.
+// Each per-flow call appends findings to the current month's snapshot,
+// creating the snapshot if it doesnt exist yet.
+
+window.diagnoseSingleFlow = async function(flowName, btnEl) {
+  if (!flowName) return;
+  if (!btnEl) btnEl = document.querySelector('.flow-health-diagnose-btn[data-flow="' + flowName.replace(/"/g, '\\"') + '"]');
+  var origLabel = btnEl ? btnEl.textContent : 'Diagnose this flow';
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Diagnosing...'; }
+
+  try {
+    // Make sure data caches are warm
+    await loadInsightsIfNeeded();
+    await loadSnapshots(false);
+
+    // Get all current-period consumer flow messages for this flow
+    var messages = (insightsData.flows || []).filter(function(m){
+      if (m.data_period && m.data_period !== 'current') return false;
+      if ((m.audience_type || 'consumer') !== 'consumer') return false;
+      if (m.flow_name !== flowName) return false;
+      var st = (m.status || '').toLowerCase();
+      if (st === 'draft') return false;
+      return Number(m.delivered || 0) > 0;
+    });
+
+    if (messages.length === 0) {
+      showToast('No current-period messages found for ' + flowName, true);
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = origLabel; }
+      return;
+    }
+
+    console.log('[diagnose-single] ' + flowName + ': ' + messages.length + ' messages');
+
+    // Determine target snapshot month from the picker, default to current month
+    var monthPicker = document.getElementById('diag-month-picker');
+    var selectedMonth = monthPicker ? monthPicker.value : null;
+    if (!selectedMonth) {
+      var now = new Date();
+      selectedMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    }
+
+    // Find-or-create the current snapshot for the selected month
+    var snapshotId = await ensureCurrentSnapshotForMonth(selectedMonth);
+    if (!snapshotId) {
+      showToast('Could not create snapshot', true);
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = origLabel; }
+      return;
+    }
+
+    // Build a focused prompt for just this one flow
+    var formatted = formatSingleFlowForPrompt(flowName, messages);
+    var systemPrompt = 'You are Quill, Goldfish Groups senior email strategist. You diagnose SFH email flows for revenue leaks, growth opportunities, and A/B test candidates. SFH is a supplement brand. You are blunt, specific, and evidence-driven.';
+    var userPrompt = 'Analyze this one flow and produce 2 to 4 diagnoses.\n\n'
+      + 'DATA:\n' + formatted + '\n\n'
+      + 'REQUIREMENTS:\n'
+      + '- Return a JSON array of 2 to 4 diagnosis objects. No preamble, no markdown, no code fences. Just the array.\n'
+      + '- Findings must be specific to this flows messages.\n'
+      + '- Mix severity. At least one should be actionable now (fix_now or opportunity).\n'
+      + '- Look for: revenue leaks (high traffic low revenue), declining engagement across sequence, messages with high opens but low clicks (body problem), missing A/B tests on high-traffic messages, sequence length issues.\n'
+      + '- Be evidence-driven. Reference specific message names and numbers.\n'
+      + '- Avoid vague advice. "Test subject lines" is useless. "Test problem-first subject vs current benefit-first" is useful.\n\n'
+      + 'EACH OBJECT MUST HAVE:\n'
+      + '{\n'
+      + '  "flow_name": "' + flowName.replace(/"/g, '\\"') + '",\n'
+      + '  "flow_status": "live | manual | mixed",\n'
+      + '  "worth_revisiting": true or false,\n'
+      + '  "scope": "flow | message | structure",\n'
+      + '  "diagnosis": "one-sentence finding stated plainly",\n'
+      + '  "category": "revenue_leak | engagement | sequencing | hook | body | deliverability | structure | testing",\n'
+      + '  "total_deliveries": integer,\n'
+      + '  "confidence": "high | medium | exploratory",\n'
+      + '  "severity": "fix_now | opportunity | monitor | test",\n'
+      + '  "evidence": "specific numbers and message names",\n'
+      + '  "recommendation": "one concrete thing to do this week or next sprint",\n'
+      + '  "ab_test_hint": "specific test hypothesis - only if severity is test, else null",\n'
+      + '  "sample_messages": ["message name"]\n'
+      + '}\n\n'
+      + 'VOICE RULES:\n'
+      + '- No em dashes\n'
+      + '- No hyperbolic words (critical, massive, exceptional, remarkable, severe, alarming)\n'
+      + '- American English\n'
+      + '- Warm, sharp, senior consultant tone\n\n'
+      + 'Return ONLY the JSON array. Start with [ and end with ].';
+
+    var res = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 2500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data;
+    try { data = await res.json(); } catch (pe) { throw new Error('Non-JSON response from server. Status ' + res.status); }
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+
+    var text = '';
+    if (data.content && Array.isArray(data.content)) {
+      data.content.forEach(function(b){ if (b.type === 'text') text += b.text; });
+    }
+    if (!text && data.text) text = data.text;
+    if (!text) throw new Error('Empty response from model');
+
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    var first = text.indexOf('[');
+    var last = text.lastIndexOf(']');
+    if (first === -1 || last === -1) throw new Error('Response did not contain a JSON array');
+    var diagnoses = JSON.parse(text.substring(first, last + 1));
+    if (!Array.isArray(diagnoses) || !diagnoses.length) throw new Error('No diagnoses returned');
+
+    // Build rows for insert. Same shape as the batch extractor uses.
+    var rows = diagnoses.map(function(d){
+      var cal = calibrateFlowConfidence(d);
+      return {
+        flow_name: d.flow_name ? String(d.flow_name).slice(0, 200) : flowName,
+        flow_status: d.flow_status ? String(d.flow_status).slice(0, 20) : null,
+        worth_revisiting: !!d.worth_revisiting,
+        scope: String(d.scope || 'flow').slice(0, 20),
+        diagnosis: String(d.diagnosis || '').slice(0, 500),
+        category: String(d.category || 'overall').slice(0, 50),
+        confidence: cal.confidence,
+        severity: String(d.severity || 'monitor').slice(0, 20),
+        evidence: String(d.evidence || '').slice(0, 1000),
+        recommendation: String(d.recommendation || '').slice(0, 500),
+        ab_test_hint: d.ab_test_hint ? String(d.ab_test_hint).slice(0, 500) : null,
+        sample_messages: Array.isArray(d.sample_messages) ? d.sample_messages.slice(0, 5) : [],
+        active: true,
+        starred: false,
+        snapshot_id: snapshotId,
+        snapshot_month: selectedMonth
+      };
+    });
+
+    var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
+    if (ins.error) throw new Error('Insert failed: ' + ins.error.message);
+
+    // Update the snapshot's finding counts
+    await refreshSnapshotCounts(snapshotId);
+
+    // Reload caches + re-render
+    await loadFlowDiagnostics(true);
+    await loadSnapshots(true);
+    populateSnapshotPicker();
+    renderFlowDiagnostics();
+    if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
+    showToast(rows.length + ' findings added for ' + flowName);
+  } catch (err) {
+    console.error('diagnoseSingleFlow error', err);
+    showToast('Diagnose failed: ' + (err.message || err), true);
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = origLabel; }
+  }
+};
+
+// Find or create the current snapshot for a given month. Returns snapshot_id.
+async function ensureCurrentSnapshotForMonth(month) {
+  // Look for an existing current snapshot for this month
+  var existing = await db.from('quill_flow_diagnostic_snapshots')
+    .select('id')
+    .eq('snapshot_month', month)
+    .eq('is_current', true)
+    .maybeSingle();
+  if (existing.error && existing.error.code !== 'PGRST116') {
+    console.error('ensureCurrentSnapshotForMonth lookup error', existing.error);
+    return null;
+  }
+  if (existing.data && existing.data.id) return existing.data.id;
+
+  // None exists. Create one with zero counts; counts will be refreshed after insert.
+  var ins = await db.from('quill_flow_diagnostic_snapshots')
+    .insert([{
+      snapshot_month: month,
+      is_current: true,
+      total_findings: 0,
+      fix_now_count: 0,
+      opportunity_count: 0,
+      test_count: 0,
+      monitor_count: 0,
+      notes: 'Created by per-flow diagnose. Findings accumulate as flows are diagnosed individually.'
+    }])
+    .select()
+    .single();
+  if (ins.error) {
+    console.error('ensureCurrentSnapshotForMonth insert error', ins.error);
+    return null;
+  }
+  return ins.data.id;
+}
+
+// Refresh the count fields on a snapshot after findings have been appended.
+async function refreshSnapshotCounts(snapshotId) {
+  if (!snapshotId) return;
+  var res = await db.from('quill_flow_diagnostics').select('severity,active').eq('snapshot_id', snapshotId);
+  if (res.error) { console.error('refreshSnapshotCounts error', res.error); return; }
+  var rows = res.data || [];
+  var total = rows.filter(function(r){ return r.active; }).length;
+  var fixNow = rows.filter(function(r){ return r.active && r.severity === 'fix_now'; }).length;
+  var opp = rows.filter(function(r){ return r.active && r.severity === 'opportunity'; }).length;
+  var test = rows.filter(function(r){ return r.active && r.severity === 'test'; }).length;
+  var monitor = rows.filter(function(r){ return r.active && r.severity === 'monitor'; }).length;
+  await db.from('quill_flow_diagnostic_snapshots')
+    .update({ total_findings: total, fix_now_count: fixNow, opportunity_count: opp, test_count: test, monitor_count: monitor })
+    .eq('id', snapshotId);
+}
+
+// Format a single flow's messages into a tight payload for the LLM prompt.
+function formatSingleFlowForPrompt(flowName, messages) {
+  // Sort by send_position if available, else by message_name alphabetically
+  messages.sort(function(a, b){
+    var ap = Number(a.send_position) || 999;
+    var bp = Number(b.send_position) || 999;
+    if (ap !== bp) return ap - bp;
+    return (a.message_name || '').localeCompare(b.message_name || '');
+  });
+  var lines = [];
+  lines.push('FLOW: ' + flowName);
+  lines.push('TOTAL MESSAGES: ' + messages.length);
+  var totalDel = messages.reduce(function(s, m){ return s + (Number(m.delivered) || 0); }, 0);
+  var totalRev = messages.reduce(function(s, m){ return s + (Number(m.revenue) || 0); }, 0);
+  lines.push('TOTAL DELIVERED: ' + Math.round(totalDel).toLocaleString());
+  lines.push('TOTAL REVENUE: $' + Number(totalRev).toFixed(2));
+  lines.push('');
+  lines.push('MESSAGES (in send order):');
+  messages.forEach(function(m, i){
+    var pos = (i + 1);
+    lines.push('---');
+    lines.push('Position ' + pos + ' of ' + messages.length);
+    lines.push('Name: ' + (m.message_name || 'Untitled'));
+    lines.push('Subject: ' + (m.subject || 'no subject'));
+    lines.push('Preview: ' + (m.preview || 'no preview'));
+    lines.push('Status: ' + (m.status || 'unknown'));
+    lines.push('Delivered: ' + Math.round(Number(m.delivered) || 0));
+    lines.push('Open rate: ' + (m.open_rate !== null && m.open_rate !== undefined ? Number(m.open_rate).toFixed(2) + '%' : 'n/a'));
+    lines.push('Click rate: ' + (m.click_rate !== null && m.click_rate !== undefined ? Number(m.click_rate).toFixed(2) + '%' : 'n/a'));
+    lines.push('Unsub rate: ' + (m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined ? Number(m.unsubscribe_rate).toFixed(2) + '%' : 'n/a'));
+    lines.push('Revenue: $' + Number(m.revenue || 0).toFixed(2));
+    lines.push('Revenue per recipient: $' + Number(m.revenue_per_recipient || 0).toFixed(4));
+  });
+  return lines.join('\n');
+}
+
 window.extractFlowDiagnostics = async function() {
   var btn = document.getElementById('diag-extract-btn');
   var status = document.getElementById('diag-status');
@@ -6489,7 +6737,10 @@ window.renderFlowHealthCards = async function() {
       + reasonsHtml
       + '  <div class="flow-health-attention-line">'
       + '    <span class="flow-health-attention-text">' + escapeHtml(attentionLineText) + '</span>'
-      + '    <button class="flow-health-expand-btn" onclick="toggleFlowExpand(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + expandToggleLabel + '</button>'
+      + '    <div class="flow-health-attention-actions">'
+      + '      <button class="flow-health-diagnose-btn" data-flow="' + escapeHtml(f.flow_name) + '" onclick="diagnoseSingleFlow(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027, this)">Diagnose this flow</button>'
+      + '      <button class="flow-health-expand-btn" onclick="toggleFlowExpand(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + expandToggleLabel + '</button>'
+      + '    </div>'
       + '  </div>'
       + expandedHtml
       + '</div>';
