@@ -472,10 +472,10 @@
     .flow-health-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
     .flow-health-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-health-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 620px; }
-    .flow-health-baselines { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; }
-    .flow-health-baseline-item { font-size: 10px; }
+    .flow-health-baselines { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; padding: 0; background: transparent; border: none; }
+    .flow-health-baseline-item { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: var(--gg-offwhite); border: 0.5px solid var(--q-line); border-radius: 6px; min-width: 140px; }
     .flow-health-baseline-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
-    .flow-health-baseline-val { font-size: 12px; color: var(--gg-charcoal); font-weight: 600; margin-left: 4px; }
+    .flow-health-baseline-val { font-size: 11px; color: var(--gg-charcoal); font-weight: 600; display: block; margin: 0; }
     .flow-health-baseline-sfh { color: var(--gg-olive); }
 
     .flow-health-cards { display: flex; flex-direction: column; gap: 10px; }
@@ -556,6 +556,30 @@
 
     .flow-health-reasons { margin-top: 10px; font-size: 11px; color: var(--gg-charcoal); line-height: 1.5; }
     .flow-health-reasons-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+
+    /* Session 9.5: Findings narrative INSIDE Flow Health cards (flow-level) */
+    .flow-health-findings { margin-top: 14px; padding: 12px 14px; background: #fcfaf3; border: 0.5px solid var(--q-line); border-radius: 6px; }
+    .flow-health-findings-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 8px; }
+    .flow-health-finding { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 0.5px dashed #e8e1cf; }
+    .flow-health-finding:first-of-type { border-top: none; padding-top: 0; }
+    .flow-health-finding-sev { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 7px; border-radius: 9px; flex-shrink: 0; white-space: nowrap; }
+    .flow-health-finding-sev.fix_now { background: #f8d4d4; color: #882b2b; }
+    .flow-health-finding-sev.opportunity { background: #e6efd9; color: #3d6022; }
+    .flow-health-finding-sev.test { background: #e5e7f5; color: #3a4480; }
+    .flow-health-finding-sev.monitor { background: #ecebe6; color: #5e5d59; }
+    .flow-health-finding-text { font-size: 12px; color: var(--gg-charcoal); line-height: 1.55; flex: 1; }
+    .flow-health-finding-rec { color: var(--q-muted); }
+
+    /* Message-level findings (compact, 1-2 sentence) */
+    .flow-msg-finding-compact { display: flex; gap: 8px; align-items: center; padding: 6px 0; font-size: 11px; line-height: 1.5; }
+    .flow-msg-finding-compact + .flow-msg-finding-compact { border-top: 0.5px dashed #e8e1cf; padding-top: 8px; margin-top: 4px; }
+    .flow-msg-finding-sev { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 8px; flex-shrink: 0; white-space: nowrap; }
+    .flow-msg-finding-sev.fix_now { background: #f8d4d4; color: #882b2b; }
+    .flow-msg-finding-sev.opportunity { background: #e6efd9; color: #3d6022; }
+    .flow-msg-finding-sev.test { background: #e5e7f5; color: #3a4480; }
+    .flow-msg-finding-sev.monitor { background: #ecebe6; color: #5e5d59; }
+    .flow-msg-finding-narrative { flex: 1; color: var(--gg-charcoal); }
+    .flow-msg-finding-rec { color: var(--q-muted); }
     .flow-health-reason { padding: 2px 0; }
     .flow-health-reason-marker { color: #a83232; font-weight: 700; }
     .flow-health-reason-marker.warn { color: #b8741f; }
@@ -1685,12 +1709,10 @@
             </div>
             <div class="patterns-head-right">
               <div class="patterns-filter-toggle" style="flex-wrap:wrap">
-                <button class="patterns-filter-btn active" onclick="setFlowView('all')" id="fv-all">All</button>
-                <button class="patterns-filter-btn" onclick="setFlowView('fix_now')" id="fv-fix_now">Fix now</button>
-                <button class="patterns-filter-btn" onclick="setFlowView('opportunity')" id="fv-opportunity">Opportunity</button>
-                <button class="patterns-filter-btn" onclick="setFlowView('test')" id="fv-test">A/B test</button>
-                <button class="patterns-filter-btn" onclick="setFlowView('starred')" id="fv-starred">Starred</button>
-                <button class="patterns-filter-btn" onclick="setFlowView('dismissed')" id="fv-dismissed">Dismissed</button>
+                <button class="patterns-filter-btn active" onclick="setHealthFilter('all')" id="hf-all">All</button>
+                <button class="patterns-filter-btn" onclick="setHealthFilter('critical')" id="hf-critical">Critical</button>
+                <button class="patterns-filter-btn" onclick="setHealthFilter('needs-improvement')" id="hf-needs-improvement">Needs Improvement</button>
+                <button class="patterns-filter-btn" onclick="setHealthFilter('healthy')" id="hf-healthy">Healthy</button>
               </div>
               <div class="diag-snapshot-controls">
                 <div class="diag-snapshot-row">
@@ -1698,11 +1720,6 @@
                   <select id="diag-snapshot-picker" class="diag-snapshot-select" onchange="onDiagSnapshotChange()">
                     <option value="">Loading...</option>
                   </select>
-                </div>
-                <div class="diag-snapshot-row">
-                  <label class="diag-snapshot-label">Diagnose for month</label>
-                  <select id="diag-month-picker" class="diag-snapshot-select"></select>
-                  <button class="extract-btn" id="diag-extract-btn" onclick="extractFlowDiagnostics()">Diagnose flows</button>
                 </div>
               </div>
             </div>
@@ -1752,8 +1769,8 @@
           <div class="flow-health-section">
             <div class="flow-health-head">
               <div>
-                <div class="flow-health-title">Flow health</div>
-                <div class="flow-health-sub">Live consumer flows ranked by health. Worst at the top. Metrics are all-time aggregates from Klaviyo. Months active is shown alongside so you can read metrics in context (a 3-year-old flow with declining numbers tells a different story than a 3-month-old one).</div>
+                <div class="flow-health-title">Benchmarks</div>
+                <div class="flow-health-sub">Live consumer flows ranked by health. Worst at the top. Metrics are all-time aggregates from Klaviyo. Months active is shown alongside for context.</div>
               </div>
               <div class="flow-health-baselines" id="flow-health-baselines"></div>
             </div>
@@ -1765,37 +1782,6 @@
               <button class="flow-health-toolbar-btn" onclick="openManageFlowsModal()">Manage flows</button>
             </div>
             <div class="flow-health-cards" id="flow-health-cards"></div>
-          </div>
-
-          <div class="flow-browser-section">
-            <div class="flow-browser-head">
-              <div class="flow-browser-title">Flow messages</div>
-              <div class="flow-browser-sub">Pick any active flow message to draft an improvement. Use this when a strategist or client has flagged a flow for revamp outside of diagnostic findings.</div>
-            </div>
-            <div class="flow-browser-controls">
-              <input type="text" id="flow-browser-search" class="flow-browser-search" placeholder="Search by flow name or subject..." oninput="renderFlowBrowser()">
-              <select id="flow-browser-filter-flow" class="flow-browser-filter" onchange="renderFlowBrowser()">
-                <option value="">All flows</option>
-              </select>
-              <select id="flow-browser-filter-status" class="flow-browser-filter" onchange="renderFlowBrowser()">
-                <option value="live">Live only</option>
-                <option value="all">All statuses</option>
-              </select>
-              <label class="flow-browser-toggle"><input type="checkbox" id="flow-browser-include-legacy" onchange="onFlowBrowserIncludeLegacyToggle()"><span>Include legacy</span></label>
-            </div>
-            <div class="flow-browser-grid" id="flow-browser-grid"></div>
-          </div>
-
-          <div class="flow-diagnostics-section">
-            <div class="flow-diagnostics-head">
-              <div>
-                <div class="flow-diagnostics-title">Diagnostic findings</div>
-                <div class="flow-diagnostics-sub">Quill-generated analysis of flow performance. Star findings to feed them into Ideas. Click "Draft an improvement" to address one directly.</div>
-              </div>
-              <label class="flow-browser-toggle"><input type="checkbox" id="diagnostics-include-legacy" onchange="onDiagnosticsIncludeLegacyToggle()"><span>Include legacy</span></label>
-            </div>
-            <div class="extract-status" id="diag-status">Click Diagnose flows to analyze your active flow messages and generate per-flow recommendations.</div>
-            <div class="pattern-grid" id="diag-grid"></div>
           </div>
         </div>
 
@@ -4825,6 +4811,10 @@ var flowView = 'all';
 var diagnosticsCache = null;
 var diagnosticsLoadedAt = 0;
 
+// Health filter for Flow Health cards. Session 9.4 UI cleanup. Filters flow
+// cards (not findings) by their classified health badge.
+var healthFilter = 'all';
+
 window.setFlowView = function(view) {
   flowView = view;
   ['all','fix_now','opportunity','test','starred','dismissed'].forEach(function(v){
@@ -4832,6 +4822,15 @@ window.setFlowView = function(view) {
     if (el) el.classList.toggle('active', v === view);
   });
   renderFlowDiagnostics();
+};
+
+window.setHealthFilter = function(val) {
+  healthFilter = val;
+  ['all','critical','needs-improvement','healthy'].forEach(function(v){
+    var el = document.getElementById('hf-' + v);
+    if (el) el.classList.toggle('active', v === val);
+  });
+  if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
 };
 
 async function loadFlowDiagnostics(force) {
@@ -4881,7 +4880,13 @@ function populateSnapshotPicker() {
   if (!current.length && !archived.length) {
     html = '<option value="">No snapshots yet</option>';
   } else {
-    html = '<option value="latest">Latest snapshot</option>';
+    // "Latest" label should reflect the actual month it points to
+    var latestLabel = 'Latest snapshot';
+    if (current.length) {
+      // Pick the most recent current snapshot (sorted desc when loaded)
+      latestLabel = 'Latest snapshot \u00b7 ' + humanizeSnapshotMonth(current[0].snapshot_month);
+    }
+    html = '<option value="latest">' + escapeHtml(latestLabel) + '</option>';
     if (current.length) {
       html += '<optgroup label="Current snapshots">';
       current.forEach(function(s){
@@ -6564,20 +6569,20 @@ function renderFlowHealthBaselines(baselines) {
   // Open rate
   parts.push('<div class="flow-health-baseline-item">'
     + '<div class="flow-health-baseline-label">Open rate</div>'
-    + '<span class="flow-health-baseline-val">Industry warn ' + t.open_rate.warn + '%</span>'
-    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.open_rate) + '</span>' : '')
+    + '<div class="flow-health-baseline-val">Industry warn ' + t.open_rate.warn + '%</div>'
+    + (baselines ? '<div class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.open_rate) + '</div>' : '')
     + '</div>');
   // Click rate
   parts.push('<div class="flow-health-baseline-item">'
     + '<div class="flow-health-baseline-label">Click rate</div>'
-    + '<span class="flow-health-baseline-val">Industry warn ' + t.click_rate.warn + '%</span>'
-    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.click_rate, 2) + '</span>' : '')
+    + '<div class="flow-health-baseline-val">Industry warn ' + t.click_rate.warn + '%</div>'
+    + (baselines ? '<div class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.click_rate, 2) + '</div>' : '')
     + '</div>');
   // Unsub rate
   parts.push('<div class="flow-health-baseline-item">'
     + '<div class="flow-health-baseline-label">Unsub rate</div>'
-    + '<span class="flow-health-baseline-val">Industry critical ' + t.unsubscribe_rate.critical + '%</span>'
-    + (baselines ? ' <span class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.unsubscribe_rate, 2) + '</span>' : '')
+    + '<div class="flow-health-baseline-val">Industry critical ' + t.unsubscribe_rate.critical + '%</div>'
+    + (baselines ? '<div class="flow-health-baseline-val flow-health-baseline-sfh">SFH avg ' + fmtPct(baselines.unsubscribe_rate, 2) + '</div>' : '')
     + '</div>');
   el.innerHTML = parts.join('');
 }
@@ -6634,9 +6639,19 @@ window.renderFlowHealthCards = async function() {
     return (b.total_delivered || 0) - (a.total_delivered || 0);
   });
 
+  // Session 9.4: apply health filter (filters flow cards by their classified badge)
+  if (healthFilter && healthFilter !== 'all') {
+    flows = flows.filter(function(f){ return f.health.status === healthFilter; });
+  }
+
   // Render baselines header
   var baselines = computeSFHBaselines(flowMessagesCache);
   renderFlowHealthBaselines(baselines);
+
+  if (!flows.length) {
+    container.innerHTML = '<div class="flow-health-empty">No flows match the ' + escapeHtml(healthFilter) + ' filter.</div>';
+    return;
+  }
 
   // Render cards
   var html = flows.map(function(f){
@@ -6663,8 +6678,38 @@ window.renderFlowHealthCards = async function() {
         + '</div>';
     }
 
+    // Session 9.5: merged findings. Flow-scope findings render as narrative
+    // INSIDE the card, replacing the standalone Diagnostic findings grid.
+    var flowDiagsForCard = diagsByFlow[f.flow_name] || [];
+    var flowScopeDiags = flowDiagsForCard.filter(function(d){
+      return d.scope === 'flow' || d.scope === 'structure' || !d.scope;
+    });
+    var findingsHtml = '';
+    if (flowScopeDiags.length) {
+      // Sort by severity (fix_now first, then opportunity, test, monitor)
+      var sevOrder = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
+      flowScopeDiags.sort(function(a, b){ return (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99); });
+      findingsHtml = '<div class="flow-health-findings">'
+        + '<div class="flow-health-findings-label">What we found</div>'
+        + flowScopeDiags.map(function(d){
+            var sevClass = 'flow-health-finding-sev ' + (d.severity || 'monitor');
+            var sevLabel = d.severity === 'fix_now' ? 'Fix now'
+              : d.severity === 'opportunity' ? 'Opportunity'
+              : d.severity === 'test' ? 'A/B test'
+              : 'Monitor';
+            // Compose 2-3 sentence narrative: diagnosis + recommendation. Both already concise.
+            var diagnosis = escapeHtml(d.diagnosis || '');
+            var rec = d.recommendation ? '<span class="flow-health-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
+            return '<div class="flow-health-finding">'
+              + '<span class="' + sevClass + '">' + sevLabel + '</span>'
+              + '<span class="flow-health-finding-text">' + diagnosis + rec + '</span>'
+              + '</div>';
+          }).join('')
+        + '</div>';
+    }
+
     // B1: count messages needing attention + render expand control
-    var flowDiags = diagsByFlow[f.flow_name] || [];
+    var flowDiags = flowDiagsForCard;
     var attentionCount = 0;
     f.messages.forEach(function(m){
       var matched = matchDiagnosticsToMessage(m, flowDiags);
@@ -6737,6 +6782,7 @@ window.renderFlowHealthCards = async function() {
       + '    </div>'
       + '  </div>'
       + reasonsHtml
+      + findingsHtml
       + '  <div class="flow-health-attention-line">'
       + '    <span class="flow-health-attention-text">' + escapeHtml(attentionLineText) + '</span>'
       + '    <div class="flow-health-attention-actions">'
@@ -6780,26 +6826,28 @@ function renderFlowExpandedPanel(flow, flowDiags) {
     var findingsHtml;
     if (matched.length) {
       findingsHtml = '<div class="flow-msg-findings">'
-        + '<div class="flow-msg-findings-label">Diagnostic findings</div>'
         + matched.map(function(d){
-            var dotClass = d.severity === 'fix_now' ? 'bad' : (d.severity === 'opportunity' || d.severity === 'test') ? 'warn' : 'neutral';
-            var sevLabel = (d.severity || 'monitor').replace(/_/g, ' ');
+            var sevLabel = d.severity === 'fix_now' ? 'Fix now'
+              : d.severity === 'opportunity' ? 'Opportunity'
+              : d.severity === 'test' ? 'A/B test'
+              : 'Monitor';
+            var sevClass = 'flow-msg-finding-sev ' + (d.severity || 'monitor');
+            // 1-2 sentence narrative: diagnosis + concise recommendation inline.
+            var diagnosis = escapeHtml(d.diagnosis || d.finding || 'Finding');
+            var rec = d.recommendation ? '<span class="flow-msg-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
             var fixBtn = '';
             if (d.recommendation || d.severity === 'fix_now' || d.severity === 'opportunity') {
               fixBtn = '<button class="flow-msg-fix-btn" onclick="openFlowImproveFromHealth(' + m.id + ', ' + d.id + ')">Draft fix</button>';
             }
-            return '<div class="flow-msg-finding">'
-              + '  <span class="flow-msg-finding-dot ' + dotClass + '"></span>'
-              + '  <div class="flow-msg-finding-body">'
-              + '    <div class="flow-msg-finding-title">' + escapeHtml(d.finding || d.title || 'Finding') + ' <span class="flow-msg-finding-sev">' + escapeHtml(sevLabel) + '</span></div>'
-              + (d.recommendation ? '    <div class="flow-msg-finding-rec">' + escapeHtml(d.recommendation) + '</div>' : '')
-              + '  </div>'
-              + '  <div class="flow-msg-finding-actions">' + fixBtn + '</div>'
+            return '<div class="flow-msg-finding-compact">'
+              + '<span class="' + sevClass + '">' + sevLabel + '</span>'
+              + '<span class="flow-msg-finding-narrative">' + diagnosis + rec + '</span>'
+              + fixBtn
               + '</div>';
           }).join('')
         + '</div>';
     } else {
-      findingsHtml = '<div class="flow-msg-no-findings">No diagnostic findings on this message.</div>';
+      findingsHtml = '';
     }
 
     return '<div class="flow-msg-row ' + statusClass + '">'
