@@ -2,6 +2,12 @@
 // Pattern matches Ray. All browser-side AI calls in Quill must route here.
 // Requires env var ANTHROPIC_API_KEY set in Vercel project settings.
 
+// Vercel function config: extend timeout to 300 seconds (5 min, Pro tier max).
+// Default is 10s on hobby, ~10s on Pro unless explicitly overridden. Diagnostics
+// and pattern extraction send larger payloads to Claude and need this longer
+// window to complete reliably.
+export const maxDuration = 300;
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
