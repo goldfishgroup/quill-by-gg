@@ -238,20 +238,22 @@
     .upload-intro p { font-size: 13px; color: var(--q-muted); line-height: 1.6; }
     .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .upload-slot { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 20px; }
-    .upload-slot-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .upload-slot-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); }
-    .upload-slot-count { font-size: 11px; color: var(--gg-olive); background: var(--gg-offwhite); padding: 3px 9px; border-radius: 10px; font-weight: 500; }
+    .upload-slot-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .upload-slot-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); flex-shrink: 0; }
+    .upload-slot-count { font-size: 11px; color: var(--gg-olive); background: var(--gg-offwhite); padding: 3px 9px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
     .upload-slot-count.empty { color: var(--q-muted); background: var(--q-bg); }
-    .upload-drop { border: 1px dashed var(--q-line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: #fcfbf7; }
+    .upload-slot-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; gap: 10px; flex-wrap: wrap; }
+    .upload-status { font-size: 12px; color: var(--q-muted); line-height: 1.6; flex: 1; min-width: 0; }
+    .upload-status.success { color: #2e5e2e; }
+    .upload-status.error { color: #a32d2d; }
+    .upload-clear-link { font-size: 11px; color: var(--q-muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--q-line); text-underline-offset: 3px; flex-shrink: 0; }
+    .upload-clear-link:hover { color: var(--gg-orange); text-decoration-color: var(--gg-orange); }
+    .upload-drop { display: block; width: 100%; box-sizing: border-box; border: 1px dashed var(--q-line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: #fcfbf7; }
     .upload-drop:hover { border-color: var(--gg-olive); background: var(--gg-offwhite); }
     .upload-drop.drag-over { border-color: var(--gg-orange); background: #fff1e6; }
     .upload-drop-label { font-size: 13px; color: var(--gg-charcoal); font-weight: 500; margin-bottom: 4px; }
     .upload-drop-sub { font-size: 11px; color: var(--q-muted); }
     .upload-file-input { display: none; }
-    .upload-status { margin-top: 14px; font-size: 12px; color: var(--q-muted); line-height: 1.6; }
-    .upload-status.success { color: #2e5e2e; }
-    .upload-status.error { color: #a32d2d; }
-    .upload-actions { display: flex; gap: 8px; margin-top: 14px; }
 
     /* STUDIO PLACEHOLDER */
     .placeholder-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 40px 28px; text-align: center; max-width: 620px; margin: 0 auto; }
@@ -2182,37 +2184,37 @@
     <div class="upload-wrap">
       <div class="upload-intro">
         <h2>Klaviyo Data</h2>
-        <p>Upload your exported Klaviyo campaign performance CSV and flow message performance CSV. Quill reads every row to build per-email and per-message metrics for insights and gap analysis. Uploads replace the existing data for that slot.</p>
+        <p>Upload your Klaviyo campaign and flow exports. New uploads replace current-period data; historical data is preserved.</p>
       </div>
       <div class="upload-grid">
         <div class="upload-slot">
           <div class="upload-slot-head">
-            <span class="upload-slot-title">Campaigns CSV</span>
+            <span class="upload-slot-title">Campaigns</span>
             <span class="upload-slot-count empty" id="campaignsCount">0 rows</span>
           </div>
           <label class="upload-drop" id="campaignsDrop" for="campaignsFile">
             <div class="upload-drop-label">Drop CSV here or click to browse</div>
-            <div class="upload-drop-sub">Expected: subject, preview, send time, segment, open rate, CTR, CTOR, unsubscribe rate, revenue per recipient</div>
+            <div class="upload-drop-sub">Klaviyo campaign performance export</div>
             <input type="file" id="campaignsFile" class="upload-file-input" accept=".csv">
           </label>
-          <div class="upload-status" id="campaignsStatus">No file uploaded yet.</div>
-          <div class="upload-actions">
-            <button class="ghost-btn" onclick="clearUpload('campaigns')">Clear</button>
+          <div class="upload-slot-footer">
+            <div class="upload-status" id="campaignsStatus">No file uploaded yet.</div>
+            <a class="upload-clear-link" onclick="clearUpload('campaigns')">Clear current</a>
           </div>
         </div>
         <div class="upload-slot">
           <div class="upload-slot-head">
-            <span class="upload-slot-title">Flow Messages CSV</span>
+            <span class="upload-slot-title">Flow Messages</span>
             <span class="upload-slot-count empty" id="flowsCount">0 rows</span>
           </div>
           <label class="upload-drop" id="flowsDrop" for="flowsFile">
             <div class="upload-drop-label">Drop CSV here or click to browse</div>
-            <div class="upload-drop-sub">Expected: flow name, message name, subject, trigger, open rate, CTR, CTOR, revenue per recipient</div>
+            <div class="upload-drop-sub">Klaviyo flow message performance export</div>
             <input type="file" id="flowsFile" class="upload-file-input" accept=".csv">
           </label>
-          <div class="upload-status" id="flowsStatus">No file uploaded yet.</div>
-          <div class="upload-actions">
-            <button class="ghost-btn" onclick="clearUpload('flows')">Clear</button>
+          <div class="upload-slot-footer">
+            <div class="upload-status" id="flowsStatus">No file uploaded yet.</div>
+            <a class="upload-clear-link" onclick="clearUpload('flows')">Clear current</a>
           </div>
         </div>
       </div>
