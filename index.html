@@ -541,7 +541,7 @@
 
     .flow-health-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px 18px; transition: border-color 0.12s; }
     .flow-health-card:hover { border-color: var(--gg-olive); }
-    .flow-health-card.in-sprint { border-left: 3px solid var(--gg-orange); background: #fff9f3; }
+    .flow-health-card.in-sprint { border-left: 3px solid #5d8a3a; background: #f7faf3; }
 
     .flow-health-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
     .flow-health-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
@@ -549,30 +549,30 @@
     .flow-health-card-meta-missing { color: var(--gg-orange); font-style: italic; }
 
     /* Session 11.1: Sprint state visuals */
-    .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: var(--gg-orange); color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
+    .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #5d8a3a; color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
     .flow-period-pill { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #ecebe6; color: var(--q-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
 
-    /* Toggle switch (flow-level). Plain pill, orange on, gray off. */
+    /* Toggle switch (flow-level). Plain pill, green on, gray off. */
     .flow-sprint-toggle { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .flow-sprint-toggle::before { content: ''; display: inline-block; width: 46px; height: 24px; background: #d4d2cb; border-radius: 14px; transition: background 0.18s ease; flex-shrink: 0; }
     .flow-sprint-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.18); transition: transform 0.18s ease; }
-    .flow-sprint-toggle.active::before { background: var(--gg-orange); }
+    .flow-sprint-toggle.active::before { background: #5d8a3a; }
     .flow-sprint-toggle.active::after { transform: translateX(22px); }
     .flow-sprint-toggle:hover::before { background: #c4c2bb; }
-    .flow-sprint-toggle.active:hover::before { background: #d36733; }
+    .flow-sprint-toggle.active:hover::before { background: #4d7530; }
     .flow-sprint-toggle-label { font-size: 11px; color: var(--q-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* Toggle switch (message-level). Smaller variant. */
     .flow-msg-sprint-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex-shrink: 0; }
     .flow-msg-sprint-btn::before { content: ''; display: inline-block; width: 38px; height: 20px; background: #d4d2cb; border-radius: 12px; transition: background 0.18s ease; flex-shrink: 0; }
     .flow-msg-sprint-btn::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.18); transition: transform 0.18s ease; }
-    .flow-msg-sprint-btn.active::before { background: var(--gg-orange); }
+    .flow-msg-sprint-btn.active::before { background: #5d8a3a; }
     .flow-msg-sprint-btn.active::after { transform: translateX(18px); }
     .flow-msg-sprint-btn:hover::before { background: #c4c2bb; }
-    .flow-msg-sprint-btn.active:hover::before { background: #d36733; }
+    .flow-msg-sprint-btn.active:hover::before { background: #4d7530; }
     .flow-msg-sprint-btn-label { font-size: 10px; color: var(--q-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    .flow-msg-row.in-sprint { border-left: 2px solid var(--gg-orange); padding-left: 10px; background: #fffbf6; }
+    .flow-msg-row.in-sprint { border-left: 2px solid #5d8a3a; padding-left: 10px; background: #f7faf3; }
 
     /* Session 11.1: Metric deltas (month-over-month change indicators) */
     .flow-health-metric-delta { font-size: 9px; font-weight: 600; margin-top: 2px; letter-spacing: 0.02em; }
@@ -600,8 +600,11 @@
     /* Session 9.5: Findings narrative INSIDE Flow Health cards (flow-level) */
     .flow-health-findings { margin-top: 14px; padding: 12px 14px; background: #fcfaf3; border: 0.5px solid var(--q-line); border-radius: 6px; }
     .flow-health-findings-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 8px; }
-    .flow-health-finding { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 0.5px dashed #e8e1cf; }
+    .flow-health-finding { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 0.5px dashed #e8e1cf; transition: opacity 0.15s; }
     .flow-health-finding:first-of-type { border-top: none; padding-top: 0; }
+    .flow-health-finding.accepted { background: linear-gradient(to right, #f0f5e7 0%, transparent 60%); border-left: 2px solid #5d8a3a; padding-left: 8px; }
+    .flow-health-finding.rejected { opacity: 0.45; }
+    .flow-health-finding.rejected .flow-health-finding-text { text-decoration: line-through; text-decoration-color: var(--q-muted); }
     .flow-health-finding-sev { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 7px; border-radius: 9px; flex-shrink: 0; white-space: nowrap; }
     .flow-health-finding-sev.fix_now { background: #f8d4d4; color: #882b2b; }
     .flow-health-finding-sev.opportunity { background: #e6efd9; color: #3d6022; }
@@ -611,8 +614,11 @@
     .flow-health-finding-rec { color: var(--q-muted); }
 
     /* Message-level findings (compact, 1-2 sentence) */
-    .flow-msg-finding-compact { display: flex; gap: 8px; align-items: center; padding: 6px 0; font-size: 11px; line-height: 1.5; }
+    .flow-msg-finding-compact { display: flex; gap: 8px; align-items: center; padding: 6px 0; font-size: 11px; line-height: 1.5; transition: opacity 0.15s; }
     .flow-msg-finding-compact + .flow-msg-finding-compact { border-top: 0.5px dashed #e8e1cf; padding-top: 8px; margin-top: 4px; }
+    .flow-msg-finding-compact.accepted { background: linear-gradient(to right, #f0f5e7 0%, transparent 60%); border-left: 2px solid #5d8a3a; padding-left: 8px; }
+    .flow-msg-finding-compact.rejected { opacity: 0.45; }
+    .flow-msg-finding-compact.rejected .flow-msg-finding-narrative { text-decoration: line-through; text-decoration-color: var(--q-muted); }
     .flow-msg-finding-sev { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 8px; flex-shrink: 0; white-space: nowrap; }
     .flow-msg-finding-sev.fix_now { background: #f8d4d4; color: #882b2b; }
     .flow-msg-finding-sev.opportunity { background: #e6efd9; color: #3d6022; }
@@ -620,6 +626,20 @@
     .flow-msg-finding-sev.monitor { background: #ecebe6; color: #5e5d59; }
     .flow-msg-finding-narrative { flex: 1; color: var(--gg-charcoal); }
     .flow-msg-finding-rec { color: var(--q-muted); }
+
+    /* Session 10.3: Findings collapse header + per-finding accept/reject buttons */
+    .findings-collapse-toggle { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); text-align: left; color: var(--q-muted); transition: color 0.12s; }
+    .findings-collapse-toggle:hover { color: var(--gg-olive); }
+    .findings-collapse-caret { font-size: 11px; color: var(--q-muted); flex-shrink: 0; width: 12px; }
+    .findings-collapse-summary { font-size: 11px; font-weight: 600; }
+    .flow-health-findings.expanded .findings-collapse-toggle,
+    .flow-msg-findings.expanded .findings-collapse-toggle { padding-bottom: 8px; margin-bottom: 4px; border-bottom: 0.5px solid var(--q-line); }
+    .finding-action-btns { display: flex; gap: 4px; flex-shrink: 0; margin-left: auto; }
+    .finding-accept-btn, .finding-reject-btn { width: 26px; height: 26px; padding: 0; background: transparent; border: 0.5px solid var(--q-line); border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--q-muted); font-family: var(--font-body); display: inline-flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; }
+    .finding-accept-btn:hover { border-color: #5d8a3a; color: #5d8a3a; background: #f0f5e7; }
+    .finding-reject-btn:hover { border-color: #a83232; color: #a83232; background: #fbeaea; }
+    .finding-accept-btn.active { background: #5d8a3a; border-color: #5d8a3a; color: #fff; }
+    .finding-reject-btn.active { background: #a83232; border-color: #a83232; color: #fff; }
     .flow-health-reason { padding: 2px 0; }
     .flow-health-reason-marker { color: #a83232; font-weight: 700; }
     .flow-health-reason-marker.warn { color: #b8741f; }
@@ -7124,6 +7144,103 @@ window.toggleFlowExpand = function(flowName) {
   renderFlowHealthCards();
 };
 
+// ── FINDING COLLAPSE + ACCEPT/REJECT (Session 10.3) ───────────────────
+// Tracks which finding lists are expanded per scope+key. Persists in memory
+// for the session; not saved to DB (transient UI state).
+var expandedFindingLists = {};
+
+window.toggleFindingsExpand = function(key) {
+  if (expandedFindingLists[key]) delete expandedFindingLists[key];
+  else expandedFindingLists[key] = true;
+  renderFlowHealthCards();
+};
+
+// Accept or reject a single finding. accept=true (accept), false (reject),
+// null (clear back to undecided). The DB column 'accepted' stores tri-state.
+window.setFindingAccepted = async function(findingId, accept) {
+  if (!findingId) return;
+  // Find current in cache to support undo (click accept twice = back to null)
+  var existing = (diagnosticsCache || []).find(function(d){ return d.id === findingId; });
+  var newVal;
+  if (existing && existing.accepted === accept) {
+    newVal = null; // toggle off, back to undecided
+  } else {
+    newVal = accept;
+  }
+  var res = await db.from('quill_flow_diagnostics')
+    .update({ accepted: newVal })
+    .eq('id', findingId);
+  if (res.error) {
+    showToast('Failed to update finding: ' + res.error.message, true);
+    return;
+  }
+  if (existing) existing.accepted = newVal;
+  renderFlowHealthCards();
+};
+
+// Render an individual finding row with severity pill, narrative, and
+// accept/reject buttons. Used by both flow-scope and message-scope findings.
+// `compactClass` lets us use different wrapper classes for visual variants.
+function renderFindingRow(d, compactClass) {
+  var sevLabel = d.severity === 'fix_now' ? 'Fix now'
+    : d.severity === 'opportunity' ? 'Opportunity'
+    : d.severity === 'test' ? 'A/B test'
+    : 'Monitor';
+  var sevClass = (compactClass === 'flow-msg-finding-compact' ? 'flow-msg-finding-sev ' : 'flow-health-finding-sev ') + (d.severity || 'monitor');
+  var diagnosis = escapeHtml(d.diagnosis || d.finding || 'Finding');
+  var recClass = compactClass === 'flow-msg-finding-compact' ? 'flow-msg-finding-rec' : 'flow-health-finding-rec';
+  var narrativeClass = compactClass === 'flow-msg-finding-compact' ? 'flow-msg-finding-narrative' : 'flow-health-finding-text';
+  var rec = d.recommendation ? '<span class="' + recClass + '"> ' + escapeHtml(d.recommendation) + '</span>' : '';
+  var stateClass = '';
+  if (d.accepted === true) stateClass = ' accepted';
+  else if (d.accepted === false) stateClass = ' rejected';
+  var acceptActive = (d.accepted === true) ? ' active' : '';
+  var rejectActive = (d.accepted === false) ? ' active' : '';
+  return '<div class="' + compactClass + stateClass + '">'
+    + '<span class="' + sevClass + '">' + sevLabel + '</span>'
+    + '<span class="' + narrativeClass + '">' + diagnosis + rec + '</span>'
+    + '<div class="finding-action-btns">'
+    + '<button class="finding-accept-btn' + acceptActive + '" title="Accept this finding (include in reports)" aria-label="Accept finding" onclick="setFindingAccepted(' + d.id + ', true)">\u2713</button>'
+    + '<button class="finding-reject-btn' + rejectActive + '" title="Reject this finding (hide from reports)" aria-label="Reject finding" onclick="setFindingAccepted(' + d.id + ', false)">\u2715</button>'
+    + '</div>'
+    + '</div>';
+}
+
+// Render a collapsed-by-default findings block with header pill showing
+// counts (accepted / rejected / undecided), click to expand.
+function renderFindingsBlock(findings, key, wrapperClass, labelClass, itemClass) {
+  if (!findings || !findings.length) return '';
+  var counts = { accepted: 0, rejected: 0, undecided: 0 };
+  findings.forEach(function(d){
+    if (d.accepted === true) counts.accepted++;
+    else if (d.accepted === false) counts.rejected++;
+    else counts.undecided++;
+  });
+  var isExpanded = !!expandedFindingLists[key];
+  var summaryParts = [findings.length + ' finding' + (findings.length !== 1 ? 's' : '')];
+  if (counts.accepted > 0) summaryParts.push(counts.accepted + ' accepted');
+  if (counts.rejected > 0) summaryParts.push(counts.rejected + ' rejected');
+  if (counts.undecided > 0 && (counts.accepted > 0 || counts.rejected > 0)) summaryParts.push(counts.undecided + ' undecided');
+  var summaryText = summaryParts.join(' \u00b7 ');
+  var caret = isExpanded ? '\u25be' : '\u25b8'; // down vs right
+  var headerHtml = '<button class="findings-collapse-toggle" onclick="toggleFindingsExpand(\u0027' + key.replace(/'/g, '\\\u0027') + '\u0027)">'
+    + '<span class="findings-collapse-caret">' + caret + '</span>'
+    + '<span class="findings-collapse-summary">' + escapeHtml(summaryText) + '</span>'
+    + '</button>';
+  if (!isExpanded) {
+    return '<div class="' + wrapperClass + '">' + headerHtml + '</div>';
+  }
+  // Sort by severity (fix_now > opportunity > test > monitor) when expanding
+  var sevOrder = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
+  var sorted = findings.slice().sort(function(a, b){
+    return (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99);
+  });
+  return '<div class="' + wrapperClass + ' expanded">'
+    + headerHtml
+    + sorted.map(function(d){ return renderFindingRow(d, itemClass); }).join('')
+    + '</div>';
+}
+
 // ── SPRINT TOGGLE (Session 11.1) ──────────────────────────────────────
 // Strategist marks individual messages as "in sprint" to track active
 // optimization work. The flow-level toggle is a bulk action that sets/clears
@@ -7411,27 +7528,7 @@ window.renderFlowHealthCards = async function() {
     var flowScopeDiags = flowDiagsForCard.filter(function(d){
       return d.scope === 'flow' || d.scope === 'structure' || !d.scope;
     });
-    var findingsHtml = '';
-    if (flowScopeDiags.length) {
-      var sevOrder2 = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
-      flowScopeDiags.sort(function(a, b){ return (sevOrder2[a.severity] || 99) - (sevOrder2[b.severity] || 99); });
-      findingsHtml = '<div class="flow-health-findings">'
-        + '<div class="flow-health-findings-label">What we found</div>'
-        + flowScopeDiags.map(function(d){
-            var sevClass = 'flow-health-finding-sev ' + (d.severity || 'monitor');
-            var sevLabel = d.severity === 'fix_now' ? 'Fix now'
-              : d.severity === 'opportunity' ? 'Opportunity'
-              : d.severity === 'test' ? 'A/B test'
-              : 'Monitor';
-            var diagnosis = escapeHtml(d.diagnosis || '');
-            var rec = d.recommendation ? '<span class="flow-health-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
-            return '<div class="flow-health-finding">'
-              + '<span class="' + sevClass + '">' + sevLabel + '</span>'
-              + '<span class="flow-health-finding-text">' + diagnosis + rec + '</span>'
-              + '</div>';
-          }).join('')
-        + '</div>';
-    }
+    var findingsHtml = renderFindingsBlock(flowScopeDiags, 'flow:' + f.flow_name, 'flow-health-findings', 'flow-health-findings-label', 'flow-health-finding');
 
     var flowDiags = flowDiagsForCard;
 
@@ -7593,27 +7690,7 @@ function renderFlowExpandedPanel(flow, flowDiags) {
     var clickCls = metricColorClassMessage('click_rate', clickVal);
     var unsubCls = metricColorClassMessage('unsubscribe_rate', unsubVal);
 
-    var findingsHtml;
-    if (matched.length) {
-      findingsHtml = '<div class="flow-msg-findings">'
-        + matched.map(function(d){
-            var sevLabel = d.severity === 'fix_now' ? 'Fix now'
-              : d.severity === 'opportunity' ? 'Opportunity'
-              : d.severity === 'test' ? 'A/B test'
-              : 'Monitor';
-            var sevClass = 'flow-msg-finding-sev ' + (d.severity || 'monitor');
-            // 1-2 sentence narrative: diagnosis + concise recommendation inline.
-            var diagnosis = escapeHtml(d.diagnosis || d.finding || 'Finding');
-            var rec = d.recommendation ? '<span class="flow-msg-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
-            return '<div class="flow-msg-finding-compact">'
-              + '<span class="' + sevClass + '">' + sevLabel + '</span>'
-              + '<span class="flow-msg-finding-narrative">' + diagnosis + rec + '</span>'
-              + '</div>';
-          }).join('')
-        + '</div>';
-    } else {
-      findingsHtml = '';
-    }
+    var findingsHtml = renderFindingsBlock(matched, 'msg:' + m.id, 'flow-msg-findings', 'flow-msg-findings-label', 'flow-msg-finding-compact');
 
     var sprintActive = !!m.in_sprint;
     var sprintBtnAria = sprintActive ? 'Remove from sprint' : 'Mark in sprint';
