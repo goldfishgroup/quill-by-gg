@@ -544,9 +544,18 @@
     .flow-health-card.in-sprint { border-left: 3px solid #5d8a3a; background: #f7faf3; }
 
     .flow-health-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+    .flow-health-card-head-left { flex: 1; min-width: 0; }
+    .flow-health-card-head-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
     .flow-health-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
     .flow-health-card-meta { font-size: 10px; color: var(--q-muted); }
     .flow-health-card-meta-missing { color: var(--gg-orange); font-style: italic; }
+
+    /* Session 10.5: Flow health score (weighted avg vs Klaviyo industry benchmarks) */
+    .flow-health-score { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; cursor: help; }
+    .flow-health-score-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+    .flow-health-score-val { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; line-height: 1; }
+    .flow-health-score-pct { font-size: 13px; color: var(--q-muted); font-weight: 500; margin-left: 1px; }
+    .flow-health-score-empty .flow-health-score-val { color: var(--q-muted); font-size: 18px; }
 
     /* Session 11.1: Sprint state visuals */
     .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #5d8a3a; color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
@@ -1765,43 +1774,65 @@
           </div>
           <div class="tip-widget" id="tip-flows">
             <div class="tip-widget-head" onclick="toggleTipWidget('tip-flows')">
-              <div class="tip-widget-title">How to use this page</div>
+              <div class="tip-widget-title">How to read this page</div>
               <button class="tip-widget-toggle" id="tip-flows-toggle">Hide</button>
             </div>
             <div class="tip-widget-body">
               <div class="tip-section-title">The workflow</div>
               <ol>
-                <li><strong>Scan Flow Health (top of page).</strong> Each live flow is graded healthy / needs improvement / critical. Sorted with worst at the top so the leaks are obvious.</li>
-                <li><strong>Drill into a flagged flow.</strong> Click a flow card to expand its messages (Phase B, coming next session). Each message will show its specific stats and the issues found in it.</li>
-                <li><strong>Read the issues for the worst messages.</strong> Each message will list specific findings (subject too generic, body too long, no clear CTA, etc.) with severity dots.</li>
-                <li><strong>Take action.</strong> Each message will have "Draft improvement" (rewrite this single message) and "Draft as flow" (rebuild the whole flow from scratch) buttons.</li>
+                <li><strong>Scan flow cards.</strong> Each flow card shows a Health Score and 8 metrics. Use the score as a quick scan signal to find flows worth investigating.</li>
+                <li><strong>Pick 2 to 3 flows to optimize.</strong> Toggle "Sprint" on the cards or specific messages you plan to work on this month. Sprint-toggled flows pin to the top of the list.</li>
+                <li><strong>Diagnose a flow.</strong> Click "Diagnose this flow" to generate findings. Each diagnose run replaces the prior findings for that flow on the current snapshot, so no duplicates.</li>
+                <li><strong>Triage findings.</strong> Expand the findings block to see specific findings. Click the green checkmark to accept (will appear in reports) or red X to reject (hidden from reports). Findings start as undecided.</li>
+                <li><strong>Do the work in Klaviyo.</strong> Quill recommends; the actual changes happen in your ESP. Re-import the next month to see the impact via month-over-month deltas on each metric.</li>
               </ol>
-              <div class="tip-section-title" style="margin-top:14px;">Reading the Flow Health badge</div>
+
+              <div class="tip-section-title" style="margin-top:14px;">The Health Score (0 to 100)</div>
               <ul>
-                <li><strong>Critical (red).</strong> One or more of: open rate below 15%, unsubscribe rate above 0.5%, complaint rate above 0.1%, or an active fix-now diagnostic finding. Address this week.</li>
-                <li><strong>Needs improvement (amber).</strong> One or more of: open rate 15-25%, click rate below 1%, unsub rate 0.3-0.5%, or an active opportunity finding. Schedule next sprint.</li>
-                <li><strong>Healthy (green).</strong> Metrics within target ranges and no active findings. Keep watching.</li>
-                <li><strong>No data (grey).</strong> No delivery data yet for this flow. Either freshly imported or never triggered.</li>
+                <li><strong>What it is.</strong> A weighted score across 8 metrics (Open, Click, Click-through, Conversion, Revenue per Recipient, Unsubscribe, Spam, Bounce) compared to Klaviyo industry benchmarks for the Health and Wellness vertical.</li>
+                <li><strong>What 100% means.</strong> All 8 metrics meeting or exceeding industry averages. Positive metrics (open, click, etc.) score against the industry target; negative metrics (unsub, spam, bounce) score against the deliverability threshold.</li>
+                <li><strong>How to use it.</strong> A scan signal, not a verdict. A 92% flow might still have one critical issue. A 58% flow might be working hard but on a tough audience. Always check the 8 underlying metrics before deciding what to optimize.</li>
+                <li><strong>Why no color banding.</strong> There's no "good" or "bad" line. Different flow types perform differently. Welcome flows naturally score higher than win-back flows. The score is relative, not absolute.</li>
+                <li><strong>Benchmarks refresh annually.</strong> Klaviyo publishes new industry data each year (typically Q1). The score recalibrates when the benchmarks are updated. Currently sourced from Klaviyo 2025 + 2026 Benchmark Reports.</li>
               </ul>
-              <div class="tip-section-title" style="margin-top:14px;">Industry thresholds vs SFH baselines</div>
+
+              <div class="tip-section-title" style="margin-top:14px;">The 8 metrics</div>
               <ul>
-                <li><strong>Industry defaults are conservative rules of thumb.</strong> 25% open as a "warn" line; 0.5% unsub as a "critical" line. These work as a sanity check, not a verdict.</li>
-                <li><strong>SFH baseline (shown in the Flow Health header).</strong> The actual delivered-weighted average across all your consumer flow messages. If SFH consistently runs above the industry warn line, your real bar is higher than the default; trust the SFH baseline.</li>
-                <li><strong>Welcome flows and recovery flows have different real benchmarks.</strong> A 60% open welcome series is normal; a 30% open win-back series is normal. The mixed SFH baseline is a starting point, not the final word for any single flow type.</li>
+                <li><strong>Engagement: Open Rate, Click Rate, Click-through Rate.</strong> CTR (clicks divided by opens) is sharper than raw click rate because it isolates body performance from subject line performance.</li>
+                <li><strong>Revenue: Conversion Rate, Revenue per Recipient.</strong> Conversion is how often a delivery turns into a purchase. RPR is the dollar amount per delivered email.</li>
+                <li><strong>Deliverability: Unsubscribe, Spam, Bounce.</strong> All three are negative metrics. Above-threshold values damage list health and inbox placement for your whole sending domain.</li>
+                <li><strong>Month over month deltas.</strong> When prior snapshot data exists, each metric shows the change from the prior month. Empty if no prior snapshot.</li>
               </ul>
-              <div class="tip-section-title" style="margin-top:14px;">Flow Diagnostics findings (the detail layer)</div>
+
+              <div class="tip-section-title" style="margin-top:14px;">Findings and the accept/reject workflow</div>
               <ul>
-                <li><strong>Findings live below the Flow Health cards</strong> in the diagnostic findings grid. They feed the health classification (a fix-now finding will mark the flow critical).</li>
-                <li><strong>Severity tags.</strong> Fix now (leaking revenue or reputation, action this week). Opportunity (room to grow, schedule next sprint). Monitor (worth watching). A/B test (specific hypothesis to test).</li>
-                <li><strong>Confidence badges.</strong> High needs 5,000+ message deliveries (or 10,000+ flow / 15,000+ structural). Medium and Exploratory have lower thresholds. Computed from sample size, not self-assessed.</li>
-                <li><strong>Predicted lifts are decorative.</strong> "Lifts conversion from 0 to 0.3%" sounds precise but is an educated guess. Trust the direction, treat the magnitude as approximate.</li>
+                <li><strong>Findings come from two layers.</strong> The deterministic rule engine catches red-metric thresholds (e.g., unsub over 0.5 percent, spam over 0.1 percent) every time. The LLM adds interpretive findings on top.</li>
+                <li><strong>Findings are collapsed by default.</strong> Click the row to expand and review them.</li>
+                <li><strong>Accept (green checkmark) means it will appear in reports.</strong> Reject (red X) hides it from reports but keeps it visible in the UI for audit. Click an already-active button to clear back to undecided.</li>
+                <li><strong>Re-diagnosing replaces all findings for the flow.</strong> Your accept/reject decisions on the prior batch are not migrated forward. Make sprint-level decisions before re-diagnosing if the prior batch matters.</li>
+                <li><strong>Severity tags.</strong> Fix now (act this sprint). Opportunity (test next sprint). Monitor (watch). A/B test (specific hypothesis to validate).</li>
               </ul>
-              <div class="tip-section-title" style="margin-top:14px;">When to re-run diagnosis</div>
+
+              <div class="tip-section-title" style="margin-top:14px;">Sprint toggles</div>
               <ul>
-                <li><strong>After monthly Klaviyo uploads.</strong> Fresh data refines the findings.</li>
-                <li><strong>After acting on a fix.</strong> Wait for new data, re-upload, re-diagnose.</li>
-                <li><strong>After launching or restructuring a flow.</strong> Once 2-3 weeks of new data exists.</li>
-                <li><strong>Once is enough otherwise.</strong> Diagnoses persist. Re-running on unchanged data produces similar findings.</li>
+                <li><strong>Flow-level toggle.</strong> The big "Sprint" pill on each flow card marks ALL messages in that flow as in-sprint. Useful when you're overhauling a whole flow.</li>
+                <li><strong>Message-level toggle.</strong> The smaller "Sprint" pill on each message row toggles that single message. Useful when you only want to fix one specific email.</li>
+                <li><strong>Sprint state persists across months.</strong> A flow stays in-sprint until manually toggled off. Designed for multi-month optimization work.</li>
+                <li><strong>Flows with any sprint-marked message pin to the top of the list.</strong></li>
+              </ul>
+
+              <div class="tip-section-title" style="margin-top:14px;">When to re-diagnose</div>
+              <ul>
+                <li><strong>After monthly Klaviyo upload.</strong> Fresh metrics, fresh findings.</li>
+                <li><strong>After acting on a fix in Klaviyo.</strong> Wait for 2 to 3 weeks of new data first; diagnoses on stale data won't reflect the change.</li>
+                <li><strong>Re-running on unchanged data produces similar findings.</strong> The system is deterministic on the rules layer and roughly stable on the LLM layer.</li>
+              </ul>
+
+              <div class="tip-section-title" style="margin-top:14px;">Honest limitations</div>
+              <ul>
+                <li><strong>Quill does not see subject lines or body copy.</strong> The Klaviyo flow CSV export does not include them. Findings about subject or body recommend reviewing them in Klaviyo, not analyzing the text directly.</li>
+                <li><strong>Quill does not see send order or time delays.</strong> Message names like "Email 1" and "Email 2" are labels, not authoritative position data. Findings will not claim a message sends in any particular order.</li>
+                <li><strong>The score weights are defaults, not science.</strong> 40 percent engagement, 30 percent revenue, 30 percent deliverability. Reasonable for SFH but defensibility comes from the underlying metrics, not the weighted number itself.</li>
               </ul>
             </div>
           </div>
@@ -6896,6 +6927,102 @@ var manageFlowsSelected = {}; // flow_name → true
 var flowMetadataCache = null;
 var flowMetadataDateSaveTimers = {};
 
+// ── FLOW HEALTH SCORE (Session 10.5) ───────────────────────────────────
+// Single 0-100 score per flow, computed against Klaviyo industry benchmarks
+// for Health & Wellness vertical. Sourced from:
+//   - Klaviyo 2025 + 2026 Benchmark Reports
+//   - Klaviyo Abandoned Cart Benchmark Report (143K flows analyzed)
+//   - DTC Wellness Brands Benchmark Report 2025
+// See Klaviyo_Benchmarks_Sourced.md in /home/claude/quill/ for full citations.
+//
+// IMPORTANT: Benchmarks shift annually. Refresh this BENCHMARKS_VERSION block
+// once per year (typically in Q1 when Klaviyo publishes the new report).
+// Currently sourced: May 2026. Next review: Feb 2027.
+
+var FLOW_HEALTH_BENCHMARKS_VERSION = '2026-05';
+var FLOW_HEALTH_BENCHMARKS = {
+  // Positive metrics (higher = better). 'target' is the industry average.
+  open_rate:           { type: 'positive', target: 50.0 },
+  click_rate:          { type: 'positive', target: 5.0 },
+  ctor:                { type: 'positive', target: 10.0 },
+  conversion_rate:     { type: 'positive', target: 1.6 },
+  rpr:                 { type: 'positive', target: 1.0 },
+  // Negative metrics (lower = better). 'threshold' is where score hits 0.
+  unsubscribe_rate:    { type: 'negative', threshold: 0.5 },
+  complaint_rate:      { type: 'negative', threshold: 0.1 },
+  bounce_rate:         { type: 'negative', threshold: 2.0 }
+};
+
+// Weights sum to 1.00. Engagement and revenue weighted equal (40% each
+// combined), deliverability gets 30% so single-metric outliers (e.g., spam)
+// can meaningfully drag the score.
+var FLOW_HEALTH_WEIGHTS = {
+  open_rate:           0.10,
+  click_rate:          0.15,
+  ctor:                0.15,
+  conversion_rate:     0.15,
+  rpr:                 0.15,
+  unsubscribe_rate:    0.10,
+  complaint_rate:      0.10,
+  bounce_rate:         0.10
+};
+
+// Score a single metric value against its benchmark. Returns 0-100.
+// Returns null if value is missing (so we can exclude from weighted average).
+function scoreMetric(metricKey, value) {
+  if (value === null || value === undefined || isNaN(Number(value))) return null;
+  var bench = FLOW_HEALTH_BENCHMARKS[metricKey];
+  if (!bench) return null;
+  var v = Number(value);
+  if (bench.type === 'positive') {
+    if (bench.target <= 0) return null;
+    var pct = (v / bench.target) * 100;
+    return Math.max(0, Math.min(100, pct));
+  } else {
+    if (bench.threshold <= 0) return null;
+    var damage = (v / bench.threshold) * 100;
+    return Math.max(0, 100 - damage);
+  }
+}
+
+// Compute the flow's weighted health score (0-100), plus per-metric breakdown.
+// Returns null if not enough metrics are present to compute meaningfully.
+function computeFlowHealthScore(flow) {
+  var values = {
+    open_rate:        flow.avg_open_rate,
+    click_rate:       flow.avg_click_rate,
+    ctor:             flow.avg_ctor,
+    conversion_rate:  flow.avg_conversion_rate,
+    rpr:              flow.revenue_per_recipient,
+    unsubscribe_rate: flow.avg_unsub_rate,
+    complaint_rate:   flow.avg_complaint_rate,
+    bounce_rate:      flow.avg_bounce_rate
+  };
+  var totalWeight = 0;
+  var totalScore = 0;
+  var breakdown = {};
+  Object.keys(values).forEach(function(k){
+    var s = scoreMetric(k, values[k]);
+    if (s === null) {
+      breakdown[k] = null;
+      return;
+    }
+    var w = FLOW_HEALTH_WEIGHTS[k] || 0;
+    totalScore += s * w;
+    totalWeight += w;
+    breakdown[k] = s;
+  });
+  // Need at least 60% of weighted metrics present for a meaningful score
+  if (totalWeight < 0.6) return null;
+  // Renormalize for any missing metrics so we don't penalize for nulls
+  var normalized = totalScore / totalWeight;
+  return {
+    score: Math.round(normalized),
+    breakdown: breakdown,
+    coverage: totalWeight
+  };
+}
+
 function aggregateFlowHealthData(messages) {
   // Group consumer-facing messages by flow_name, compute delivered-weighted
   // averages so a flow with one viral message and many small ones doesn't
@@ -6957,6 +7084,8 @@ function aggregateFlowHealthData(messages) {
     f.avg_ctor = (f.total_unique_opens > 0) ? (f.total_unique_clicks / f.total_unique_opens) * 100 : null;
     // Revenue per recipient
     f.revenue_per_recipient = delivered > 0 ? (f.total_revenue / delivered) : null;
+    // Health score (0-100) vs Klaviyo industry benchmarks
+    f.health_score = computeFlowHealthScore(f);
     return f;
   });
 
@@ -7638,6 +7767,23 @@ window.renderFlowHealthCards = async function() {
     var periodLabel = formatPeriodLabel(currentPeriod);
     var periodPill = periodLabel ? '<span class="flow-period-pill">' + escapeHtml(periodLabel) + '</span>' : '';
 
+    // Health score: 0-100, weighted across 8 metrics vs Klaviyo industry benchmarks
+    var scoreHtml = '';
+    if (f.health_score) {
+      var scoreVal = f.health_score.score;
+      // Score tone: neutral (no color banding to avoid the threshold trap).
+      // Strategist uses the number as a scan signal, not a label.
+      scoreHtml = '<div class="flow-health-score" title="Weighted score across 8 metrics vs Klaviyo Health and Wellness industry benchmarks. See How to read this section for details.">'
+        + '<div class="flow-health-score-label">Health</div>'
+        + '<div class="flow-health-score-val">' + scoreVal + '<span class="flow-health-score-pct">%</span></div>'
+        + '</div>';
+    } else {
+      scoreHtml = '<div class="flow-health-score flow-health-score-empty" title="Not enough metric data to compute a health score.">'
+        + '<div class="flow-health-score-label">Health</div>'
+        + '<div class="flow-health-score-val">\u2014</div>'
+        + '</div>';
+    }
+
     // Flow-level "mark all in sprint" toggle button
     var sprintToggleAria = f.in_sprint ? 'Remove all messages from sprint' : 'Mark all messages in sprint';
 
@@ -7645,11 +7791,14 @@ window.renderFlowHealthCards = async function() {
 
     return '<div class="' + cardClass + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
       + '  <div class="flow-health-card-head">'
-      + '    <div>'
+      + '    <div class="flow-health-card-head-left">'
       + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + sprintBadge + periodPill + '</div>'
       + '      <div class="flow-health-card-meta">' + metaParts.join(' &middot; ') + '</div>'
       + '    </div>'
-      + '    <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" title="' + escapeHtml(sprintToggleAria) + '" aria-label="' + escapeHtml(sprintToggleAria) + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)"><span class="flow-sprint-toggle-label">Sprint</span></button>'
+      + '    <div class="flow-health-card-head-right">'
+      +        scoreHtml
+      + '      <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" title="' + escapeHtml(sprintToggleAria) + '" aria-label="' + escapeHtml(sprintToggleAria) + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)"><span class="flow-sprint-toggle-label">Sprint</span></button>'
+      + '    </div>'
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
