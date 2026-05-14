@@ -689,6 +689,44 @@
     .finding-reject-btn:hover { border-color: #a83232; color: #a83232; background: #fbeaea; }
     .finding-accept-btn.active { background: #5d8a3a; border-color: #5d8a3a; color: #fff; }
     .finding-reject-btn.active { background: #a83232; border-color: #a83232; color: #fff; }
+
+    /* Session 10.6: Strategist pill on manual notes + edit/delete buttons */
+    .finding-source-pill { display: inline-block; padding: 2px 7px; border-radius: 9px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: #efe7d4; color: #6b5a2a; flex-shrink: 0; white-space: nowrap; margin-left: 4px; }
+    .finding-edit-btn, .finding-delete-btn { width: 26px; height: 26px; padding: 0; background: transparent; border: 0.5px solid var(--q-line); border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--q-muted); font-family: var(--font-body); display: inline-flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; }
+    .finding-edit-btn:hover { border-color: var(--gg-charcoal); color: var(--gg-charcoal); background: #f5f3ed; }
+    .finding-delete-btn:hover { border-color: #a83232; color: #a83232; background: #fbeaea; }
+
+    /* Add note action button (on flow card + message row) */
+    .add-note-btn { padding: 6px 12px; background: transparent; border: 0.5px solid var(--q-line); border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--gg-charcoal); font-family: var(--font-body); transition: all 0.12s; white-space: nowrap; }
+    .add-note-btn:hover { background: var(--gg-charcoal); color: #fff; border-color: var(--gg-charcoal); }
+    .add-note-btn-msg { padding: 4px 10px; font-size: 10px; border-radius: 5px; }
+
+    /* Add note modal */
+    .add-note-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(50,49,47,0.45); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .add-note-overlay.open { display: flex; }
+    .add-note-modal { background: #fff; border-radius: var(--radius); width: 100%; max-width: 540px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+    .add-note-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 20px 22px 14px 22px; border-bottom: 0.5px solid var(--q-line); }
+    .add-note-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .add-note-sub { font-size: 11px; color: var(--q-muted); line-height: 1.5; }
+    .add-note-close { width: 28px; height: 28px; background: transparent; border: 0; cursor: pointer; font-size: 22px; color: var(--q-muted); line-height: 1; flex-shrink: 0; border-radius: 4px; padding: 0; }
+    .add-note-close:hover { background: #f5f3ed; color: var(--gg-charcoal); }
+    .add-note-body { padding: 18px 22px; }
+    .add-note-field { margin-bottom: 16px; }
+    .add-note-field:last-child { margin-bottom: 0; }
+    .add-note-label { display: block; font-size: 10px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 6px; }
+    .add-note-required { color: #a83232; }
+    .add-note-select { width: 100%; padding: 9px 12px; background: #fff; border: 0.5px solid var(--q-line); border-radius: 6px; font-family: var(--font-body); font-size: 13px; color: var(--gg-charcoal); cursor: pointer; }
+    .add-note-textarea { width: 100%; padding: 10px 12px; background: #fff; border: 0.5px solid var(--q-line); border-radius: 6px; font-family: var(--font-body); font-size: 13px; color: var(--gg-charcoal); resize: vertical; min-height: 90px; line-height: 1.5; box-sizing: border-box; }
+    .add-note-textarea:focus, .add-note-select:focus { outline: 0; border-color: var(--gg-olive); }
+    .add-note-context { background: #fcfaf3; border: 0.5px solid var(--q-line); border-radius: 6px; padding: 10px 12px; font-size: 11px; color: var(--q-muted); margin-top: 6px; line-height: 1.5; }
+    .add-note-context-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+    .add-note-context-val { color: var(--gg-charcoal); font-weight: 500; }
+    .add-note-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px 20px 22px; border-top: 0.5px solid var(--q-line); }
+    .add-note-cancel { padding: 9px 16px; background: transparent; border: 0.5px solid var(--q-line); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--gg-charcoal); font-family: var(--font-body); }
+    .add-note-cancel:hover { background: #f5f3ed; }
+    .add-note-save { padding: 9px 18px; background: var(--gg-charcoal); border: 0.5px solid var(--gg-charcoal); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #fff; font-family: var(--font-body); }
+    .add-note-save:hover { background: #1a1a18; }
+    .add-note-save:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
     .flow-health-reason { padding: 2px 0; }
     .flow-health-reason-marker { color: #a83232; font-weight: 700; }
     .flow-health-reason-marker.warn { color: #b8741f; }
@@ -712,7 +750,7 @@
     .flow-msg-list .flow-msg-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) auto; align-items: center; gap: 14px; margin-bottom: 0; }
     .flow-msg-list .flow-msg-head-center { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-start; row-gap: 8px; }
     .flow-msg-list .flow-msg-head-left { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
-    .flow-msg-list .flow-msg-head-right { flex-shrink: 0; }
+    .flow-msg-list .flow-msg-head-right { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
     .flow-msg-list .flow-msg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
     .flow-msg-list .flow-msg-dot.bad { background: #a83232; }
     .flow-msg-list .flow-msg-dot.warn { background: #d68d2a; }
@@ -2536,6 +2574,42 @@
     <div class="manage-flows-footer">
       <div class="manage-flows-footer-status" id="manage-flows-status">&nbsp;</div>
       <button class="manage-flows-done" onclick="closeManageFlowsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session 10.6: Add manual note/action modal. Used to add a strategist-authored
+     observation that didn't come from the LLM or rule engine. Note appears
+     alongside Quill findings, defaults to undecided (so it goes through the
+     same accept/reject triage), and can be edited or deleted by the strategist. -->
+<div class="add-note-overlay" id="add-note-overlay" onclick="if(event.target===this) closeAddNoteModal()">
+  <div class="add-note-modal">
+    <div class="add-note-head">
+      <div>
+        <div class="add-note-title" id="add-note-title">Add a note</div>
+        <div class="add-note-sub" id="add-note-sub">Capture an observation Quill missed.</div>
+      </div>
+      <button class="add-note-close" onclick="closeAddNoteModal()" title="Close">&times;</button>
+    </div>
+    <div class="add-note-body">
+      <div class="add-note-field">
+        <label class="add-note-label">Severity</label>
+        <select id="add-note-severity" class="add-note-select">
+          <option value="fix_now">Fix now</option>
+          <option value="opportunity" selected>Opportunity</option>
+          <option value="test">A/B test</option>
+          <option value="monitor">Monitor</option>
+        </select>
+      </div>
+      <div class="add-note-field">
+        <label class="add-note-label">Note <span class="add-note-required">*</span></label>
+        <textarea id="add-note-text" class="add-note-textarea" rows="4" placeholder="What did you notice? What should we do about it?"></textarea>
+      </div>
+      <div class="add-note-context" id="add-note-context"></div>
+    </div>
+    <div class="add-note-footer">
+      <button class="add-note-cancel" onclick="closeAddNoteModal()">Cancel</button>
+      <button class="add-note-save" id="add-note-save" onclick="saveAddNote()">Save note</button>
     </div>
   </div>
 </div>
@@ -6550,16 +6624,22 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     // duplicate findings. We soft-delete (active=false) rather than hard-delete
     // so historical audit trail is preserved if needed. The matcher and UI
     // both filter to active=true so soft-deleted rows are invisible.
+    //
+    // Session 10.6 fix: EXCLUDE manual notes (source='manual') from this
+    // deactivation. Manual notes are authored by the strategist and should
+    // survive re-diagnose. Only auto-generated findings (llm + rule) get
+    // replaced by a fresh diagnose pass.
     var deact = await db.from('quill_flow_diagnostics')
       .update({ active: false })
       .eq('flow_name', flowName)
       .eq('snapshot_id', snapshotId)
-      .eq('active', true);
+      .eq('active', true)
+      .neq('source', 'manual');
     if (deact.error) {
       console.warn('[diagnose-single] Could not deactivate prior findings:', deact.error.message);
       // Continue anyway; insert will still work, we just have duplicates risk
     } else {
-      console.log('[diagnose-single] Deactivated prior findings for ' + flowName + ' on this snapshot');
+      console.log('[diagnose-single] Deactivated prior LLM/rule findings for ' + flowName + ' on this snapshot. Manual notes preserved.');
     }
 
     var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
@@ -7446,6 +7526,203 @@ window.setFindingAccepted = async function(findingId, accept) {
   renderFlowHealthCards();
 };
 
+// ── ADD MANUAL NOTE / ACTION (Session 10.6) ───────────────────────────
+// Strategist can add notes Quill missed. Notes use the same finding schema
+// but are tagged source='manual'. Default to accepted=null (undecided) so
+// they go through the same triage as Quill-generated findings.
+var addNoteContext = null;  // { mode: 'create' | 'edit', scope, flowName, messageName, messageId, findingId? }
+
+window.openAddNoteFlow = function(flowName) {
+  if (!flowName) return;
+  addNoteContext = {
+    mode: 'create',
+    scope: 'flow',
+    flowName: flowName,
+    messageName: null,
+    messageId: null
+  };
+  openAddNoteModalUI('Add a note', 'Captures an observation about this flow that Quill missed.', flowName, null);
+};
+
+window.openAddNoteMessage = function(flowName, messageId, messageName) {
+  if (!flowName || !messageId) return;
+  addNoteContext = {
+    mode: 'create',
+    scope: 'message',
+    flowName: flowName,
+    messageName: messageName || '',
+    messageId: messageId
+  };
+  openAddNoteModalUI('Add a note', 'Captures an observation about this message that Quill missed.', flowName, messageName);
+};
+
+window.openEditNote = function(findingId) {
+  if (!findingId) return;
+  var existing = (diagnosticsCache || []).find(function(d){ return d.id === findingId; });
+  if (!existing) {
+    showToast('Could not find note to edit', true);
+    return;
+  }
+  var msgName = (existing.sample_messages && existing.sample_messages.length) ? existing.sample_messages[0] : null;
+  addNoteContext = {
+    mode: 'edit',
+    scope: existing.scope || 'flow',
+    flowName: existing.flow_name,
+    messageName: msgName,
+    messageId: null, // not needed for edit
+    findingId: findingId
+  };
+  openAddNoteModalUI('Edit note', 'Update this note. Accept/reject state is preserved.', existing.flow_name, msgName);
+  // Prefill values
+  var sev = document.getElementById('add-note-severity');
+  var txt = document.getElementById('add-note-text');
+  if (sev) sev.value = existing.severity || 'opportunity';
+  if (txt) txt.value = existing.diagnosis || '';
+};
+
+function openAddNoteModalUI(title, sub, flowName, messageName) {
+  var titleEl = document.getElementById('add-note-title');
+  var subEl = document.getElementById('add-note-sub');
+  var ctxEl = document.getElementById('add-note-context');
+  var sevEl = document.getElementById('add-note-severity');
+  var txtEl = document.getElementById('add-note-text');
+  if (titleEl) titleEl.textContent = title;
+  if (subEl) subEl.textContent = sub;
+  if (sevEl) sevEl.value = 'opportunity';
+  if (txtEl) txtEl.value = '';
+  if (ctxEl) {
+    var html = '<div class="add-note-context-label">Adding to</div>'
+      + '<div><span class="add-note-context-val">' + escapeHtml(flowName) + '</span>';
+    if (messageName) {
+      html += ' \u00b7 <span class="add-note-context-val">' + escapeHtml(messageName) + '</span>';
+    }
+    html += '</div>';
+    ctxEl.innerHTML = html;
+  }
+  var overlay = document.getElementById('add-note-overlay');
+  if (overlay) overlay.classList.add('open');
+  // Focus the textarea on open
+  setTimeout(function(){
+    if (txtEl) txtEl.focus();
+  }, 50);
+}
+
+window.closeAddNoteModal = function() {
+  var overlay = document.getElementById('add-note-overlay');
+  if (overlay) overlay.classList.remove('open');
+  addNoteContext = null;
+};
+
+window.saveAddNote = async function() {
+  if (!addNoteContext) return;
+  var sev = document.getElementById('add-note-severity').value;
+  var text = (document.getElementById('add-note-text').value || '').trim();
+  if (!text) {
+    showToast('Note text is required', true);
+    return;
+  }
+  var saveBtn = document.getElementById('add-note-save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+  try {
+    if (addNoteContext.mode === 'edit' && addNoteContext.findingId) {
+      // UPDATE existing
+      var upd = await db.from('quill_flow_diagnostics')
+        .update({ severity: sev, diagnosis: text })
+        .eq('id', addNoteContext.findingId);
+      if (upd.error) throw new Error(upd.error.message);
+      // Update cache in place
+      var cached = (diagnosticsCache || []).find(function(d){ return d.id === addNoteContext.findingId; });
+      if (cached) { cached.severity = sev; cached.diagnosis = text; }
+      showToast('Note updated');
+    } else {
+      // INSERT new
+      // Find current snapshot for this month, or create one
+      var snapshotId = await getOrCreateCurrentSnapshotForManualNote();
+      var row = {
+        flow_name: addNoteContext.flowName,
+        severity: sev,
+        scope: addNoteContext.scope,
+        diagnosis: text,
+        recommendation: null,
+        sample_messages: addNoteContext.messageName ? [addNoteContext.messageName] : [],
+        category: 'manual_observation',
+        confidence: 'high',
+        active: true,
+        accepted: null, // undecided by default, strategist still triages own notes
+        source: 'manual',
+        snapshot_id: snapshotId
+      };
+      var ins = await db.from('quill_flow_diagnostics').insert(row).select();
+      if (ins.error) throw new Error(ins.error.message);
+      // Push to cache so it renders immediately
+      if (ins.data && ins.data.length) {
+        if (!diagnosticsCache) diagnosticsCache = [];
+        diagnosticsCache.unshift(ins.data[0]);
+      }
+      // Auto-expand the relevant findings block so the new note is visible
+      var expandKey = addNoteContext.scope === 'message'
+        ? 'msg:' + (ins.data && ins.data[0] && ins.data[0].sample_messages && ins.data[0].sample_messages[0] ? '' : '')
+        : 'flow:' + addNoteContext.flowName;
+      // Note: msg expand key needs the actual message id, which we don't track
+      // on diagnostics. So we only auto-expand flow blocks reliably.
+      if (addNoteContext.scope !== 'message') {
+        expandedFindingLists[expandKey] = true;
+      }
+      showToast('Note added');
+    }
+    closeAddNoteModal();
+    renderFlowHealthCards();
+  } catch (err) {
+    console.error('saveAddNote error', err);
+    showToast('Failed to save note: ' + (err.message || err), true);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save note'; }
+  }
+};
+
+// Find or create the current snapshot for the currently-selected month.
+// Manual notes need to attach to a snapshot so they show in the right view.
+async function getOrCreateCurrentSnapshotForManualNote() {
+  // Try the currently-viewed snapshot first
+  if (viewingSnapshotId) return viewingSnapshotId;
+  // Fall back to the most recent current snapshot
+  var current = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+  if (current.length) return current[0].id;
+  // Last resort: create a new snapshot for the current month
+  var now = new Date();
+  var month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  var ins = await db.from('quill_flow_diagnostic_snapshots').insert({
+    snapshot_month: month,
+    is_current: true,
+    total_findings: 0
+  }).select();
+  if (ins.error) throw new Error('Could not create snapshot: ' + ins.error.message);
+  if (ins.data && ins.data.length) {
+    if (!snapshotsCache) snapshotsCache = [];
+    snapshotsCache.unshift(ins.data[0]);
+    return ins.data[0].id;
+  }
+  throw new Error('Snapshot creation returned no row');
+}
+
+window.deleteManualNote = async function(findingId) {
+  if (!findingId) return;
+  if (!confirm('Delete this note? This cannot be undone.')) return;
+  var res = await db.from('quill_flow_diagnostics')
+    .delete()
+    .eq('id', findingId);
+  if (res.error) {
+    showToast('Failed to delete note: ' + res.error.message, true);
+    return;
+  }
+  // Remove from cache
+  if (diagnosticsCache) {
+    diagnosticsCache = diagnosticsCache.filter(function(d){ return d.id !== findingId; });
+  }
+  showToast('Note deleted');
+  renderFlowHealthCards();
+};
+
 // Render an individual finding row with severity pill, narrative, and
 // accept/reject buttons. Used by both flow-scope and message-scope findings.
 // `compactClass` lets us use different wrapper classes for visual variants.
@@ -7464,10 +7741,19 @@ function renderFindingRow(d, compactClass) {
   else if (d.accepted === false) stateClass = ' rejected';
   var acceptActive = (d.accepted === true) ? ' active' : '';
   var rejectActive = (d.accepted === false) ? ' active' : '';
+  // Session 10.6: Strategist pill on manual notes + edit/delete buttons
+  var isManual = d.source === 'manual';
+  var strategistPill = isManual ? '<span class="finding-source-pill" title="Added manually by the strategist">Strategist</span>' : '';
+  var manualBtns = isManual
+    ? '<button class="finding-edit-btn" title="Edit this note" aria-label="Edit note" onclick="openEditNote(' + d.id + ')">\u270e</button>'
+      + '<button class="finding-delete-btn" title="Delete this note" aria-label="Delete note" onclick="deleteManualNote(' + d.id + ')">\u00d7</button>'
+    : '';
   return '<div class="' + compactClass + stateClass + '">'
     + '<span class="' + sevClass + '">' + sevLabel + '</span>'
+    + strategistPill
     + '<span class="' + narrativeClass + '">' + diagnosis + rec + '</span>'
     + '<div class="finding-action-btns">'
+    +    manualBtns
     + '<button class="finding-accept-btn' + acceptActive + '" title="Accept this finding (include in reports)" aria-label="Accept finding" onclick="setFindingAccepted(' + d.id + ', true)">\u2713</button>'
     + '<button class="finding-reject-btn' + rejectActive + '" title="Reject this finding (hide from reports)" aria-label="Reject finding" onclick="setFindingAccepted(' + d.id + ', false)">\u2715</button>'
     + '</div>'
@@ -8173,6 +8459,7 @@ window.renderFlowHealthCards = async function() {
       + '  <div class="flow-health-attention-line">'
       + '    <span class="flow-health-attention-text">' + escapeHtml(attentionLineText) + '</span>'
       + '    <div class="flow-health-attention-actions">'
+      + '      <button class="add-note-btn" onclick="openAddNoteFlow(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">Add note</button>'
       + '      <button class="flow-health-diagnose-btn" data-flow="' + escapeHtml(f.flow_name) + '" onclick="diagnoseSingleFlow(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027, this)">Diagnose this flow</button>'
       + '      <button class="flow-health-expand-btn" onclick="toggleFlowExpand(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + expandToggleLabel + '</button>'
       + '    </div>'
@@ -8249,6 +8536,7 @@ function renderFlowExpandedPanel(flow, flowDiags) {
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span><span class="flow-msg-metric-label">Unsub</span></div>'
       + '    </div>'
       + '    <div class="flow-msg-head-right">'
+      + '      <button class="add-note-btn add-note-btn-msg" onclick="openAddNoteMessage(\u0027' + String(flow.flow_name).replace(/'/g, '\\\u0027') + '\u0027, ' + m.id + ', \u0027' + String(m.message_name || '').replace(/'/g, '\\\u0027') + '\u0027)">Add note</button>'
       + '      <button class="' + sprintBtnClass + '" title="' + escapeHtml(sprintBtnAria) + '" aria-label="' + escapeHtml(sprintBtnAria) + '" onclick="toggleMessageSprint(' + m.id + ', this)"><span class="flow-msg-sprint-btn-label">Sprint</span></button>'
       + '    </div>'
       + '  </div>'
