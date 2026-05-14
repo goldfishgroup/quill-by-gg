@@ -551,11 +551,14 @@
     .flow-health-card-meta-missing { color: var(--gg-orange); font-style: italic; }
 
     /* Session 10.5: Flow health score (weighted avg vs Klaviyo industry benchmarks) */
-    .flow-health-score { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; cursor: help; }
+    /* Session 10.5b: SVG donut with threshold colors. */
+    .flow-health-score { display: flex; flex-direction: column; align-items: center; line-height: 1; cursor: help; }
     .flow-health-score-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
-    .flow-health-score-val { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; line-height: 1; }
-    .flow-health-score-pct { font-size: 13px; color: var(--q-muted); font-weight: 500; margin-left: 1px; }
-    .flow-health-score-empty .flow-health-score-val { color: var(--q-muted); font-size: 18px; }
+    .flow-health-score-ring { position: relative; display: inline-block; width: 60px; height: 60px; }
+    .flow-health-score-ring svg { display: block; }
+    .flow-health-score-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+    .flow-health-score-ring-text-empty { color: var(--q-muted); font-size: 18px; }
+    .flow-health-score-pct { font-size: 9px; color: var(--q-muted); font-weight: 500; margin-left: 1px; }
 
     /* Session 11.1: Sprint state visuals */
     .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #5d8a3a; color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
@@ -1792,7 +1795,8 @@
                 <li><strong>What it is.</strong> A weighted score across 8 metrics (Open, Click, Click-through, Conversion, Revenue per Recipient, Unsubscribe, Spam, Bounce) compared to Klaviyo industry benchmarks for the Health and Wellness vertical.</li>
                 <li><strong>What 100% means.</strong> All 8 metrics meeting or exceeding industry averages. Positive metrics (open, click, etc.) score against the industry target; negative metrics (unsub, spam, bounce) score against the deliverability threshold.</li>
                 <li><strong>How to use it.</strong> A scan signal, not a verdict. A 92% flow might still have one critical issue. A 58% flow might be working hard but on a tough audience. Always check the 8 underlying metrics before deciding what to optimize.</li>
-                <li><strong>Why no color banding.</strong> There's no "good" or "bad" line. Different flow types perform differently. Welcome flows naturally score higher than win-back flows. The score is relative, not absolute.</li>
+                <li><strong>Color bands.</strong> The donut ring is colored to give a fast scan signal: orange (0 to 49) means needs attention, blue (50 to 79) means okay with room to grow, green (80 to 100) means strong performance. The bands are deliberately broad; treat them as scan signals, not verdicts.</li>
+                <li><strong>Color is not a verdict.</strong> Different flow types perform differently. A welcome flow naturally scores higher than a win-back. A 60% (blue) win-back may be excellent for that audience; a 60% welcome flow may be underperforming. Always check the 8 underlying metrics before deciding what to optimize.</li>
                 <li><strong>Benchmarks refresh annually.</strong> Klaviyo publishes new industry data each year (typically Q1). The score recalibrates when the benchmarks are updated. Currently sourced from Klaviyo 2025 + 2026 Benchmark Reports.</li>
               </ul>
 
@@ -7771,16 +7775,41 @@ window.renderFlowHealthCards = async function() {
     var scoreHtml = '';
     if (f.health_score) {
       var scoreVal = f.health_score.score;
-      // Score tone: neutral (no color banding to avoid the threshold trap).
-      // Strategist uses the number as a scan signal, not a label.
-      scoreHtml = '<div class="flow-health-score" title="Weighted score across 8 metrics vs Klaviyo Health and Wellness industry benchmarks. See How to read this section for details.">'
+      // Threshold colors per Session 10.5 decision (revisits earlier no-banding choice):
+      //   0-49 = orange (needs attention)
+      //   50-79 = blue (okay, room to grow)
+      //   80-100 = green (strong)
+      var scoreColor;
+      var scoreTier;
+      if (scoreVal >= 80) { scoreColor = '#5d8a3a'; scoreTier = 'strong'; }
+      else if (scoreVal >= 50) { scoreColor = '#3a6db8'; scoreTier = 'okay'; }
+      else { scoreColor = '#d68d2a'; scoreTier = 'needs attention'; }
+      // SVG donut: radius 26, stroke 5, circumference ~163.36.
+      // Filled arc length = (score / 100) * circumference.
+      // We rotate the circle -90deg so the fill starts at 12 o'clock.
+      var circ = 163.36;
+      var filled = (scoreVal / 100) * circ;
+      var unfilled = circ - filled;
+      var tooltipText = 'Health score ' + scoreVal + '%. Weighted across 8 metrics vs Klaviyo Health and Wellness industry benchmarks. Color: ' + scoreTier + '. See How to read this section for details.';
+      scoreHtml = '<div class="flow-health-score" title="' + escapeHtml(tooltipText) + '">'
         + '<div class="flow-health-score-label">Health</div>'
-        + '<div class="flow-health-score-val">' + scoreVal + '<span class="flow-health-score-pct">%</span></div>'
+        + '<div class="flow-health-score-ring">'
+        + '  <svg viewBox="0 0 60 60" width="60" height="60" aria-hidden="true">'
+        + '    <circle cx="30" cy="30" r="26" fill="none" stroke="#ecebe6" stroke-width="5"></circle>'
+        + '    <circle cx="30" cy="30" r="26" fill="none" stroke="' + scoreColor + '" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + filled.toFixed(2) + ' ' + unfilled.toFixed(2) + '" transform="rotate(-90 30 30)"></circle>'
+        + '  </svg>'
+        + '  <div class="flow-health-score-ring-text">' + scoreVal + '<span class="flow-health-score-pct">%</span></div>'
+        + '</div>'
         + '</div>';
     } else {
       scoreHtml = '<div class="flow-health-score flow-health-score-empty" title="Not enough metric data to compute a health score.">'
         + '<div class="flow-health-score-label">Health</div>'
-        + '<div class="flow-health-score-val">\u2014</div>'
+        + '<div class="flow-health-score-ring">'
+        + '  <svg viewBox="0 0 60 60" width="60" height="60" aria-hidden="true">'
+        + '    <circle cx="30" cy="30" r="26" fill="none" stroke="#ecebe6" stroke-width="5"></circle>'
+        + '  </svg>'
+        + '  <div class="flow-health-score-ring-text flow-health-score-ring-text-empty">\u2014</div>'
+        + '</div>'
         + '</div>';
     }
 
