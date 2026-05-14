@@ -6830,6 +6830,8 @@ function aggregateFlowHealthData(messages) {
         total_unique_clicks: 0,
         total_unsubscribes: 0,
         total_complaints: 0,
+        total_bounces: 0,
+        total_placed_orders: 0,
         total_revenue: 0,
         messages: []
       };
@@ -6842,12 +6844,18 @@ function aggregateFlowHealthData(messages) {
     f.total_unique_opens += Number(m.unique_opens) || 0;
     f.total_unique_clicks += Number(m.unique_clicks) || 0;
     f.total_revenue += Number(m.revenue) || 0;
-    // Klaviyo unsubscribe_rate is stored as percent. Reverse to count via delivered.
+    // Klaviyo stores rates as percent. Reverse to count via delivered.
     if (delivered > 0 && m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined) {
       f.total_unsubscribes += (Number(m.unsubscribe_rate) / 100) * delivered;
     }
     if (delivered > 0 && m.complaint_rate !== null && m.complaint_rate !== undefined) {
       f.total_complaints += (Number(m.complaint_rate) / 100) * delivered;
+    }
+    if (delivered > 0 && m.bounce_rate !== null && m.bounce_rate !== undefined) {
+      f.total_bounces += (Number(m.bounce_rate) / 100) * delivered;
+    }
+    if (delivered > 0 && m.placed_order_rate !== null && m.placed_order_rate !== undefined) {
+      f.total_placed_orders += (Number(m.placed_order_rate) / 100) * delivered;
     }
   });
 
@@ -6859,10 +6867,15 @@ function aggregateFlowHealthData(messages) {
     f.avg_click_rate = delivered > 0 ? (f.total_unique_clicks / delivered) * 100 : null;
     f.avg_unsub_rate = delivered > 0 ? (f.total_unsubscribes / delivered) * 100 : null;
     f.avg_complaint_rate = delivered > 0 ? (f.total_complaints / delivered) * 100 : null;
+    f.avg_bounce_rate = delivered > 0 ? (f.total_bounces / delivered) * 100 : null;
+    f.avg_conversion_rate = delivered > 0 ? (f.total_placed_orders / delivered) * 100 : null;
+    // Click-through rate (CTR/OR): clicks divided by opens. Computed, not stored.
+    f.avg_ctor = (f.total_unique_opens > 0) ? (f.total_unique_clicks / f.total_unique_opens) * 100 : null;
+    // Revenue per recipient
+    f.revenue_per_recipient = delivered > 0 ? (f.total_revenue / delivered) : null;
     return f;
   });
 
-  // Sort: critical first, then needs-improvement, then healthy, then unknown
   return flows;
 }
 
@@ -7423,6 +7436,7 @@ window.renderFlowHealthCards = async function() {
     var metaParts = [];
     metaParts.push(f.message_count + ' message' + (f.message_count !== 1 ? 's' : ''));
     metaParts.push(Math.round(f.total_delivered).toLocaleString() + ' delivered');
+    metaParts.push(fmtCurrency(f.total_revenue) + ' revenue');
     if (monthsLabel) metaParts.push(monthsLabel);
     else metaParts.push('<span class="flow-health-card-meta-missing">First-fired date not set</span>');
 
@@ -7439,6 +7453,17 @@ window.renderFlowHealthCards = async function() {
     var unsubDelta = computeMetricDelta('unsubscribe_rate', f.avg_unsub_rate, prior);
     var revenueDelta = computeMetricDelta('total_revenue', f.total_revenue, prior);
     var rpmDelta = computeMetricDelta('revenue_per_msg', f.revenue_per_msg, prior);
+    var bounceDelta = computeMetricDelta('bounce_rate', f.avg_bounce_rate, prior);
+    var ctorDelta = computeMetricDelta('click_to_open_rate', f.avg_ctor, prior);
+    var conversionDelta = computeMetricDelta('conversion_rate', f.avg_conversion_rate, prior);
+    var spamDelta = computeMetricDelta('complaint_rate', f.avg_complaint_rate, prior);
+
+    // Color classes for the new metrics. Use same severity-style coloring where
+    // we have thresholds, neutral otherwise.
+    var bounceCls = metricColorClass('bounce_rate', f.avg_bounce_rate);
+    var spamCls = metricColorClass('complaint_rate', f.avg_complaint_rate);
+    var conversionCls = '';
+    var ctorCls = '';
 
     // Sprint indicator (pill on the card)
     var sprintBadge = '';
@@ -7461,31 +7486,42 @@ window.renderFlowHealthCards = async function() {
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Delivered</div>'
-      + '      <div class="flow-health-metric-val">' + Math.round(f.total_delivered).toLocaleString() + '</div>'
-      + '    </div>'
-      + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Revenue</div>'
-      + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
-      +        revenueDelta
-      + '    </div>'
-      + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Revenue / msg</div>'
-      + '      <div class="flow-health-metric-val ' + rpmCls + '">' + rpmDisplay + '</div>'
-      +        rpmDelta
-      + '    </div>'
-      + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Open rate</div>'
+      + '      <div class="flow-health-metric-label">Open Rate</div>'
       + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
       +        openDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Click rate</div>'
+      + '      <div class="flow-health-metric-label">Click Rate</div>'
       + '      <div class="flow-health-metric-val ' + clickCls + '">' + fmtPct(f.avg_click_rate, 2) + '</div>'
       +        clickDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Unsub rate</div>'
+      + '      <div class="flow-health-metric-label">Click-through</div>'
+      + '      <div class="flow-health-metric-val ' + ctorCls + '">' + fmtPct(f.avg_ctor, 2) + '</div>'
+      +        ctorDelta
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Conversion</div>'
+      + '      <div class="flow-health-metric-val ' + conversionCls + '">' + fmtPct(f.avg_conversion_rate, 2) + '</div>'
+      +        conversionDelta
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Revenue / Recipient</div>'
+      + '      <div class="flow-health-metric-val ' + rpmCls + '">' + rpmDisplay + '</div>'
+      +        rpmDelta
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Bounce Rate</div>'
+      + '      <div class="flow-health-metric-val ' + bounceCls + '">' + fmtPct(f.avg_bounce_rate, 2) + '</div>'
+      +        bounceDelta
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Spam Rate</div>'
+      + '      <div class="flow-health-metric-val ' + spamCls + '">' + fmtPct(f.avg_complaint_rate, 3) + '</div>'
+      +        spamDelta
+      + '    </div>'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Unsub Rate</div>'
       + '      <div class="flow-health-metric-val ' + unsubCls + '">' + fmtPct(f.avg_unsub_rate, 2) + '</div>'
       +        unsubDelta
       + '    </div>'
@@ -7543,14 +7579,9 @@ function renderFlowExpandedPanel(flow, flowDiags) {
             // 1-2 sentence narrative: diagnosis + concise recommendation inline.
             var diagnosis = escapeHtml(d.diagnosis || d.finding || 'Finding');
             var rec = d.recommendation ? '<span class="flow-msg-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
-            var fixBtn = '';
-            if (d.recommendation || d.severity === 'fix_now' || d.severity === 'opportunity') {
-              fixBtn = '<button class="flow-msg-fix-btn" onclick="openFlowImproveFromHealth(' + m.id + ', ' + d.id + ')">Draft fix</button>';
-            }
             return '<div class="flow-msg-finding-compact">'
               + '<span class="' + sevClass + '">' + sevLabel + '</span>'
               + '<span class="flow-msg-finding-narrative">' + diagnosis + rec + '</span>'
-              + fixBtn
               + '</div>';
           }).join('')
         + '</div>';
@@ -7859,7 +7890,7 @@ async function loadFlowBrowserData() {
   // into the improve modal manually when generating an improvement.
   // Session 9.1: filter to current period; historical data is not browsable in UI.
   var res = await db.from('quill_flow_messages')
-    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,unsubscribe_rate,complaint_rate,revenue,revenue_per_recipient,audience_type,is_active,in_sprint,last_improved_at,last_improved_from_draft_id')
+    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,click_to_open_rate,unsubscribe_rate,complaint_rate,bounce_rate,placed_order_rate,revenue,revenue_per_recipient,audience_type,is_active,in_sprint,last_improved_at,last_improved_from_draft_id')
     .eq('data_period', 'current')
     .order('flow_name', { ascending: true })
     .limit(2000);
