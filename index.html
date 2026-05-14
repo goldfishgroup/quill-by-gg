@@ -6156,8 +6156,17 @@ function runFlowDiagnosticRules(messages, flowName) {
   return findings;
 }
 
+// Track which flows currently have a diagnose run in flight, to prevent
+// double-runs that would create duplicate findings if the user clicks twice.
+var diagnoseInFlight = {};
+
 window.diagnoseSingleFlow = async function(flowName, btnEl) {
   if (!flowName) return;
+  if (diagnoseInFlight[flowName]) {
+    console.log('[diagnose-single] Already running for ' + flowName + ', ignoring duplicate request');
+    return;
+  }
+  diagnoseInFlight[flowName] = true;
   if (!btnEl) btnEl = document.querySelector('.flow-health-diagnose-btn[data-flow="' + flowName.replace(/"/g, '\\"') + '"]');
   var origLabel = btnEl ? btnEl.textContent : 'Diagnose this flow';
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Diagnosing...'; }
@@ -6251,15 +6260,20 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       + ruleFindingsSummary + '\n\n'
       + 'DATA AVAILABILITY:\n'
       + '- You have: flow name, message names, send position, delivered counts, open rates, click rates, unsubscribe rates, revenue, revenue per recipient, A/B test winning variant flags.\n'
-      + '- You do NOT have: subject line text, preview text, body copy, trigger filters, time delays. Do not ask for these. Do not say they are missing. Infer recommendations from the metrics you have.\n\n'
+      + '- You do NOT have: subject line text, preview text, body copy, trigger filters, time delays, send order, send position, time delays between messages, or which message sends first in the sequence. Do not ask for these. Do not say they are missing. Do NOT infer send order or message position from message names (names like "Email 1", "Email 2" are labels, NOT proof of actual send sequence). Infer recommendations from the metrics you have.\n\n'
       + 'PRINCIPLES TO APPLY (use these as your diagnostic lens):\n'
       + '- Low open rate (under 25 percent) on a flow message: subject line or send timing is likely the issue. Recommend reviewing subject line angle, length, and personalization. The strategist will fetch the actual subject from Klaviyo.\n'
       + '- High open rate but low click rate (CTR under 2 percent): body content or CTA is the issue, not the hook. Recommend reviewing body copy, CTA placement, and offer clarity.\n'
       + '- Low revenue per recipient with high delivery: the message is being seen but not converting. Recommend reviewing offer alignment with audience intent at this flow stage.\n'
-      + '- Declining engagement across the sequence (each message worse than the prior): sequence may be too long, or later messages may feel redundant. Recommend reviewing message-to-message angle differentiation.\n'
-      + '- Sequence length issues: too short for the flow type (e.g., single-message post-purchase when 3-4 typical) or too long (sub-30 percent open on later messages).\n'
+      + '- Engagement gaps between messages (e.g., one message has 60% open rate, another has 30%): may indicate different audience segments, content fit, or trigger filter differences. Recommend the strategist review angle differentiation. Do NOT claim the lower-performing message comes "later" in the sequence; you do not have that data.\n'
+      + '- Sequence count issues: total messages in the flow is too short for the flow type (e.g., single-message post-purchase when 3-4 typical) based on the message count alone. Do not infer position.\n'
       + '- Missing A/B test on high-traffic messages: if a message has 1000+ deliveries and no winning variant flag, recommend A/B testing the subject line angle.\n'
       + '- Unusually high unsubscribe rate (over 0.5 percent): audience-message fit problem. Recommend reviewing flow trigger filters or message frequency.\n\n'
+      + 'FORBIDDEN INFERENCES:\n'
+      + '- Do NOT diagnose "wrong send order" or "incorrect sequence" findings. Message names containing "Email 1", "Email 2", "#1", "#3" etc. are just labels chosen by the strategist. They do NOT prove send position.\n'
+      + '- Do NOT claim a message is "in position N" or "sends before/after" another message. You cannot see send order.\n'
+      + '- Do NOT recommend "reordering" the flow. You cannot see the current order.\n'
+      + '- If you want to flag an engagement gap between two messages, describe it as a metric difference, NOT a position issue. Example good: "Email 2 has 63% open vs Email 1 at 61%, but Email 2 RPR is $0.81 vs $1.33 on Email 1". Example bad: "Email 1 should send first based on its higher RPR".\n\n'
       + 'MANDATORY RED-METRIC FLAGGING:\n'
       + 'Before deciding which findings to surface, FIRST scan the data for any message with these red-flag conditions. You MUST create a scope:"message" finding for each occurrence found, before adding any other findings.\n'
       + '- Unsub rate over 0.5 percent on any message (severity: fix_now)\n'
@@ -6354,7 +6368,21 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       /\bdire\b/i,
       /\bterrible\b/i,
       /\bhorrible\b/i,
-      /\bawful\b/i
+      /\bawful\b/i,
+      // Session 10.4: send-order hallucinations. The LLM has no position
+      // data and must not invent send sequence findings.
+      /\bsequence is inverted\b/i,
+      /\bsends before\b/i,
+      /\bsends first\b/i,
+      /\bsends third\b/i,
+      /\bsends second\b/i,
+      /\bsend order\b/i,
+      /\breorder the flow\b/i,
+      /\breorder the messages\b/i,
+      /\bin position [0-9]/i,
+      /\bdespite being in position\b/i,
+      /\bincorrect send order\b/i,
+      /\bwrong order\b/i
     ];
     var beforeCount = diagnoses.length;
     diagnoses = diagnoses.filter(function(d){
@@ -6423,6 +6451,23 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     rows = ruleRows.concat(rows);
     console.log('[diagnose-single] Saving ' + ruleRows.length + ' rule findings + ' + (rows.length - ruleRows.length) + ' LLM findings = ' + rows.length + ' total');
 
+    // Session 10.4 fix: deactivate any prior findings for this flow on this
+    // snapshot before inserting new ones. Prevents re-runs from piling up
+    // duplicate findings. We soft-delete (active=false) rather than hard-delete
+    // so historical audit trail is preserved if needed. The matcher and UI
+    // both filter to active=true so soft-deleted rows are invisible.
+    var deact = await db.from('quill_flow_diagnostics')
+      .update({ active: false })
+      .eq('flow_name', flowName)
+      .eq('snapshot_id', snapshotId)
+      .eq('active', true);
+    if (deact.error) {
+      console.warn('[diagnose-single] Could not deactivate prior findings:', deact.error.message);
+      // Continue anyway; insert will still work, we just have duplicates risk
+    } else {
+      console.log('[diagnose-single] Deactivated prior findings for ' + flowName + ' on this snapshot');
+    }
+
     var ins = await db.from('quill_flow_diagnostics').insert(rows).select();
     if (ins.error) throw new Error('Insert failed: ' + ins.error.message);
 
@@ -6440,6 +6485,8 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     console.error('diagnoseSingleFlow error', err);
     showToast('Diagnose failed: ' + (err.message || err), true);
     if (btnEl) { btnEl.disabled = false; btnEl.textContent = origLabel; }
+  } finally {
+    delete diagnoseInFlight[flowName];
   }
 };
 
@@ -6496,12 +6543,13 @@ async function refreshSnapshotCounts(snapshotId) {
 
 // Format a single flow's messages into a tight payload for the LLM prompt.
 function formatSingleFlowForPrompt(flowName, messages) {
-  // Sort by send_position if available, else by message_name alphabetically
+  // Sort by delivered descending so the LLM sees biggest-impact messages first.
+  // We do NOT sort by send_position because that data is not reliable from
+  // the Klaviyo CSV (send_position is not in the export). Previously this
+  // function falsely labeled "Position N of total" which led the LLM to
+  // hallucinate send-order findings. Sort is presentational only.
   messages.sort(function(a, b){
-    var ap = Number(a.send_position) || 999;
-    var bp = Number(b.send_position) || 999;
-    if (ap !== bp) return ap - bp;
-    return (a.message_name || '').localeCompare(b.message_name || '');
+    return (Number(b.delivered) || 0) - (Number(a.delivered) || 0);
   });
   var lines = [];
   lines.push('FLOW: ' + flowName);
@@ -6511,11 +6559,11 @@ function formatSingleFlowForPrompt(flowName, messages) {
   lines.push('TOTAL DELIVERED: ' + Math.round(totalDel).toLocaleString());
   lines.push('TOTAL REVENUE: $' + Number(totalRev).toFixed(2));
   lines.push('');
-  lines.push('MESSAGES (in send order):');
-  messages.forEach(function(m, i){
-    var pos = (i + 1);
+  lines.push('NOTE: send order is NOT available in this data. Message names are labels chosen by the strategist; they do not prove send sequence.');
+  lines.push('');
+  lines.push('MESSAGES (sorted by delivered count, not send order):');
+  messages.forEach(function(m){
     lines.push('---');
-    lines.push('Position ' + pos + ' of ' + messages.length);
     lines.push('Name: ' + (m.message_name || 'Untitled'));
     // Only include subject and preview if they have real values. Empty
     // placeholders prime the LLM to flag missing fields.
