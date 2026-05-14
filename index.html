@@ -628,10 +628,11 @@
     .flow-msg-finding-rec { color: var(--q-muted); }
 
     /* Session 10.3: Findings collapse header + per-finding accept/reject buttons */
-    .findings-collapse-toggle { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); text-align: left; color: var(--q-muted); transition: color 0.12s; }
-    .findings-collapse-toggle:hover { color: var(--gg-olive); }
-    .findings-collapse-caret { font-size: 11px; color: var(--q-muted); flex-shrink: 0; width: 12px; }
-    .findings-collapse-summary { font-size: 11px; font-weight: 600; }
+    .findings-collapse-toggle { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 4px; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); text-align: left; color: var(--q-muted); transition: color 0.12s; border-radius: 4px; }
+    .findings-collapse-toggle:hover { color: var(--gg-olive); background: rgba(0,0,0,0.02); }
+    .findings-collapse-caret { font-size: 16px; color: var(--q-muted); flex-shrink: 0; width: 18px; text-align: center; line-height: 1; }
+    .findings-collapse-toggle:hover .findings-collapse-caret { color: var(--gg-olive); }
+    .findings-collapse-summary { font-size: 12px; font-weight: 600; }
     .flow-health-findings.expanded .findings-collapse-toggle,
     .flow-msg-findings.expanded .findings-collapse-toggle { padding-bottom: 8px; margin-bottom: 4px; border-bottom: 0.5px solid var(--q-line); }
     .finding-action-btns { display: flex; gap: 4px; flex-shrink: 0; margin-left: auto; }
