@@ -541,15 +541,28 @@
 
     .flow-health-card { background: #fff; border: 0.5px solid var(--q-line); border-radius: var(--radius); padding: 14px 18px; transition: border-color 0.12s; }
     .flow-health-card:hover { border-color: var(--gg-olive); }
-    .flow-health-card.healthy { border-left: 3px solid #5d8a3a; }
-    .flow-health-card.needs-improvement { border-left: 3px solid #d68d2a; }
-    .flow-health-card.critical { border-left: 3px solid #a83232; }
-    .flow-health-card.unknown { border-left: 3px solid #b8b6ad; }
+    .flow-health-card.in-sprint { border-left: 3px solid var(--gg-orange); background: #fff9f3; }
 
     .flow-health-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
     .flow-health-card-name { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 2px; }
     .flow-health-card-meta { font-size: 10px; color: var(--q-muted); }
     .flow-health-card-meta-missing { color: var(--gg-orange); font-style: italic; }
+
+    /* Session 11.1: Sprint state visuals */
+    .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: var(--gg-orange); color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
+    .flow-sprint-toggle { padding: 5px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; transition: all 0.12s; }
+    .flow-sprint-toggle:hover { border-color: var(--gg-orange); color: var(--gg-orange); }
+    .flow-sprint-toggle.active { border-color: var(--gg-orange); color: var(--gg-orange); background: #fff9f3; }
+    .flow-msg-sprint-btn { padding: 4px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex-shrink: 0; transition: all 0.12s; }
+    .flow-msg-sprint-btn:hover { border-color: var(--gg-orange); color: var(--gg-orange); }
+    .flow-msg-sprint-btn.active { border-color: var(--gg-orange); color: var(--gg-orange); background: #fff9f3; }
+    .flow-msg-row.in-sprint { border-left: 2px solid var(--gg-orange); padding-left: 10px; background: #fffbf6; }
+
+    /* Session 11.1: Metric deltas (month-over-month change indicators) */
+    .flow-health-metric-delta { font-size: 9px; font-weight: 600; margin-top: 2px; letter-spacing: 0.02em; }
+    .flow-health-metric-delta.up { color: #3d6022; }
+    .flow-health-metric-delta.down { color: #a83232; }
+    .flow-health-metric-delta.neutral { color: var(--q-muted); font-weight: 500; }
     .flow-health-badge { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
     .flow-health-badge.healthy { background: #e6efd9; color: #3d6022; }
     .flow-health-badge.needs-improvement { background: #fbe9cc; color: #8c5713; }
@@ -1704,12 +1717,6 @@
               <div class="patterns-sub">Live flows by health, with diagnostic findings underneath. Scan the top, drill into a critical flow, fix the worst messages.</div>
             </div>
             <div class="patterns-head-right">
-              <div class="patterns-filter-toggle" style="flex-wrap:wrap">
-                <button class="patterns-filter-btn active" onclick="setHealthFilter('all')" id="hf-all">All</button>
-                <button class="patterns-filter-btn" onclick="setHealthFilter('critical')" id="hf-critical">Critical</button>
-                <button class="patterns-filter-btn" onclick="setHealthFilter('needs-improvement')" id="hf-needs-improvement">Needs Improvement</button>
-                <button class="patterns-filter-btn" onclick="setHealthFilter('healthy')" id="hf-healthy">Healthy</button>
-              </div>
               <div class="diag-snapshot-controls">
                 <div class="diag-snapshot-row">
                   <label class="diag-snapshot-label">Viewing snapshot</label>
@@ -7089,6 +7096,163 @@ window.toggleFlowExpand = function(flowName) {
   renderFlowHealthCards();
 };
 
+// ── SPRINT TOGGLE (Session 11.1) ──────────────────────────────────────
+// Strategist marks individual messages as "in sprint" to track active
+// optimization work. The flow-level toggle is a bulk action that sets/clears
+// the flag on all messages within the flow. State persists across months.
+
+// Per-message sprint toggle. Called from the expanded message row.
+window.toggleMessageSprint = async function(messageId, btnEl) {
+  if (!messageId) return;
+  // Find current value to flip
+  var msg = (flowMessagesCache || []).find(function(m){ return m.id === messageId; });
+  if (!msg) {
+    showToast('Message not found in cache', true);
+    return;
+  }
+  var newVal = !msg.in_sprint;
+  if (btnEl) { btnEl.disabled = true; }
+  var res = await db.from('quill_flow_messages')
+    .update({ in_sprint: newVal })
+    .eq('id', messageId);
+  if (res.error) {
+    showToast('Failed to update sprint state: ' + res.error.message, true);
+    if (btnEl) { btnEl.disabled = false; }
+    return;
+  }
+  msg.in_sprint = newVal;
+  // Also update insightsData if present
+  if (insightsData && insightsData.flows) {
+    var idata = insightsData.flows.find(function(m){ return m.id === messageId; });
+    if (idata) idata.in_sprint = newVal;
+  }
+  showToast(newVal ? 'Marked in sprint' : 'Removed from sprint');
+  renderFlowHealthCards();
+};
+
+// Flow-level sprint toggle. Bulk action on all messages in the flow.
+window.toggleFlowSprint = async function(flowName) {
+  if (!flowName) return;
+  // Find all current-period messages for this flow
+  var flowMessages = (flowMessagesCache || []).filter(function(m){
+    return m.flow_name === flowName && (m.data_period === 'current' || !m.data_period);
+  });
+  if (!flowMessages.length) {
+    showToast('No current-period messages for ' + flowName, true);
+    return;
+  }
+  // If ANY message is in_sprint, the bulk action clears them all. Otherwise, set all.
+  var anyInSprint = flowMessages.some(function(m){ return !!m.in_sprint; });
+  var newVal = !anyInSprint;
+  var ids = flowMessages.map(function(m){ return m.id; });
+  var res = await db.from('quill_flow_messages')
+    .update({ in_sprint: newVal })
+    .in('id', ids);
+  if (res.error) {
+    showToast('Failed: ' + res.error.message, true);
+    return;
+  }
+  // Update local caches
+  flowMessages.forEach(function(m){ m.in_sprint = newVal; });
+  if (insightsData && insightsData.flows) {
+    insightsData.flows.forEach(function(m){
+      if (m.flow_name === flowName && (m.data_period === 'current' || !m.data_period)) {
+        m.in_sprint = newVal;
+      }
+    });
+  }
+  showToast(newVal ? 'All messages in ' + flowName + ' marked in sprint' : 'Sprint flags cleared for ' + flowName);
+  renderFlowHealthCards();
+};
+
+// ── DELTA COMPUTATION (Session 11.1) ──────────────────────────────────
+// Compute month-over-month deltas by comparing current snapshot's flow
+// metrics against the prior snapshot's same flow. Falls back to nothing
+// when no prior snapshot exists.
+
+// Returns a map of flow_name -> { open_rate, click_rate, unsubscribe_rate, total_revenue, revenue_per_msg, snapshot_month }
+// based on the most recent prior snapshot before the currently-viewed one.
+// For now, since we don't have a separate flow-snapshot table (flow data is
+// imported per CSV upload and overwrites current), we approximate by reading
+// historical flow data from quill_flow_messages where data_period='historical'.
+// Once true monthly snapshots are wired (Klaviyo API integration), this swaps
+// to reading the prior month's snapshot directly.
+function computePriorSnapshotFlowMetrics(currentFlows) {
+  var out = {};
+  // Build aggregates from historical flow messages (data_period='historical')
+  // grouped by flow_name. This is the best approximation today.
+  var historicalMessages = (insightsData.flows || []).filter(function(m){
+    return m.data_period === 'historical' && (m.audience_type || 'consumer') === 'consumer';
+  });
+  if (!historicalMessages.length) return out;
+  var byFlow = {};
+  historicalMessages.forEach(function(m){
+    var fn = m.flow_name || '';
+    if (!fn) return;
+    if (!byFlow[fn]) byFlow[fn] = { delivered: 0, opens: 0, clicks: 0, unsubs: 0, revenue: 0, messages: 0 };
+    var del = Number(m.delivered) || 0;
+    byFlow[fn].delivered += del;
+    byFlow[fn].opens += (Number(m.unique_opens) || 0);
+    byFlow[fn].clicks += (Number(m.unique_clicks) || 0);
+    byFlow[fn].unsubs += (Number(m.unsubscribes) || 0);
+    byFlow[fn].revenue += (Number(m.revenue) || 0);
+    byFlow[fn].messages += 1;
+  });
+  Object.keys(byFlow).forEach(function(fn){
+    var a = byFlow[fn];
+    out[fn] = {
+      avg_open_rate: a.delivered > 0 ? (a.opens / a.delivered) * 100 : null,
+      avg_click_rate: a.delivered > 0 ? (a.clicks / a.delivered) * 100 : null,
+      avg_unsub_rate: a.delivered > 0 ? (a.unsubs / a.delivered) * 100 : null,
+      total_revenue: a.revenue,
+      revenue_per_msg: a.messages > 0 ? a.revenue / a.messages : null,
+      label: 'historical'
+    };
+  });
+  return out;
+}
+
+// Build a small inline delta string for a metric. Returns HTML; empty string
+// if no prior data exists for that flow/metric. Color-coded by direction
+// (green = improvement, red = regression, gray = no change or no prior).
+// For unsub_rate, lower is better; for others, higher is better.
+function computeMetricDelta(metricName, currentVal, priorMetrics) {
+  if (!priorMetrics) return '';
+  var priorVal;
+  if (metricName === 'open_rate') priorVal = priorMetrics.avg_open_rate;
+  else if (metricName === 'click_rate') priorVal = priorMetrics.avg_click_rate;
+  else if (metricName === 'unsubscribe_rate') priorVal = priorMetrics.avg_unsub_rate;
+  else if (metricName === 'total_revenue') priorVal = priorMetrics.total_revenue;
+  else if (metricName === 'revenue_per_msg') priorVal = priorMetrics.revenue_per_msg;
+  else return '';
+  if (priorVal === null || priorVal === undefined || isNaN(Number(priorVal))) return '';
+  if (currentVal === null || currentVal === undefined || isNaN(Number(currentVal))) return '';
+  var diff = Number(currentVal) - Number(priorVal);
+  if (Math.abs(diff) < 0.0001) {
+    return '<div class="flow-health-metric-delta neutral">no change vs prior</div>';
+  }
+  // For unsub, lower is better; flip direction
+  var isImprovement;
+  if (metricName === 'unsubscribe_rate') {
+    isImprovement = diff < 0;
+  } else {
+    isImprovement = diff > 0;
+  }
+  var arrow = diff > 0 ? '\u2191' : '\u2193';
+  var cls = isImprovement ? 'flow-health-metric-delta up' : 'flow-health-metric-delta down';
+  var displayDiff;
+  if (metricName === 'total_revenue') {
+    displayDiff = '$' + Math.abs(diff).toFixed(0);
+  } else if (metricName === 'revenue_per_msg') {
+    displayDiff = '$' + Math.abs(diff).toFixed(2);
+  } else {
+    // Rate metrics: show as percentage point change
+    displayDiff = Math.abs(diff).toFixed(1) + 'pp';
+  }
+  var sourceLabel = priorMetrics.label || 'prior';
+  return '<div class="' + cls + '">' + arrow + ' ' + displayDiff + ' vs ' + sourceLabel + '</div>';
+}
+
 window.openFlowImproveFromHealth = function(flowMessageId, diagId) {
   // Reuse existing flow improvement modal. If a diagnostic id is provided,
   // attach it as context using the same trick as deeplinkToFlowImprove.
@@ -7180,69 +7344,46 @@ window.renderFlowHealthCards = async function() {
     diagsByFlow[key].push(d);
   });
 
-  // Classify each flow
+  // Session 11.1: badges removed. Compute sprint state per flow (any message in_sprint = true)
   flows.forEach(function(f){
-    f.health = classifyFlowHealth(f, diagsByFlow[f.flow_name] || []);
+    f.in_sprint = (f.messages || []).some(function(m){ return !!m.in_sprint; });
+    f.sprint_count = (f.messages || []).filter(function(m){ return !!m.in_sprint; }).length;
   });
 
-  // Sort: critical > needs-improvement > healthy > unknown
-  var sevOrder = { 'critical': 0, 'needs-improvement': 1, 'healthy': 2, 'unknown': 3 };
+  // Sort: flows with ANY in-sprint message first, then by revenue descending
   flows.sort(function(a, b){
-    var diff = sevOrder[a.health.status] - sevOrder[b.health.status];
-    if (diff !== 0) return diff;
-    return (b.total_delivered || 0) - (a.total_delivered || 0);
+    if (a.in_sprint !== b.in_sprint) return a.in_sprint ? -1 : 1;
+    return (b.total_revenue || 0) - (a.total_revenue || 0);
   });
-
-  // Session 9.4: apply health filter (filters flow cards by their classified badge)
-  if (healthFilter && healthFilter !== 'all') {
-    flows = flows.filter(function(f){ return f.health.status === healthFilter; });
-  }
 
   // Render baselines header
   var baselines = computeSFHBaselines(flowMessagesCache);
   renderFlowHealthBaselines(baselines);
 
   if (!flows.length) {
-    container.innerHTML = '<div class="flow-health-empty">No flows match the ' + escapeHtml(healthFilter) + ' filter.</div>';
+    container.innerHTML = '<div class="flow-health-empty">No flows to show.</div>';
     return;
   }
 
+  // Build prior-snapshot lookup for deltas (compares current snapshot's flow metrics
+  // to the prior snapshot's same flow). Falls back gracefully when no prior exists.
+  var priorFlowMetrics = computePriorSnapshotFlowMetrics(flows);
+
   // Render cards
   var html = flows.map(function(f){
-    var h = f.health;
-    var statusLabel = h.status === 'needs-improvement' ? 'Needs improvement'
-      : h.status === 'critical' ? 'Critical'
-      : h.status === 'unknown' ? 'No data'
-      : 'Healthy';
-
     var openCls = metricColorClass('open_rate', f.avg_open_rate);
     var clickCls = metricColorClass('click_rate', f.avg_click_rate);
     var unsubCls = metricColorClass('unsubscribe_rate', f.avg_unsub_rate);
 
-    var reasonsHtml = '';
-    if (h.reasons && h.reasons.length) {
-      reasonsHtml = '<div class="flow-health-reasons">'
-        + '<div class="flow-health-reasons-label">Why this status</div>'
-        + h.reasons.map(function(r){
-            var marker = r.severity === 'critical' ? '<span class="flow-health-reason-marker">!</span>'
-              : r.severity === 'warn' ? '<span class="flow-health-reason-marker warn">!</span>'
-              : '<span style="color:#3d6022;font-weight:700;">\u2713</span>';
-            return '<div class="flow-health-reason">' + marker + ' ' + escapeHtml(r.text) + '</div>';
-          }).join('')
-        + '</div>';
-    }
-
-    // Session 9.5: merged findings. Flow-scope findings render as narrative
-    // INSIDE the card, replacing the standalone Diagnostic findings grid.
+    // Session 11.1: flow-scope findings still render as narrative inside card
     var flowDiagsForCard = diagsByFlow[f.flow_name] || [];
     var flowScopeDiags = flowDiagsForCard.filter(function(d){
       return d.scope === 'flow' || d.scope === 'structure' || !d.scope;
     });
     var findingsHtml = '';
     if (flowScopeDiags.length) {
-      // Sort by severity (fix_now first, then opportunity, test, monitor)
-      var sevOrder = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
-      flowScopeDiags.sort(function(a, b){ return (sevOrder[a.severity] || 99) - (sevOrder[b.severity] || 99); });
+      var sevOrder2 = { 'fix_now': 0, 'opportunity': 1, 'test': 2, 'monitor': 3 };
+      flowScopeDiags.sort(function(a, b){ return (sevOrder2[a.severity] || 99) - (sevOrder2[b.severity] || 99); });
       findingsHtml = '<div class="flow-health-findings">'
         + '<div class="flow-health-findings-label">What we found</div>'
         + flowScopeDiags.map(function(d){
@@ -7251,7 +7392,6 @@ window.renderFlowHealthCards = async function() {
               : d.severity === 'opportunity' ? 'Opportunity'
               : d.severity === 'test' ? 'A/B test'
               : 'Monitor';
-            // Compose 2-3 sentence narrative: diagnosis + recommendation. Both already concise.
             var diagnosis = escapeHtml(d.diagnosis || '');
             var rec = d.recommendation ? '<span class="flow-health-finding-rec"> ' + escapeHtml(d.recommendation) + '</span>' : '';
             return '<div class="flow-health-finding">'
@@ -7262,23 +7402,14 @@ window.renderFlowHealthCards = async function() {
         + '</div>';
     }
 
-    // B1: count messages needing attention + render expand control
     var flowDiags = flowDiagsForCard;
-    var attentionCount = 0;
-    f.messages.forEach(function(m){
-      var matched = matchDiagnosticsToMessage(m, flowDiags);
-      var msgStatus = classifyMessageHealth(m, matched);
-      if (msgStatus !== 'good') attentionCount++;
-    });
 
     var totalMessages = f.message_count;
     var attentionLineText;
-    if (h.status === 'unknown') {
-      attentionLineText = 'No delivery data on individual messages yet.';
-    } else if (attentionCount === 0) {
-      attentionLineText = 'All ' + totalMessages + ' message' + (totalMessages !== 1 ? 's are' : ' is') + ' within ranges.';
+    if (f.sprint_count > 0) {
+      attentionLineText = f.sprint_count + ' of ' + totalMessages + ' message' + (totalMessages !== 1 ? 's' : '') + ' in sprint.';
     } else {
-      attentionLineText = attentionCount + ' of ' + totalMessages + ' message' + (totalMessages !== 1 ? 's' : '') + ' need' + (attentionCount === 1 ? 's' : '') + ' attention.';
+      attentionLineText = totalMessages + ' message' + (totalMessages !== 1 ? 's' : '') + ' tracked.';
     }
     var isExpanded = !!expandedFlows[f.flow_name];
     var expandToggleLabel = isExpanded ? 'Hide messages' : 'Show messages';
@@ -7301,13 +7432,32 @@ window.renderFlowHealthCards = async function() {
       rpmDisplay = '$' + Number(f.revenue_per_msg).toFixed(2);
     }
 
-    return '<div class="flow-health-card ' + h.status + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
+    // Delta strings for each metric (when prior snapshot exists)
+    var prior = priorFlowMetrics[f.flow_name];
+    var openDelta = computeMetricDelta('open_rate', f.avg_open_rate, prior);
+    var clickDelta = computeMetricDelta('click_rate', f.avg_click_rate, prior);
+    var unsubDelta = computeMetricDelta('unsubscribe_rate', f.avg_unsub_rate, prior);
+    var revenueDelta = computeMetricDelta('total_revenue', f.total_revenue, prior);
+    var rpmDelta = computeMetricDelta('revenue_per_msg', f.revenue_per_msg, prior);
+
+    // Sprint indicator (pill on the card)
+    var sprintBadge = '';
+    if (f.in_sprint) {
+      sprintBadge = '<span class="flow-sprint-badge">In sprint</span>';
+    }
+
+    // Flow-level "mark all in sprint" toggle button
+    var sprintToggleLabel = f.in_sprint ? 'Clear all sprint flags' : 'Mark all in sprint';
+
+    var cardClass = 'flow-health-card' + (f.in_sprint ? ' in-sprint' : '');
+
+    return '<div class="' + cardClass + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
       + '  <div class="flow-health-card-head">'
       + '    <div>'
-      + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + '</div>'
+      + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + sprintBadge + '</div>'
       + '      <div class="flow-health-card-meta">' + metaParts.join(' &middot; ') + '</div>'
       + '    </div>'
-      + '    <div class="flow-health-badge ' + h.status + '">' + statusLabel + '</div>'
+      + '    <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + sprintToggleLabel + '</button>'
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
@@ -7317,25 +7467,29 @@ window.renderFlowHealthCards = async function() {
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Revenue</div>'
       + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
+      +        revenueDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Revenue / msg</div>'
       + '      <div class="flow-health-metric-val ' + rpmCls + '">' + rpmDisplay + '</div>'
+      +        rpmDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Open rate</div>'
       + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
+      +        openDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Click rate</div>'
       + '      <div class="flow-health-metric-val ' + clickCls + '">' + fmtPct(f.avg_click_rate, 2) + '</div>'
+      +        clickDelta
       + '    </div>'
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Unsub rate</div>'
       + '      <div class="flow-health-metric-val ' + unsubCls + '">' + fmtPct(f.avg_unsub_rate, 2) + '</div>'
+      +        unsubDelta
       + '    </div>'
       + '  </div>'
-      + reasonsHtml
       + findingsHtml
       + '  <div class="flow-health-attention-line">'
       + '    <span class="flow-health-attention-text">' + escapeHtml(attentionLineText) + '</span>'
@@ -7404,13 +7558,19 @@ function renderFlowExpandedPanel(flow, flowDiags) {
       findingsHtml = '';
     }
 
-    return '<div class="flow-msg-row ' + statusClass + '">'
+    var sprintActive = !!m.in_sprint;
+    var sprintBtnLabel = sprintActive ? '\u2713 In sprint' : 'Mark in sprint';
+    var sprintBtnClass = sprintActive ? 'flow-msg-sprint-btn active' : 'flow-msg-sprint-btn';
+    var rowSprintClass = sprintActive ? ' in-sprint' : '';
+
+    return '<div class="flow-msg-row ' + statusClass + rowSprintClass + '">'
       + '  <div class="flow-msg-head">'
       + '    <span class="flow-msg-dot ' + statusClass + '"></span>'
       + '    <div class="flow-msg-head-body">'
       + '      <div class="flow-msg-subject">' + escapeHtml(subjectText) + '</div>'
       + '      <div class="flow-msg-meta">' + posLabel + '<span class="flow-msg-delivered">' + Math.round(Number(m.delivered) || 0).toLocaleString() + ' delivered</span></div>'
       + '    </div>'
+      + '    <button class="' + sprintBtnClass + '" onclick="toggleMessageSprint(' + m.id + ', this)">' + sprintBtnLabel + '</button>'
       + '  </div>'
       + '  <div class="flow-msg-metrics">'
       + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Revenue</span> <span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span></div>'
@@ -7699,7 +7859,7 @@ async function loadFlowBrowserData() {
   // into the improve modal manually when generating an improvement.
   // Session 9.1: filter to current period; historical data is not browsable in UI.
   var res = await db.from('quill_flow_messages')
-    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,unsubscribe_rate,complaint_rate,revenue,revenue_per_recipient,audience_type,is_active,last_improved_at,last_improved_from_draft_id')
+    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,unsubscribe_rate,complaint_rate,revenue,revenue_per_recipient,audience_type,is_active,in_sprint,last_improved_at,last_improved_from_draft_id')
     .eq('data_period', 'current')
     .order('flow_name', { ascending: true })
     .limit(2000);
