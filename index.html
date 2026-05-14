@@ -550,6 +550,7 @@
 
     /* Session 11.1: Sprint state visuals */
     .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: var(--gg-orange); color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
+    .flow-period-pill { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #ecebe6; color: var(--q-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
     .flow-sprint-toggle { padding: 5px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; transition: all 0.12s; }
     .flow-sprint-toggle:hover { border-color: var(--gg-orange); color: var(--gg-orange); }
     .flow-sprint-toggle.active { border-color: var(--gg-orange); color: var(--gg-orange); background: #fff9f3; }
@@ -624,7 +625,10 @@
     .flow-msg-row.warn { border-left: 3px solid #d68d2a; }
     .flow-msg-row.good { border-left: 3px solid #5d8a3a; }
 
-    .flow-msg-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .flow-msg-head { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) auto; align-items: center; gap: 16px; margin-bottom: 0; }
+    .flow-msg-head-left { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+    .flow-msg-head-center { display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-start; }
+    .flow-msg-head-right { flex-shrink: 0; }
     .flow-msg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
     .flow-msg-dot.bad { background: #a83232; }
     .flow-msg-dot.warn { background: #d68d2a; }
@@ -638,7 +642,6 @@
     .flow-msg-improve-btn { padding: 5px 10px; background: var(--gg-olive); color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
     .flow-msg-improve-btn:hover { background: #2f3214; }
 
-    .flow-msg-metrics { display: flex; gap: 18px; padding: 8px 0; flex-wrap: wrap; }
     .flow-msg-metric { font-size: 11px; }
     .flow-msg-metric-label { color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 9px; margin-right: 4px; }
     .flow-msg-metric-val { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--gg-charcoal); }
@@ -7382,6 +7385,9 @@ window.renderFlowHealthCards = async function() {
   // to the prior snapshot's same flow). Falls back gracefully when no prior exists.
   var priorFlowMetrics = computePriorSnapshotFlowMetrics(flows);
 
+  // Period label is shared across all cards in this render pass
+  var currentPeriod = getCurrentDisplayPeriod();
+
   // Render cards
   var html = flows.map(function(f){
     var openCls = metricColorClass('open_rate', f.avg_open_rate);
@@ -7436,7 +7442,6 @@ window.renderFlowHealthCards = async function() {
     var metaParts = [];
     metaParts.push(f.message_count + ' message' + (f.message_count !== 1 ? 's' : ''));
     metaParts.push(Math.round(f.total_delivered).toLocaleString() + ' delivered');
-    metaParts.push(fmtCurrency(f.total_revenue) + ' revenue');
     if (monthsLabel) metaParts.push(monthsLabel);
     else metaParts.push('<span class="flow-health-card-meta-missing">First-fired date not set</span>');
 
@@ -7471,6 +7476,10 @@ window.renderFlowHealthCards = async function() {
       sprintBadge = '<span class="flow-sprint-badge">In sprint</span>';
     }
 
+    // Period pill: shows what month this card is reporting on
+    var periodLabel = formatPeriodLabel(currentPeriod);
+    var periodPill = periodLabel ? '<span class="flow-period-pill">' + escapeHtml(periodLabel) + '</span>' : '';
+
     // Flow-level "mark all in sprint" toggle button
     var sprintToggleLabel = f.in_sprint ? 'Clear all sprint flags' : 'Mark all in sprint';
 
@@ -7479,12 +7488,17 @@ window.renderFlowHealthCards = async function() {
     return '<div class="' + cardClass + '" data-flow-name="' + escapeHtml(f.flow_name) + '">'
       + '  <div class="flow-health-card-head">'
       + '    <div>'
-      + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + sprintBadge + '</div>'
+      + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + sprintBadge + periodPill + '</div>'
       + '      <div class="flow-health-card-meta">' + metaParts.join(' &middot; ') + '</div>'
       + '    </div>'
       + '    <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + sprintToggleLabel + '</button>'
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
+      + '    <div class="flow-health-metric">'
+      + '      <div class="flow-health-metric-label">Revenue</div>'
+      + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
+      +        revenueDelta
+      + '    </div>'
       + '    <div class="flow-health-metric">'
       + '      <div class="flow-health-metric-label">Open Rate</div>'
       + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
@@ -7596,18 +7610,22 @@ function renderFlowExpandedPanel(flow, flowDiags) {
 
     return '<div class="flow-msg-row ' + statusClass + rowSprintClass + '">'
       + '  <div class="flow-msg-head">'
-      + '    <span class="flow-msg-dot ' + statusClass + '"></span>'
-      + '    <div class="flow-msg-head-body">'
-      + '      <div class="flow-msg-subject">' + escapeHtml(subjectText) + '</div>'
-      + '      <div class="flow-msg-meta">' + posLabel + '<span class="flow-msg-delivered">' + Math.round(Number(m.delivered) || 0).toLocaleString() + ' delivered</span></div>'
+      + '    <div class="flow-msg-head-left">'
+      + '      <span class="flow-msg-dot ' + statusClass + '"></span>'
+      + '      <div class="flow-msg-head-body">'
+      + '        <div class="flow-msg-subject">' + escapeHtml(subjectText) + '</div>'
+      + '        <div class="flow-msg-meta">' + posLabel + '<span class="flow-msg-delivered">' + Math.round(Number(m.delivered) || 0).toLocaleString() + ' delivered</span></div>'
+      + '      </div>'
       + '    </div>'
-      + '    <button class="' + sprintBtnClass + '" onclick="toggleMessageSprint(' + m.id + ', this)">' + sprintBtnLabel + '</button>'
-      + '  </div>'
-      + '  <div class="flow-msg-metrics">'
-      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Revenue</span> <span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span></div>'
-      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Open</span> <span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span></div>'
-      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Click</span> <span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span></div>'
-      + '    <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
+      + '    <div class="flow-msg-head-center">'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Revenue</span> <span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Open</span> <span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Click</span> <span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
+      + '    </div>'
+      + '    <div class="flow-msg-head-right">'
+      + '      <button class="' + sprintBtnClass + '" onclick="toggleMessageSprint(' + m.id + ', this)">' + sprintBtnLabel + '</button>'
+      + '    </div>'
       + '  </div>'
       + findingsHtml
       + '</div>';
@@ -7707,6 +7725,45 @@ function formatMonthsActive(months) {
   var rem = months % 12;
   if (rem === 0) return 'Active ' + years + ' year' + (years !== 1 ? 's' : '');
   return 'Active ' + years + 'y ' + rem + 'm';
+}
+
+// Format a YYYY-MM string into a human-readable month label like "April 2026".
+// Used for the period pill on flow cards. Returns null on bad input.
+function formatPeriodLabel(yyyyMm) {
+  if (!yyyyMm) return null;
+  var parts = String(yyyyMm).split('-');
+  if (parts.length !== 2) return null;
+  var year = parseInt(parts[0], 10);
+  var month = parseInt(parts[1], 10);
+  if (!year || !month || month < 1 || month > 12) return null;
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return monthNames[month - 1] + ' ' + year;
+}
+
+// Derive the period currently being viewed from the snapshot picker, falling
+// back to previous calendar month if none is selected. Mirrors the logic
+// used by diagnoseSingleFlow so the displayed period matches what gets tagged.
+function getCurrentDisplayPeriod() {
+  var selectedMonth = null;
+  var picker = document.getElementById('diag-snapshot-picker');
+  if (picker && picker.value) {
+    if (picker.value === 'latest') {
+      var currentSnaps = (snapshotsCache || []).filter(function(s){ return s.is_current; });
+      if (currentSnaps.length) selectedMonth = currentSnaps[0].snapshot_month;
+    } else {
+      var pickedId = Number(picker.value);
+      var picked = (snapshotsCache || []).find(function(s){ return s.id === pickedId; });
+      if (picked && picked.snapshot_month && picked.snapshot_month !== 'pre-2026-04') {
+        selectedMonth = picked.snapshot_month;
+      }
+    }
+  }
+  if (!selectedMonth) {
+    var now = new Date();
+    var prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    selectedMonth = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
+  }
+  return selectedMonth;
 }
 
 function renderManageFlowsProgress() {
