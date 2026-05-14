@@ -551,12 +551,27 @@
     /* Session 11.1: Sprint state visuals */
     .flow-sprint-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: var(--gg-orange); color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
     .flow-period-pill { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 10px; background: #ecebe6; color: var(--q-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: middle; }
-    .flow-sprint-toggle { padding: 5px 12px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; transition: all 0.12s; }
-    .flow-sprint-toggle:hover { border-color: var(--gg-orange); color: var(--gg-orange); }
-    .flow-sprint-toggle.active { border-color: var(--gg-orange); color: var(--gg-orange); background: #fff9f3; }
-    .flow-msg-sprint-btn { padding: 4px 10px; background: transparent; border: 0.5px solid var(--q-line); color: var(--q-muted); border-radius: 5px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex-shrink: 0; transition: all 0.12s; }
-    .flow-msg-sprint-btn:hover { border-color: var(--gg-orange); color: var(--gg-orange); }
-    .flow-msg-sprint-btn.active { border-color: var(--gg-orange); color: var(--gg-orange); background: #fff9f3; }
+
+    /* Toggle switch (flow-level). Plain pill, orange on, gray off. */
+    .flow-sprint-toggle { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .flow-sprint-toggle::before { content: ''; display: inline-block; width: 46px; height: 24px; background: #d4d2cb; border-radius: 14px; transition: background 0.18s ease; flex-shrink: 0; }
+    .flow-sprint-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.18); transition: transform 0.18s ease; }
+    .flow-sprint-toggle.active::before { background: var(--gg-orange); }
+    .flow-sprint-toggle.active::after { transform: translateX(22px); }
+    .flow-sprint-toggle:hover::before { background: #c4c2bb; }
+    .flow-sprint-toggle.active:hover::before { background: #d36733; }
+    .flow-sprint-toggle-label { font-size: 11px; color: var(--q-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Toggle switch (message-level). Smaller variant. */
+    .flow-msg-sprint-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 0; background: transparent; border: 0; cursor: pointer; font-family: var(--font-body); white-space: nowrap; flex-shrink: 0; }
+    .flow-msg-sprint-btn::before { content: ''; display: inline-block; width: 38px; height: 20px; background: #d4d2cb; border-radius: 12px; transition: background 0.18s ease; flex-shrink: 0; }
+    .flow-msg-sprint-btn::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.18); transition: transform 0.18s ease; }
+    .flow-msg-sprint-btn.active::before { background: var(--gg-orange); }
+    .flow-msg-sprint-btn.active::after { transform: translateX(18px); }
+    .flow-msg-sprint-btn:hover::before { background: #c4c2bb; }
+    .flow-msg-sprint-btn.active:hover::before { background: #d36733; }
+    .flow-msg-sprint-btn-label { font-size: 10px; color: var(--q-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
     .flow-msg-row.in-sprint { border-left: 2px solid var(--gg-orange); padding-left: 10px; background: #fffbf6; }
 
     /* Session 11.1: Metric deltas (month-over-month change indicators) */
@@ -7478,7 +7493,7 @@ window.renderFlowHealthCards = async function() {
     var periodPill = periodLabel ? '<span class="flow-period-pill">' + escapeHtml(periodLabel) + '</span>' : '';
 
     // Flow-level "mark all in sprint" toggle button
-    var sprintToggleLabel = f.in_sprint ? 'Clear all sprint flags' : 'Mark all in sprint';
+    var sprintToggleAria = f.in_sprint ? 'Remove all messages from sprint' : 'Mark all messages in sprint';
 
     var cardClass = 'flow-health-card' + (f.in_sprint ? ' in-sprint' : '');
 
@@ -7488,7 +7503,7 @@ window.renderFlowHealthCards = async function() {
       + '      <div class="flow-health-card-name">' + escapeHtml(f.flow_name) + sprintBadge + periodPill + '</div>'
       + '      <div class="flow-health-card-meta">' + metaParts.join(' &middot; ') + '</div>'
       + '    </div>'
-      + '    <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)">' + sprintToggleLabel + '</button>'
+      + '    <button class="flow-sprint-toggle' + (f.in_sprint ? ' active' : '') + '" title="' + escapeHtml(sprintToggleAria) + '" aria-label="' + escapeHtml(sprintToggleAria) + '" onclick="toggleFlowSprint(\u0027' + String(f.flow_name).replace(/'/g, '\\\u0027') + '\u0027)"><span class="flow-sprint-toggle-label">Sprint</span></button>'
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
@@ -7601,7 +7616,7 @@ function renderFlowExpandedPanel(flow, flowDiags) {
     }
 
     var sprintActive = !!m.in_sprint;
-    var sprintBtnLabel = sprintActive ? '\u2713 In sprint' : 'Mark in sprint';
+    var sprintBtnAria = sprintActive ? 'Remove from sprint' : 'Mark in sprint';
     var sprintBtnClass = sprintActive ? 'flow-msg-sprint-btn active' : 'flow-msg-sprint-btn';
     var rowSprintClass = sprintActive ? ' in-sprint' : '';
 
@@ -7621,7 +7636,7 @@ function renderFlowExpandedPanel(flow, flowDiags) {
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
       + '    </div>'
       + '    <div class="flow-msg-head-right">'
-      + '      <button class="' + sprintBtnClass + '" onclick="toggleMessageSprint(' + m.id + ', this)">' + sprintBtnLabel + '</button>'
+      + '      <button class="' + sprintBtnClass + '" title="' + escapeHtml(sprintBtnAria) + '" aria-label="' + escapeHtml(sprintBtnAria) + '" onclick="toggleMessageSprint(' + m.id + ', this)"><span class="flow-msg-sprint-btn-label">Sprint</span></button>'
       + '    </div>'
       + '  </div>'
       + findingsHtml
