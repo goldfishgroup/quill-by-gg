@@ -480,6 +480,42 @@
 
     /* FLOW HEALTH (Phase A) */
     .flow-health-section { margin-top: 18px; padding-bottom: 24px; border-bottom: 0.5px solid var(--q-line); margin-bottom: 24px; }
+
+    /* Session 10.6: Flow Performance summary (mirrors Campaign Insights structurally, scoped for flows) */
+    .flow-perf-section { margin-top: 18px; padding: 22px 24px; background: #fcfaf3; border: 0.5px solid var(--q-line); border-radius: 10px; margin-bottom: 24px; }
+    .flow-perf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+    .flow-perf-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
+    .flow-perf-sub { font-size: 11px; color: var(--q-muted); line-height: 1.5; }
+    .flow-perf-period { display: inline-block; padding: 4px 10px; border-radius: 11px; background: #ecebe6; color: var(--gg-charcoal); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+    .flow-perf-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+    .flow-perf-stat { background: #fff; padding: 14px 16px; border-radius: 8px; border: 0.5px solid var(--q-line); }
+    .flow-perf-stat-val { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .flow-perf-stat-delta { font-size: 10px; font-weight: 600; margin-top: 3px; letter-spacing: 0.02em; }
+    .flow-perf-stat-delta.up { color: #3d6022; }
+    .flow-perf-stat-delta.down { color: #a83232; }
+    .flow-perf-stat-delta.neutral { color: var(--q-muted); font-weight: 500; }
+    .flow-perf-stat-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-top: 6px; }
+    .flow-perf-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .flow-perf-col-title { font-size: 11px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 10px; }
+    .flow-perf-col-list { background: #fff; border: 0.5px solid var(--q-line); border-radius: 8px; overflow: hidden; }
+    .flow-perf-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-top: 0.5px solid var(--q-line); }
+    .flow-perf-row:first-child { border-top: none; }
+    .flow-perf-row-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+    .flow-perf-row-rank { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--q-muted); width: 18px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .flow-perf-row-name { font-size: 12px; color: var(--gg-charcoal); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .flow-perf-row-score { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .flow-perf-row-score.bad { background: #f8d4d4; color: #882b2b; }
+    .flow-perf-row-score.warn { background: #f8e4c8; color: #7a4f1a; }
+    .flow-perf-row-score.good { background: #e6efd9; color: #3d6022; }
+    .flow-perf-row-score.unknown { background: #ecebe6; color: var(--q-muted); }
+    .flow-perf-row-val { font-size: 12px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .flow-perf-empty { padding: 16px; text-align: center; font-size: 11px; color: var(--q-muted); font-style: italic; }
+    .flow-perf-sprint { background: #fff; border: 0.5px solid var(--q-line); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--gg-charcoal); line-height: 1.6; }
+    .flow-perf-sprint-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+    .flow-perf-sprint-num { font-weight: 700; color: var(--gg-charcoal); }
+    .flow-perf-sprint-num.green { color: #3d6022; }
+    .flow-perf-sprint-num.orange { color: #b8741f; }
+    .flow-perf-sprint-empty { color: var(--q-muted); font-style: italic; }
     .flow-health-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
     .flow-health-title { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--gg-charcoal); margin-bottom: 4px; }
     .flow-health-sub { font-size: 12px; color: var(--q-muted); line-height: 1.5; max-width: 620px; }
@@ -1840,6 +1876,29 @@
               </ul>
             </div>
           </div>
+
+          <div class="flow-perf-section" id="flow-perf-section">
+            <div class="flow-perf-head">
+              <div>
+                <div class="flow-perf-title">Flow Performance</div>
+                <div class="flow-perf-sub" id="flow-perf-sub">Headline numbers for the current snapshot, plus what is in flight.</div>
+              </div>
+              <div class="flow-perf-period" id="flow-perf-period"></div>
+            </div>
+            <div class="flow-perf-stats" id="flow-perf-stats"></div>
+            <div class="flow-perf-columns">
+              <div class="flow-perf-col">
+                <div class="flow-perf-col-title">Top 3 by revenue</div>
+                <div class="flow-perf-col-list" id="flow-perf-top-revenue"></div>
+              </div>
+              <div class="flow-perf-col">
+                <div class="flow-perf-col-title">Lowest health scores</div>
+                <div class="flow-perf-col-list" id="flow-perf-low-health"></div>
+              </div>
+            </div>
+            <div class="flow-perf-sprint" id="flow-perf-sprint"></div>
+          </div>
+
           <div class="flow-health-section">
             <div class="flow-health-head">
               <div>
@@ -7659,6 +7718,203 @@ function renderFlowHealthBaselines(baselines) {
   el.innerHTML = parts.join('');
 }
 
+// ── FLOW PERFORMANCE SUMMARY (Session 10.6) ──────────────────────────
+// Renders the headline numbers, top performers, lowest health flows, and
+// sprint summary above the Flow Health cards. Uses the same flow data the
+// cards do so the math is consistent.
+function renderFlowPerformance(flows, diagsByFlow, currentPeriod, priorFlowMetrics) {
+  var section = document.getElementById('flow-perf-section');
+  if (!section) return;
+
+  // Period pill
+  var periodEl = document.getElementById('flow-perf-period');
+  if (periodEl) {
+    var periodLabel = formatPeriodLabel(currentPeriod);
+    periodEl.textContent = periodLabel || '';
+  }
+
+  // Handle empty state across the section
+  if (!flows || !flows.length) {
+    var statsEl = document.getElementById('flow-perf-stats');
+    if (statsEl) statsEl.innerHTML = '<div class="flow-perf-empty">No flows to summarize.</div>';
+    var topRevEl = document.getElementById('flow-perf-top-revenue');
+    if (topRevEl) topRevEl.innerHTML = '';
+    var lowHealthEl = document.getElementById('flow-perf-low-health');
+    if (lowHealthEl) lowHealthEl.innerHTML = '';
+    var sprintEl = document.getElementById('flow-perf-sprint');
+    if (sprintEl) sprintEl.innerHTML = '';
+    return;
+  }
+
+  // Aggregate top-line numbers
+  var totalRevenue = 0;
+  var totalDelivered = 0;
+  var activeFlowCount = 0;
+  flows.forEach(function(f){
+    totalRevenue += Number(f.total_revenue) || 0;
+    totalDelivered += Number(f.total_delivered) || 0;
+    if (f.total_delivered && f.total_delivered > 0) activeFlowCount++;
+  });
+  var avgRpr = totalDelivered > 0 ? (totalRevenue / totalDelivered) : null;
+
+  // Compute prior-period totals for deltas (sum prior metrics across flows)
+  var priorRev = 0;
+  var priorDel = 0;
+  var hasPrior = false;
+  if (priorFlowMetrics) {
+    flows.forEach(function(f){
+      var p = priorFlowMetrics[f.flow_name];
+      if (p) {
+        priorRev += Number(p.total_revenue) || 0;
+        priorDel += Number(p.total_delivered) || 0;
+        hasPrior = true;
+      }
+    });
+  }
+
+  // Delta helper for stat tiles
+  function formatPerfDelta(current, prior) {
+    if (!hasPrior || prior === null || prior === undefined || isNaN(prior)) return '';
+    if (prior === 0 && current === 0) {
+      return '<div class="flow-perf-stat-delta neutral">no change</div>';
+    }
+    if (prior === 0) {
+      return '<div class="flow-perf-stat-delta up">new vs prior</div>';
+    }
+    var diffPct = ((current - prior) / prior) * 100;
+    var rounded = Math.round(diffPct * 10) / 10;
+    if (Math.abs(rounded) < 0.1) {
+      return '<div class="flow-perf-stat-delta neutral">flat vs prior</div>';
+    }
+    var sign = rounded > 0 ? '+' : '';
+    var cls = rounded > 0 ? 'up' : 'down';
+    return '<div class="flow-perf-stat-delta ' + cls + '">' + sign + rounded.toFixed(1) + '% vs prior</div>';
+  }
+
+  // Stat tiles: 4 numbers
+  var statsHtml = '';
+  statsHtml += '<div class="flow-perf-stat">'
+    + '<div class="flow-perf-stat-val">' + fmtCurrency(totalRevenue) + '</div>'
+    + formatPerfDelta(totalRevenue, priorRev)
+    + '<div class="flow-perf-stat-label">Total flow revenue</div>'
+    + '</div>';
+  statsHtml += '<div class="flow-perf-stat">'
+    + '<div class="flow-perf-stat-val">' + Math.round(totalDelivered).toLocaleString() + '</div>'
+    + formatPerfDelta(totalDelivered, priorDel)
+    + '<div class="flow-perf-stat-label">Total delivered</div>'
+    + '</div>';
+  statsHtml += '<div class="flow-perf-stat">'
+    + '<div class="flow-perf-stat-val">' + (avgRpr !== null ? '$' + avgRpr.toFixed(2) : '\u2014') + '</div>'
+    + '<div class="flow-perf-stat-label">Avg revenue / recipient</div>'
+    + '</div>';
+  statsHtml += '<div class="flow-perf-stat">'
+    + '<div class="flow-perf-stat-val">' + activeFlowCount + '</div>'
+    + '<div class="flow-perf-stat-label">Active flows</div>'
+    + '</div>';
+  var statsEl = document.getElementById('flow-perf-stats');
+  if (statsEl) statsEl.innerHTML = statsHtml;
+
+  // Helper: classify a score for badge color
+  function scoreBadgeClass(score) {
+    if (score === null || score === undefined) return 'unknown';
+    if (score >= 80) return 'good';
+    if (score >= 50) return 'warn';
+    return 'bad';
+  }
+
+  // Top 3 by revenue
+  var sortedByRev = flows.slice()
+    .filter(function(f){ return Number(f.total_revenue) > 0; })
+    .sort(function(a, b){ return Number(b.total_revenue) - Number(a.total_revenue); })
+    .slice(0, 3);
+  var topRevHtml = '';
+  if (sortedByRev.length === 0) {
+    topRevHtml = '<div class="flow-perf-empty">No revenue this period.</div>';
+  } else {
+    topRevHtml = sortedByRev.map(function(f, idx){
+      var scoreVal = f.health_score ? f.health_score.score : null;
+      var scoreClass = scoreBadgeClass(scoreVal);
+      var scoreDisplay = scoreVal !== null ? scoreVal + '%' : '\u2014';
+      return '<div class="flow-perf-row">'
+        + '<div class="flow-perf-row-left">'
+        + '<span class="flow-perf-row-rank">' + (idx + 1) + '</span>'
+        + '<span class="flow-perf-row-name" title="' + escapeHtml(f.flow_name) + '">' + escapeHtml(f.flow_name) + '</span>'
+        + '<span class="flow-perf-row-score ' + scoreClass + '" title="Health score">' + scoreDisplay + '</span>'
+        + '</div>'
+        + '<span class="flow-perf-row-val">' + fmtCurrency(f.total_revenue) + '</span>'
+        + '</div>';
+    }).join('');
+  }
+  var topRevEl = document.getElementById('flow-perf-top-revenue');
+  if (topRevEl) topRevEl.innerHTML = topRevHtml;
+
+  // Lowest 3 health scores (only flows with a real score, ascending)
+  var sortedByHealth = flows.slice()
+    .filter(function(f){ return f.health_score && f.health_score.score !== null; })
+    .sort(function(a, b){ return a.health_score.score - b.health_score.score; })
+    .slice(0, 3);
+  var lowHealthHtml = '';
+  if (sortedByHealth.length === 0) {
+    lowHealthHtml = '<div class="flow-perf-empty">No flows scored yet.</div>';
+  } else {
+    lowHealthHtml = sortedByHealth.map(function(f, idx){
+      var scoreVal = f.health_score.score;
+      var scoreClass = scoreBadgeClass(scoreVal);
+      return '<div class="flow-perf-row">'
+        + '<div class="flow-perf-row-left">'
+        + '<span class="flow-perf-row-rank">' + (idx + 1) + '</span>'
+        + '<span class="flow-perf-row-name" title="' + escapeHtml(f.flow_name) + '">' + escapeHtml(f.flow_name) + '</span>'
+        + '</div>'
+        + '<span class="flow-perf-row-score ' + scoreClass + '">' + scoreVal + '%</span>'
+        + '</div>';
+    }).join('');
+  }
+  var lowHealthEl = document.getElementById('flow-perf-low-health');
+  if (lowHealthEl) lowHealthEl.innerHTML = lowHealthHtml;
+
+  // Sprint summary: count sprint state + finding triage state
+  var sprintFlowCount = flows.filter(function(f){ return f.in_sprint; }).length;
+  var sprintMsgCount = 0;
+  flows.forEach(function(f){ sprintMsgCount += (Number(f.sprint_count) || 0); });
+  // Count findings across all flows by accepted state
+  var totalFindings = 0;
+  var acceptedCount = 0;
+  var rejectedCount = 0;
+  var undecidedCount = 0;
+  if (diagsByFlow) {
+    Object.keys(diagsByFlow).forEach(function(flowName){
+      var diags = diagsByFlow[flowName] || [];
+      diags.forEach(function(d){
+        totalFindings++;
+        if (d.accepted === true) acceptedCount++;
+        else if (d.accepted === false) rejectedCount++;
+        else undecidedCount++;
+      });
+    });
+  }
+  var sprintHtml = '<div class="flow-perf-sprint-label">What is in flight</div>';
+  if (sprintFlowCount === 0 && sprintMsgCount === 0 && totalFindings === 0) {
+    sprintHtml += '<span class="flow-perf-sprint-empty">No flows or messages in sprint. No diagnostic findings to triage.</span>';
+  } else {
+    var parts = [];
+    if (sprintFlowCount > 0 || sprintMsgCount > 0) {
+      parts.push('<span class="flow-perf-sprint-num">' + sprintFlowCount + '</span> flow' + (sprintFlowCount !== 1 ? 's' : '') + ' and <span class="flow-perf-sprint-num">' + sprintMsgCount + '</span> message' + (sprintMsgCount !== 1 ? 's' : '') + ' in sprint.');
+    }
+    if (acceptedCount > 0) {
+      parts.push('<span class="flow-perf-sprint-num green">' + acceptedCount + '</span> finding' + (acceptedCount !== 1 ? 's' : '') + ' accepted, ready to action.');
+    }
+    if (undecidedCount > 0) {
+      parts.push('<span class="flow-perf-sprint-num orange">' + undecidedCount + '</span> finding' + (undecidedCount !== 1 ? 's' : '') + ' awaiting triage.');
+    }
+    if (rejectedCount > 0) {
+      parts.push('<span class="flow-perf-sprint-num">' + rejectedCount + '</span> finding' + (rejectedCount !== 1 ? 's' : '') + ' rejected.');
+    }
+    sprintHtml += parts.join(' ');
+  }
+  var sprintEl = document.getElementById('flow-perf-sprint');
+  if (sprintEl) sprintEl.innerHTML = sprintHtml;
+}
+
 window.renderFlowHealthCards = async function() {
   var container = document.getElementById('flow-health-cards');
   if (!container) return;
@@ -7714,6 +7970,14 @@ window.renderFlowHealthCards = async function() {
   var baselines = computeSFHBaselines(flowMessagesCache);
   renderFlowHealthBaselines(baselines);
 
+  // Session 10.6: render the Flow Performance summary above the cards, using
+  // the same flow + diags data the cards do so the math is consistent.
+  // Called BEFORE the empty-flows early return so the section handles its
+  // own empty state cleanly rather than showing stale data.
+  var currentPeriodForPerf = getCurrentDisplayPeriod();
+  var priorFlowMetricsForPerf = flows.length ? computePriorSnapshotFlowMetrics(flows) : null;
+  renderFlowPerformance(flows, diagsByFlow, currentPeriodForPerf, priorFlowMetricsForPerf);
+
   if (!flows.length) {
     container.innerHTML = '<div class="flow-health-empty">No flows to show.</div>';
     return;
@@ -7721,10 +7985,10 @@ window.renderFlowHealthCards = async function() {
 
   // Build prior-snapshot lookup for deltas (compares current snapshot's flow metrics
   // to the prior snapshot's same flow). Falls back gracefully when no prior exists.
-  var priorFlowMetrics = computePriorSnapshotFlowMetrics(flows);
+  var priorFlowMetrics = priorFlowMetricsForPerf;
 
   // Period label is shared across all cards in this render pass
-  var currentPeriod = getCurrentDisplayPeriod();
+  var currentPeriod = currentPeriodForPerf;
 
   // Render cards
   var html = flows.map(function(f){
