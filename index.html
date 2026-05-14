@@ -687,9 +687,9 @@
     .flow-msg-list .flow-msg-pos { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gg-olive); }
     .flow-msg-list .flow-msg-delivered { color: var(--q-muted); }
 
-    .flow-msg-list .flow-msg-metric { font-size: 11px; }
-    .flow-msg-list .flow-msg-metric-label { color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 9px; margin-right: 4px; }
-    .flow-msg-list .flow-msg-metric-val { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--gg-charcoal); }
+    .flow-msg-list .flow-msg-metric { display: flex; flex-direction: column; gap: 2px; font-size: 11px; min-width: 56px; }
+    .flow-msg-list .flow-msg-metric-label { color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 9px; margin-right: 0; }
+    .flow-msg-list .flow-msg-metric-val { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--gg-charcoal); font-size: 13px; line-height: 1.2; }
     .flow-msg-list .flow-msg-metric-val.bad { color: #a83232; }
     .flow-msg-list .flow-msg-metric-val.warn { color: #b8741f; }
     .flow-msg-list .flow-msg-metric-val.good { color: #3d6022; }
@@ -7860,49 +7860,49 @@ window.renderFlowHealthCards = async function() {
       + '  </div>'
       + '  <div class="flow-health-card-metrics">'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Revenue</div>'
       + '      <div class="flow-health-metric-val">' + fmtCurrency(f.total_revenue) + '</div>'
       +        revenueDelta
+      + '      <div class="flow-health-metric-label">Revenue</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Open Rate</div>'
       + '      <div class="flow-health-metric-val ' + openCls + '">' + fmtPct(f.avg_open_rate) + '</div>'
       +        openDelta
+      + '      <div class="flow-health-metric-label">Open Rate</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Click Rate</div>'
       + '      <div class="flow-health-metric-val ' + clickCls + '">' + fmtPct(f.avg_click_rate, 2) + '</div>'
       +        clickDelta
+      + '      <div class="flow-health-metric-label">Click Rate</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Click-through</div>'
       + '      <div class="flow-health-metric-val ' + ctorCls + '">' + fmtPct(f.avg_ctor, 2) + '</div>'
       +        ctorDelta
+      + '      <div class="flow-health-metric-label">Click-through</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Conversion</div>'
       + '      <div class="flow-health-metric-val ' + conversionCls + '">' + fmtPct(f.avg_conversion_rate, 2) + '</div>'
       +        conversionDelta
+      + '      <div class="flow-health-metric-label">Conversion</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Revenue / Recipient</div>'
       + '      <div class="flow-health-metric-val ' + rpmCls + '">' + rpmDisplay + '</div>'
       +        rpmDelta
+      + '      <div class="flow-health-metric-label">Revenue / Recipient</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Bounce Rate</div>'
       + '      <div class="flow-health-metric-val ' + bounceCls + '">' + fmtPct(f.avg_bounce_rate, 2) + '</div>'
       +        bounceDelta
+      + '      <div class="flow-health-metric-label">Bounce Rate</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Spam Rate</div>'
       + '      <div class="flow-health-metric-val ' + spamCls + '">' + fmtPct(f.avg_complaint_rate, 3) + '</div>'
       +        spamDelta
+      + '      <div class="flow-health-metric-label">Spam Rate</div>'
       + '    </div>'
       + '    <div class="flow-health-metric">'
-      + '      <div class="flow-health-metric-label">Unsub Rate</div>'
       + '      <div class="flow-health-metric-val ' + unsubCls + '">' + fmtPct(f.avg_unsub_rate, 2) + '</div>'
       +        unsubDelta
+      + '      <div class="flow-health-metric-label">Unsub Rate</div>'
       + '    </div>'
       + '  </div>'
       + findingsHtml
@@ -7974,15 +7974,15 @@ function renderFlowExpandedPanel(flow, flowDiags) {
       + '      </div>'
       + '    </div>'
       + '    <div class="flow-msg-head-center">'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Revenue</span> <span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Open</span> <span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Click</span> <span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">CTR</span> <span class="flow-msg-metric-val ' + ctorCls + '">' + fmtPct(ctorVal, 2) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Conv</span> <span class="flow-msg-metric-val ' + conversionCls + '">' + fmtPct(conversionVal, 2) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">RPR</span> <span class="flow-msg-metric-val ' + rprCls + '">' + rprDisplay + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Bounce</span> <span class="flow-msg-metric-val ' + bounceCls + '">' + fmtPct(bounceVal, 2) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Spam</span> <span class="flow-msg-metric-val ' + spamCls + '">' + fmtPct(spamVal, 3) + '</span></div>'
-      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span><span class="flow-msg-metric-label">Revenue</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span><span class="flow-msg-metric-label">Open</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span><span class="flow-msg-metric-label">Click</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + ctorCls + '">' + fmtPct(ctorVal, 2) + '</span><span class="flow-msg-metric-label">CTR</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + conversionCls + '">' + fmtPct(conversionVal, 2) + '</span><span class="flow-msg-metric-label">Conv</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + rprCls + '">' + rprDisplay + '</span><span class="flow-msg-metric-label">RPR</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + bounceCls + '">' + fmtPct(bounceVal, 2) + '</span><span class="flow-msg-metric-label">Bounce</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + spamCls + '">' + fmtPct(spamVal, 3) + '</span><span class="flow-msg-metric-label">Spam</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span><span class="flow-msg-metric-label">Unsub</span></div>'
       + '    </div>'
       + '    <div class="flow-msg-head-right">'
       + '      <button class="' + sprintBtnClass + '" title="' + escapeHtml(sprintBtnAria) + '" aria-label="' + escapeHtml(sprintBtnAria) + '" onclick="toggleMessageSprint(' + m.id + ', this)"><span class="flow-msg-sprint-btn-label">Sprint</span></button>'
