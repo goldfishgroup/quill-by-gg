@@ -673,9 +673,9 @@
     .flow-msg-list .flow-msg-row.warn { border-left: 3px solid #d68d2a; }
     .flow-msg-list .flow-msg-row.good { border-left: 3px solid #5d8a3a; }
 
-    .flow-msg-list .flow-msg-head { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) auto; align-items: center; gap: 16px; margin-bottom: 0; }
+    .flow-msg-list .flow-msg-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) auto; align-items: center; gap: 14px; margin-bottom: 0; }
+    .flow-msg-list .flow-msg-head-center { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-start; row-gap: 8px; }
     .flow-msg-list .flow-msg-head-left { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
-    .flow-msg-list .flow-msg-head-center { display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-start; }
     .flow-msg-list .flow-msg-head-right { flex-shrink: 0; }
     .flow-msg-list .flow-msg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
     .flow-msg-list .flow-msg-dot.bad { background: #a83232; }
@@ -1795,7 +1795,7 @@
                 <li><strong>What it is.</strong> A weighted score across 8 metrics (Open, Click, Click-through, Conversion, Revenue per Recipient, Unsubscribe, Spam, Bounce) compared to Klaviyo industry benchmarks for the Health and Wellness vertical.</li>
                 <li><strong>What 100% means.</strong> All 8 metrics meeting or exceeding industry averages. Positive metrics (open, click, etc.) score against the industry target; negative metrics (unsub, spam, bounce) score against the deliverability threshold.</li>
                 <li><strong>How to use it.</strong> A scan signal, not a verdict. A 92% flow might still have one critical issue. A 58% flow might be working hard but on a tough audience. Always check the 8 underlying metrics before deciding what to optimize.</li>
-                <li><strong>Color bands.</strong> The donut ring is colored to give a fast scan signal: orange (0 to 49) means needs attention, blue (50 to 79) means okay with room to grow, green (80 to 100) means strong performance. The bands are deliberately broad; treat them as scan signals, not verdicts.</li>
+                <li><strong>Color bands.</strong> The donut ring is colored to give a fast scan signal: red (0 to 49) means below benchmark, orange (50 to 79) means within range with room to grow, green (80 to 100) means above benchmark. The same colors appear on the individual metric tiles below: red = below benchmark, orange = within range, green = above benchmark.</li>
                 <li><strong>Color is not a verdict.</strong> Different flow types perform differently. A welcome flow naturally scores higher than a win-back. A 60% (blue) win-back may be excellent for that audience; a 60% welcome flow may be underperforming. Always check the 8 underlying metrics before deciding what to optimize.</li>
                 <li><strong>Benchmarks refresh annually.</strong> Klaviyo publishes new industry data each year (typically Q1). The score recalibrates when the benchmarks are updated. Currently sourced from Klaviyo 2025 + 2026 Benchmark Reports.</li>
               </ul>
@@ -7185,38 +7185,39 @@ function computeSFHBaselines(messages) {
 }
 
 function metricColorClass(metricKey, value) {
-  // Returns 'good' / 'warn' / 'bad' / '' based on threshold comparison
+  // Session 10.5b: red/orange/green threshold colors aligned with the
+  // health score's per-metric scoring. Uses FLOW_HEALTH_BENCHMARKS as
+  // single source of truth (same data the score ring uses), so metric
+  // colors and the score ring tell the same story.
+  //
+  // The score for a given metric is 0-100. Color bands match the ring:
+  //   80-100 = green (above benchmark)
+  //   50-79  = orange (within range, room to grow)
+  //   0-49   = red (below benchmark)
+  //
+  // Works automatically for both positive (open, click etc) and negative
+  // (unsub, spam, bounce) metrics because scoreMetric() handles inversion.
   if (value === null || value === undefined || isNaN(value)) return '';
-  var t = FLOW_HEALTH_THRESHOLDS[metricKey];
-  if (!t) return '';
-  if (metricKey === 'unsubscribe_rate' || metricKey === 'complaint_rate') {
-    // higher = worse
-    if (value > t.critical) return 'bad';
-    if (value > t.warn) return 'warn';
-    return 'good';
-  } else {
-    // higher = better (open_rate, click_rate)
-    if (t.critical !== undefined && value < t.critical) return 'bad';
-    if (t.warn !== undefined && value < t.warn) return 'warn';
-    return 'good';
-  }
+  // Map UI metric keys to FLOW_HEALTH_BENCHMARKS keys
+  var benchKey = metricKey;
+  if (metricKey === 'revenue_per_recipient' || metricKey === 'revenue_per_msg') benchKey = 'rpr';
+  if (metricKey === 'click_to_open_rate') benchKey = 'ctor';
+  if (metricKey === 'conversion_rate') benchKey = 'conversion_rate';
+  if (!FLOW_HEALTH_BENCHMARKS[benchKey]) return '';
+  var s = scoreMetric(benchKey, value);
+  if (s === null) return '';
+  if (s >= 80) return 'good';
+  if (s >= 50) return 'warn';
+  return 'bad';
 }
 
 // Same shape as metricColorClass but uses the tighter per-message thresholds.
 // Per-message metrics are noisier so the warn/critical lines are looser.
 function metricColorClassMessage(metricKey, value) {
-  if (value === null || value === undefined || isNaN(value)) return '';
-  var t = FLOW_HEALTH_MSG_THRESHOLDS[metricKey];
-  if (!t) return '';
-  if (metricKey === 'unsubscribe_rate') {
-    if (value > t.critical) return 'bad';
-    if (value > t.warn) return 'warn';
-    return 'good';
-  } else {
-    if (t.critical !== undefined && value < t.critical) return 'bad';
-    if (t.warn !== undefined && value < t.warn) return 'warn';
-    return 'good';
-  }
+  // For per-message coloring, reuse the same scoring + thresholds.
+  // Per-message metrics are noisier but using consistent bands keeps the
+  // visual language uniform across the page.
+  return metricColorClass(metricKey, value);
 }
 
 // Classify a single message into healthy / warn / bad based on the worst of
@@ -7250,6 +7251,32 @@ function toMessageClickRate(m) {
 function toMessageUnsubRate(m) {
   if (m.unsubscribe_rate !== null && m.unsubscribe_rate !== undefined && !isNaN(Number(m.unsubscribe_rate))) return Number(m.unsubscribe_rate);
   return null;
+}
+// Session 10.5c: helpers for the 5 metrics newly surfaced at message level
+function toMessageCtor(m) {
+  if (m.click_to_open_rate !== null && m.click_to_open_rate !== undefined && !isNaN(Number(m.click_to_open_rate))) return Number(m.click_to_open_rate);
+  // Compute if missing: unique_clicks / unique_opens * 100
+  var opens = Number(m.unique_opens) || 0;
+  if (opens <= 0) return null;
+  return ((Number(m.unique_clicks) || 0) / opens) * 100;
+}
+function toMessageConversionRate(m) {
+  if (m.placed_order_rate !== null && m.placed_order_rate !== undefined && !isNaN(Number(m.placed_order_rate))) return Number(m.placed_order_rate);
+  return null;
+}
+function toMessageSpamRate(m) {
+  if (m.complaint_rate !== null && m.complaint_rate !== undefined && !isNaN(Number(m.complaint_rate))) return Number(m.complaint_rate);
+  return null;
+}
+function toMessageBounceRate(m) {
+  if (m.bounce_rate !== null && m.bounce_rate !== undefined && !isNaN(Number(m.bounce_rate))) return Number(m.bounce_rate);
+  return null;
+}
+function toMessageRpr(m) {
+  if (m.revenue_per_recipient !== null && m.revenue_per_recipient !== undefined && !isNaN(Number(m.revenue_per_recipient))) return Number(m.revenue_per_recipient);
+  var d = Number(m.delivered) || 0;
+  if (d <= 0) return null;
+  return (Number(m.revenue) || 0) / d;
 }
 
 // Match diagnostic findings to a specific message within a flow. Findings
@@ -7736,7 +7763,7 @@ window.renderFlowHealthCards = async function() {
     if (monthsLabel) metaParts.push(monthsLabel);
     else metaParts.push('<span class="flow-health-card-meta-missing">First-fired date not set</span>');
 
-    var rpmCls = '';
+    var rpmCls = metricColorClass('revenue_per_recipient', f.revenue_per_msg);
     var rpmDisplay = '\u2014';
     if (f.revenue_per_msg !== null) {
       rpmDisplay = '$' + Number(f.revenue_per_msg).toFixed(2);
@@ -7758,8 +7785,8 @@ window.renderFlowHealthCards = async function() {
     // we have thresholds, neutral otherwise.
     var bounceCls = metricColorClass('bounce_rate', f.avg_bounce_rate);
     var spamCls = metricColorClass('complaint_rate', f.avg_complaint_rate);
-    var conversionCls = '';
-    var ctorCls = '';
+    var conversionCls = metricColorClass('conversion_rate', f.avg_conversion_rate);
+    var ctorCls = metricColorClass('click_to_open_rate', f.avg_ctor);
 
     // Sprint indicator (pill on the card)
     var sprintBadge = '';
@@ -7776,14 +7803,16 @@ window.renderFlowHealthCards = async function() {
     if (f.health_score) {
       var scoreVal = f.health_score.score;
       // Threshold colors per Session 10.5 decision (revisits earlier no-banding choice):
-      //   0-49 = orange (needs attention)
-      //   50-79 = blue (okay, room to grow)
-      //   80-100 = green (strong)
+      //   0-49 = red (below benchmark, needs attention)
+      //   50-79 = orange (within range, room to grow)
+      //   80-100 = green (above benchmark, strong)
+      // Colors match .flow-health-metric-val .bad/.warn/.good classes so
+      // ring and tiles tell the same color story.
       var scoreColor;
       var scoreTier;
-      if (scoreVal >= 80) { scoreColor = '#5d8a3a'; scoreTier = 'strong'; }
-      else if (scoreVal >= 50) { scoreColor = '#3a6db8'; scoreTier = 'okay'; }
-      else { scoreColor = '#d68d2a'; scoreTier = 'needs attention'; }
+      if (scoreVal >= 80) { scoreColor = '#3d6022'; scoreTier = 'above benchmark'; }
+      else if (scoreVal >= 50) { scoreColor = '#b8741f'; scoreTier = 'within range'; }
+      else { scoreColor = '#a83232'; scoreTier = 'below benchmark'; }
       // SVG donut: radius 26, stroke 5, circumference ~163.36.
       // Filled arc length = (score / 100) * circumference.
       // We rotate the circle -90deg so the fill starts at 12 o'clock.
@@ -7913,9 +7942,20 @@ function renderFlowExpandedPanel(flow, flowDiags) {
     var openVal = toMessageOpenRate(m);
     var clickVal = toMessageClickRate(m);
     var unsubVal = toMessageUnsubRate(m);
+    var ctorVal = toMessageCtor(m);
+    var conversionVal = toMessageConversionRate(m);
+    var spamVal = toMessageSpamRate(m);
+    var bounceVal = toMessageBounceRate(m);
+    var rprVal = toMessageRpr(m);
     var openCls = metricColorClassMessage('open_rate', openVal);
     var clickCls = metricColorClassMessage('click_rate', clickVal);
     var unsubCls = metricColorClassMessage('unsubscribe_rate', unsubVal);
+    var ctorCls = metricColorClassMessage('click_to_open_rate', ctorVal);
+    var conversionCls = metricColorClassMessage('conversion_rate', conversionVal);
+    var spamCls = metricColorClassMessage('complaint_rate', spamVal);
+    var bounceCls = metricColorClassMessage('bounce_rate', bounceVal);
+    var rprCls = metricColorClassMessage('revenue_per_recipient', rprVal);
+    var rprDisplay = rprVal !== null ? '$' + Number(rprVal).toFixed(2) : '\u2014';
 
     var findingsHtml = renderFindingsBlock(matched, 'msg:' + m.id, 'flow-msg-findings', 'flow-msg-findings-label', 'flow-msg-finding-compact');
 
@@ -7937,6 +7977,11 @@ function renderFlowExpandedPanel(flow, flowDiags) {
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Revenue</span> <span class="flow-msg-metric-val">' + fmtCurrency(m.revenue) + '</span></div>'
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Open</span> <span class="flow-msg-metric-val ' + openCls + '">' + fmtPct(openVal) + '</span></div>'
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Click</span> <span class="flow-msg-metric-val ' + clickCls + '">' + fmtPct(clickVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">CTR</span> <span class="flow-msg-metric-val ' + ctorCls + '">' + fmtPct(ctorVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Conv</span> <span class="flow-msg-metric-val ' + conversionCls + '">' + fmtPct(conversionVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">RPR</span> <span class="flow-msg-metric-val ' + rprCls + '">' + rprDisplay + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Bounce</span> <span class="flow-msg-metric-val ' + bounceCls + '">' + fmtPct(bounceVal, 2) + '</span></div>'
+      + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Spam</span> <span class="flow-msg-metric-val ' + spamCls + '">' + fmtPct(spamVal, 3) + '</span></div>'
       + '      <div class="flow-msg-metric"><span class="flow-msg-metric-label">Unsub</span> <span class="flow-msg-metric-val ' + unsubCls + '">' + fmtPct(unsubVal, 2) + '</span></div>'
       + '    </div>'
       + '    <div class="flow-msg-head-right">'
