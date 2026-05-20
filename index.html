@@ -182,7 +182,11 @@
     .cal-chip-sent-pending { display: inline-block; font-size: 9px; font-weight: 600; color: var(--q-muted); margin-left: 6px; font-style: italic; }
 
     /* Sent section inside the edit modal */
-    .sent-section { border-top: 0.5px solid var(--q-line); margin-top: 14px; padding-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+    .sent-section { display: flex; flex-direction: column; gap: 12px; }
+    /* When at bottom (legacy): border on top to separate from notes */
+    .sent-section:not(.sent-section-top) { border-top: 0.5px solid var(--q-line); margin-top: 14px; padding-top: 14px; }
+    /* When at top (current): border on bottom to separate from form fields */
+    .sent-section-top { border-bottom: 0.5px solid var(--q-line); margin-bottom: 14px; padding-bottom: 14px; }
     .sent-checkbox-row { display: flex; align-items: center; gap: 12px; }
     .sent-checkbox-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--gg-charcoal); }
     .sent-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #3d6022; }
@@ -2414,6 +2418,29 @@
       <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body">
+      <!-- Session 10.8: Sent state + Klaviyo performance link, at top so
+           the strategist sees performance first when opening a sent campaign. -->
+      <div class="sent-section sent-section-top">
+        <div class="sent-checkbox-row">
+          <label class="sent-checkbox-label">
+            <input type="checkbox" id="f-sent" class="sent-checkbox" onchange="onSentCheckboxChange()">
+            <span class="sent-checkbox-text">Mark as sent</span>
+          </label>
+          <span class="sent-date-pill" id="f-sent-date" style="display:none;"></span>
+        </div>
+        <div class="sent-link-row" id="f-sent-link-row" style="display:none;">
+          <label class="field-label">Klaviyo campaign</label>
+          <div class="sent-link-controls">
+            <select id="f-klaviyo-link" class="field-select"></select>
+            <button class="ghost-btn sent-unlink-btn" id="f-klaviyo-unlink" onclick="unlinkKlaviyoCampaign()" style="display:none;">Unlink</button>
+          </div>
+          <div class="sent-link-hint" id="f-klaviyo-hint"></div>
+        </div>
+        <div class="sent-perf-row" id="f-sent-perf" style="display:none;">
+          <div class="sent-perf-label">Performance</div>
+          <div class="sent-perf-grid" id="f-sent-perf-grid"></div>
+        </div>
+      </div>
       <div>
         <label class="field-label">Subject line / working title</label>
         <input type="text" id="f-subject" class="field-input" placeholder="e.g. Most supplements arent what they claim">
@@ -2475,28 +2502,7 @@
         <input type="text" id="f-discount-promo" class="field-input" placeholder="e.g. 15% off with code SPRING15, BOGO on protein, free shipping over $75">
       </div>
 
-      <!-- Session 10.8: Sent state + Klaviyo performance link -->
-      <div class="sent-section">
-        <div class="sent-checkbox-row">
-          <label class="sent-checkbox-label">
-            <input type="checkbox" id="f-sent" class="sent-checkbox" onchange="onSentCheckboxChange()">
-            <span class="sent-checkbox-text">Mark as sent</span>
-          </label>
-          <span class="sent-date-pill" id="f-sent-date" style="display:none;"></span>
-        </div>
-        <div class="sent-link-row" id="f-sent-link-row" style="display:none;">
-          <label class="field-label">Klaviyo campaign</label>
-          <div class="sent-link-controls">
-            <select id="f-klaviyo-link" class="field-select"></select>
-            <button class="ghost-btn sent-unlink-btn" id="f-klaviyo-unlink" onclick="unlinkKlaviyoCampaign()" style="display:none;">Unlink</button>
-          </div>
-          <div class="sent-link-hint" id="f-klaviyo-hint"></div>
-        </div>
-        <div class="sent-perf-row" id="f-sent-perf" style="display:none;">
-          <div class="sent-perf-label">Performance</div>
-          <div class="sent-perf-grid" id="f-sent-perf-grid"></div>
-        </div>
-      </div>
+      <!-- Session 10.8: Sent section moved to top of modal -->
     </div>
     <div class="modal-foot">
       <button class="ghost-btn" id="deleteBtn" onclick="deleteFromModal()" style="color:#a32d2d;display:none">Delete</button>
@@ -3148,11 +3154,21 @@ function renderListView() {  var fe = filteredMonthEmails().sort(function(a,b){
   }
   fe.forEach(function(e){
     var row = document.createElement('div');
-    row.className = 'list-row';
+    row.className = 'list-row' + (e.sent_at ? ' is-sent' : '');
     var status = e.status || 'draft';
     var statusLabel = status === 'approved' ? 'In Progress' : status.replace('-',' ');
+    // Session 10.8: append revenue badge if sent + linked
+    var subjectExtra = '';
+    if (e.sent_at) {
+      var perf = e.klaviyo_campaign_id ? findKlaviyoCampaignById(e.klaviyo_campaign_id) : null;
+      if (perf && perf.revenue !== null && perf.revenue !== undefined) {
+        subjectExtra = '<span class="cal-chip-sent-revenue">$' + Math.round(Number(perf.revenue)).toLocaleString() + '</span>';
+      } else {
+        subjectExtra = '<span class="cal-chip-sent-pending">pending data</span>';
+      }
+    }
     row.innerHTML = '<span style="font-size:12px;color:var(--q-muted)">' + (e.send_date || '') + '</span>'
-      + '<span style="font-weight:500">' + (e.subject || 'Untitled') + '</span>'
+      + '<span style="font-weight:500">' + (e.subject || 'Untitled') + subjectExtra + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.segment || '') + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.bucket || '') + '</span>'
       + '<span style="font-size:12px;color:var(--q-muted)">' + (e.email_type || '') + '</span>'
