@@ -174,6 +174,31 @@
     .cal-chip.status-approved { border-left-color: #4b9e4b; }
     .cal-chip.status-sent-to-design { border-left-color: #e8a030; }
     .cal-chip.status-scheduled { border-left-color: var(--gg-olive); background: #f4f0de; }
+
+    /* Session 10.8: Sent campaigns get a distinct green styling that overrides status colors */
+    .cal-chip.is-sent { background: #e6efd9; border-left-color: #3d6022; }
+    .cal-chip.is-sent:hover { background: #d8e5c5; }
+    .cal-chip-sent-revenue { display: inline-block; font-size: 9px; font-weight: 700; color: #3d6022; margin-left: 6px; padding: 1px 5px; background: #fff; border-radius: 8px; vertical-align: middle; }
+    .cal-chip-sent-pending { display: inline-block; font-size: 9px; font-weight: 600; color: var(--q-muted); margin-left: 6px; font-style: italic; }
+
+    /* Sent section inside the edit modal */
+    .sent-section { border-top: 0.5px solid var(--q-line); margin-top: 14px; padding-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+    .sent-checkbox-row { display: flex; align-items: center; gap: 12px; }
+    .sent-checkbox-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--gg-charcoal); }
+    .sent-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #3d6022; }
+    .sent-checkbox-text { user-select: none; }
+    .sent-date-pill { font-size: 10px; color: #3d6022; font-weight: 600; padding: 3px 8px; background: #e6efd9; border-radius: 9px; }
+    .sent-link-row { display: flex; flex-direction: column; gap: 6px; }
+    .sent-link-controls { display: flex; gap: 8px; align-items: center; }
+    .sent-link-controls .field-select { flex: 1; }
+    .sent-unlink-btn { padding: 7px 12px; font-size: 11px; }
+    .sent-link-hint { font-size: 11px; color: var(--q-muted); line-height: 1.4; }
+    .sent-perf-row { background: #fcfaf3; border: 0.5px solid var(--q-line); border-radius: 6px; padding: 12px 14px; }
+    .sent-perf-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 10px; }
+    .sent-perf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .sent-perf-stat { display: flex; flex-direction: column; gap: 2px; }
+    .sent-perf-stat-val { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--gg-charcoal); font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .sent-perf-stat-label { font-size: 9px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
     .draggable-chip { cursor: grab; }
     .draggable-chip:active { cursor: grabbing; }
 
@@ -2449,6 +2474,29 @@
         <label class="field-label">Discount / Promo (optional)</label>
         <input type="text" id="f-discount-promo" class="field-input" placeholder="e.g. 15% off with code SPRING15, BOGO on protein, free shipping over $75">
       </div>
+
+      <!-- Session 10.8: Sent state + Klaviyo performance link -->
+      <div class="sent-section">
+        <div class="sent-checkbox-row">
+          <label class="sent-checkbox-label">
+            <input type="checkbox" id="f-sent" class="sent-checkbox" onchange="onSentCheckboxChange()">
+            <span class="sent-checkbox-text">Mark as sent</span>
+          </label>
+          <span class="sent-date-pill" id="f-sent-date" style="display:none;"></span>
+        </div>
+        <div class="sent-link-row" id="f-sent-link-row" style="display:none;">
+          <label class="field-label">Klaviyo campaign</label>
+          <div class="sent-link-controls">
+            <select id="f-klaviyo-link" class="field-select"></select>
+            <button class="ghost-btn sent-unlink-btn" id="f-klaviyo-unlink" onclick="unlinkKlaviyoCampaign()" style="display:none;">Unlink</button>
+          </div>
+          <div class="sent-link-hint" id="f-klaviyo-hint"></div>
+        </div>
+        <div class="sent-perf-row" id="f-sent-perf" style="display:none;">
+          <div class="sent-perf-label">Performance</div>
+          <div class="sent-perf-grid" id="f-sent-perf-grid"></div>
+        </div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="ghost-btn" id="deleteBtn" onclick="deleteFromModal()" style="color:#a32d2d;display:none">Delete</button>
@@ -2731,6 +2779,12 @@ window.switchTab = function(t) {
   if (t === 'calendar') {
     // Lazy-load themes when the calendar tab is shown
     loadThemes(false).then(function(){ renderThemesBand(); });
+    // Session 10.8: insights cache feeds the sent-chip revenue display
+    // and the Klaviyo campaign picker. Load if not yet loaded; ignore errors.
+    loadInsightsIfNeeded().then(function(){
+      // Re-render after insights load so sent chips get their revenue
+      if (typeof renderCalendar === 'function') renderCalendar();
+    }).catch(function(){});
   }
 };
 
@@ -2837,10 +2891,24 @@ function renderMonthView() {
     var dayEmails = monthEmails.filter(function(e){ return e.send_date === ds; });
     dayEmails.forEach(function(e){
       var chip = document.createElement('div');
-      chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft');
+      var sentClass = e.sent_at ? ' is-sent' : '';
+      chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft') + sentClass;
       chip.draggable = true;
       chip.dataset.id = e.id;
-      chip.textContent = e.subject || 'Untitled';
+      // Build chip text: subject + revenue (if sent + linked) OR pending pill
+      var subjectText = e.subject || 'Untitled';
+      if (e.sent_at) {
+        var perf = e.klaviyo_campaign_id ? findKlaviyoCampaignById(e.klaviyo_campaign_id) : null;
+        if (perf && perf.revenue !== null && perf.revenue !== undefined) {
+          chip.innerHTML = escapeHtml(subjectText)
+            + '<span class="cal-chip-sent-revenue">$' + Math.round(Number(perf.revenue)).toLocaleString() + '</span>';
+        } else {
+          chip.innerHTML = escapeHtml(subjectText)
+            + '<span class="cal-chip-sent-pending">pending data</span>';
+        }
+      } else {
+        chip.textContent = subjectText;
+      }
       chip.addEventListener('click', function(evt){
         evt.stopPropagation();
         openEditModal(e.id);
@@ -3251,7 +3319,179 @@ window.openEditModal = function(id) {
   if (pf) pf.value = em.products_to_feature || '';
   var dp = document.getElementById('f-discount-promo');
   if (dp) dp.value = em.discount_promo || '';
+  // Session 10.8: populate sent state + Klaviyo link
+  populateSentSection(em);
   document.getElementById('modalOverlay').classList.add('open');
+};
+
+// Session 10.8 helpers: sent campaign tracking
+// ────────────────────────────────────────────────────────────────────
+
+// Find a Klaviyo campaign by its campaign_id text field. Returns null if
+// the cache isn\u0027t loaded or the campaign isn\u0027t present.
+function findKlaviyoCampaignById(campaignId) {
+  if (!campaignId) return null;
+  var camps = (typeof insightsData === 'object' && insightsData && insightsData.campaigns) || [];
+  return camps.find(function(c){ return c.campaign_id === campaignId; }) || null;
+}
+
+// Populate the Sent section of the edit modal based on the email\u0027s state.
+function populateSentSection(em) {
+  var checkbox = document.getElementById('f-sent');
+  var datePill = document.getElementById('f-sent-date');
+  var linkRow = document.getElementById('f-sent-link-row');
+  var linkSelect = document.getElementById('f-klaviyo-link');
+  var unlinkBtn = document.getElementById('f-klaviyo-unlink');
+  var hint = document.getElementById('f-klaviyo-hint');
+  var perfRow = document.getElementById('f-sent-perf');
+  if (!checkbox || !datePill || !linkRow || !linkSelect || !perfRow) return;
+
+  var isSent = !!em.sent_at;
+  checkbox.checked = isSent;
+
+  if (isSent && em.sent_at) {
+    var d = new Date(em.sent_at);
+    datePill.textContent = 'Sent ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    datePill.style.display = 'inline-block';
+  } else {
+    datePill.style.display = 'none';
+  }
+
+  if (isSent) {
+    linkRow.style.display = 'flex';
+    populateKlaviyoLinkSelect(em);
+  } else {
+    linkRow.style.display = 'none';
+    perfRow.style.display = 'none';
+  }
+
+  if (em.klaviyo_campaign_id) {
+    unlinkBtn.style.display = 'inline-block';
+    renderSentPerformance(em);
+  } else {
+    unlinkBtn.style.display = 'none';
+    perfRow.style.display = 'none';
+    if (isSent) {
+      hint.textContent = 'Awaiting Klaviyo data. Once you upload this month\u0027s campaigns CSV, pick the matching campaign from the dropdown.';
+    } else {
+      hint.textContent = '';
+    }
+  }
+}
+
+// Populate the dropdown of unlinked Klaviyo campaigns the user can pick from.
+function populateKlaviyoLinkSelect(em) {
+  var sel = document.getElementById('f-klaviyo-link');
+  if (!sel) return;
+  var camps = (typeof insightsData === 'object' && insightsData && insightsData.campaigns) || [];
+  // Find campaign IDs already linked to OTHER calendar items
+  var linkedElsewhere = {};
+  (emails || []).forEach(function(e){
+    if (e.id !== em.id && e.klaviyo_campaign_id) linkedElsewhere[e.klaviyo_campaign_id] = e.subject || 'Untitled';
+  });
+  // Available campaigns: not linked to any other calendar item.
+  // Sort by send_date desc so most recent shows first.
+  var available = camps.filter(function(c){
+    return c.campaign_id && !linkedElsewhere[c.campaign_id];
+  }).sort(function(a, b){
+    var da = a.send_date || '';
+    var db = b.send_date || '';
+    return db.localeCompare(da);
+  });
+  var html = '<option value="">Select a Klaviyo campaign...</option>';
+  available.forEach(function(c){
+    var label = (c.subject || c.campaign_name || 'Untitled');
+    if (c.send_date) label += ' (' + c.send_date + ')';
+    var selected = c.campaign_id === em.klaviyo_campaign_id ? ' selected' : '';
+    html += '<option value="' + escapeHtml(c.campaign_id) + '"' + selected + '>' + escapeHtml(label) + '</option>';
+  });
+  sel.innerHTML = html;
+  // Wire change handler
+  sel.onchange = function() { linkKlaviyoCampaign(sel.value); };
+}
+
+// Render the performance grid for a linked Klaviyo campaign.
+function renderSentPerformance(em) {
+  var perfRow = document.getElementById('f-sent-perf');
+  var grid = document.getElementById('f-sent-perf-grid');
+  if (!perfRow || !grid) return;
+  var c = findKlaviyoCampaignById(em.klaviyo_campaign_id);
+  if (!c) {
+    perfRow.style.display = 'none';
+    return;
+  }
+  perfRow.style.display = 'block';
+  function stat(val, label) {
+    return '<div class="sent-perf-stat">'
+      + '<div class="sent-perf-stat-val">' + val + '</div>'
+      + '<div class="sent-perf-stat-label">' + label + '</div>'
+      + '</div>';
+  }
+  function pct(v) { return v !== null && v !== undefined && !isNaN(Number(v)) ? Number(v).toFixed(1) + '%' : '\u2014'; }
+  function dol(v) { return v !== null && v !== undefined && !isNaN(Number(v)) ? '$' + Math.round(Number(v)).toLocaleString() : '\u2014'; }
+  grid.innerHTML = stat(dol(c.revenue), 'Revenue')
+    + stat(pct(c.open_rate), 'Open Rate')
+    + stat(pct(c.click_rate), 'Click Rate')
+    + stat(Math.round(Number(c.recipients) || 0).toLocaleString(), 'Recipients');
+}
+
+// Mark sent / unmark sent. Stores timestamp in sent_at.
+window.onSentCheckboxChange = async function() {
+  if (!editingId) return;
+  var checkbox = document.getElementById('f-sent');
+  var em = emails.find(function(x){ return x.id === editingId; });
+  if (!em) return;
+  var newSentAt = checkbox.checked ? new Date().toISOString() : null;
+  // If unchecking, also clear the link
+  var update = { sent_at: newSentAt };
+  if (!checkbox.checked) {
+    update.klaviyo_campaign_id = null;
+  }
+  var res = await db.from('quill_calendar').update(update).eq('id', editingId).select().single();
+  if (res.error) {
+    showToast('Could not update sent state: ' + res.error.message, true);
+    checkbox.checked = !checkbox.checked; // revert UI
+    return;
+  }
+  // Update local cache
+  em.sent_at = newSentAt;
+  if (!checkbox.checked) em.klaviyo_campaign_id = null;
+  // Re-render modal sent section + calendar
+  populateSentSection(em);
+  renderCalendar();
+  showToast(checkbox.checked ? 'Marked as sent' : 'Unmarked sent');
+};
+
+// Link to a Klaviyo campaign by campaign_id.
+window.linkKlaviyoCampaign = async function(campaignId) {
+  if (!editingId || !campaignId) return;
+  var em = emails.find(function(x){ return x.id === editingId; });
+  if (!em) return;
+  var res = await db.from('quill_calendar').update({ klaviyo_campaign_id: campaignId }).eq('id', editingId).select().single();
+  if (res.error) {
+    showToast('Could not link: ' + res.error.message, true);
+    return;
+  }
+  em.klaviyo_campaign_id = campaignId;
+  populateSentSection(em);
+  renderCalendar();
+  showToast('Linked to Klaviyo campaign');
+};
+
+// Unlink Klaviyo campaign (does not affect sent_at).
+window.unlinkKlaviyoCampaign = async function() {
+  if (!editingId) return;
+  var em = emails.find(function(x){ return x.id === editingId; });
+  if (!em) return;
+  var res = await db.from('quill_calendar').update({ klaviyo_campaign_id: null }).eq('id', editingId).select().single();
+  if (res.error) {
+    showToast('Could not unlink: ' + res.error.message, true);
+    return;
+  }
+  em.klaviyo_campaign_id = null;
+  populateSentSection(em);
+  renderCalendar();
+  showToast('Unlinked');
 };
 
 // If something else hijacked the modal body (e.g. bucket edit) and crashed
