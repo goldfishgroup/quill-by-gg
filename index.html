@@ -2919,18 +2919,15 @@ function renderMonthView() {
       if (e.sent_at) {
         var perf = e.klaviyo_campaign_id ? findKlaviyoCampaignById(e.klaviyo_campaign_id) : null;
         if (perf && perf.revenue !== null && perf.revenue !== undefined) {
-          // Build 3-metric row: Revenue, Open Rate, Click Rate
+          // Build 2-metric row: Revenue, Open Rate
           var rev = '$' + Math.round(Number(perf.revenue)).toLocaleString();
           var openRate = (perf.open_rate !== null && perf.open_rate !== undefined && !isNaN(Number(perf.open_rate)))
             ? Number(perf.open_rate).toFixed(1) + '%' : '\u2014';
-          var clickRate = (perf.click_rate !== null && perf.click_rate !== undefined && !isNaN(Number(perf.click_rate)))
-            ? Number(perf.click_rate).toFixed(1) + '%' : '\u2014';
           chip.classList.add('has-metrics');
           chip.innerHTML = '<div class="cal-chip-subject">' + escapeHtml(subjectText) + '</div>'
             + '<div class="cal-chip-metrics">'
             +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + rev + '</span><span class="cal-chip-metric-label">rev</span></span>'
             +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + openRate + '</span><span class="cal-chip-metric-label">open</span></span>'
-            +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + clickRate + '</span><span class="cal-chip-metric-label">click</span></span>'
             + '</div>';
         } else {
           chip.innerHTML = '<div class="cal-chip-subject">' + escapeHtml(subjectText) + '</div>'
