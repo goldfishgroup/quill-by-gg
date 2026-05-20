@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5142,6 +5143,41 @@ var snapshotsCache = null;
 var snapshotsLoadedAt = 0;
 var viewingSnapshotId = null;  // id of snapshot currently being viewed, or null = "all current"
 
+// Session 10.7: Which monthly snapshot of FLOW MESSAGES to display in the UI.
+// Format: 'YYYY-MM' (e.g., '2026-04'). Synced with the snapshot picker so
+// changing the diagnostic snapshot also changes which month of message data
+// the cards aggregate. null = use most recent available month.
+var selectedMessageSnapshotMonth = null;
+
+// Return distinct snapshot months present in cached message data, newest first.
+function getAvailableMessageMonths() {
+  var months = {};
+  var src = (insightsData && insightsData.flows) || [];
+  src.forEach(function(m){
+    if (m.snapshot_month) months[m.snapshot_month] = true;
+  });
+  return Object.keys(months).sort().reverse();
+}
+
+// Resolve the snapshot month to use right now (falls back to newest available).
+function resolveCurrentMessageSnapshotMonth() {
+  if (selectedMessageSnapshotMonth) return selectedMessageSnapshotMonth;
+  var avail = getAvailableMessageMonths();
+  return avail.length ? avail[0] : null;
+}
+
+// Step back one calendar month from a 'YYYY-MM' code.
+function priorMonthCode(month) {
+  if (!month || !/^\d{4}-\d{2}$/.test(month)) return null;
+  var parts = month.split('-');
+  var y = Number(parts[0]);
+  var m = Number(parts[1]);
+  m -= 1;
+  if (m < 1) { m = 12; y -= 1; }
+  return y + '-' + String(m).padStart(2, '0');
+}
+
+
 async function loadSnapshots(force) {
   if (!force && snapshotsCache && (Date.now() - snapshotsLoadedAt) < 30000) return;
   var res = await db.from('quill_flow_diagnostic_snapshots')
@@ -5250,8 +5286,19 @@ function applySnapshotSelection(val) {
   } else {
     viewingSnapshotId = Number(val) || null;
   }
-  // Re-render diagnostics with the selection applied
+  // Session 10.7: also sync the message snapshot month based on the picker.
+  // The diagnostic snapshot record has a snapshot_month field we mirror.
+  var snap = getCurrentSnapshot();
+  if (snap && snap.snapshot_month) {
+    selectedMessageSnapshotMonth = snap.snapshot_month;
+  } else {
+    // Reset to "newest available" if no snapshot has a month tag
+    selectedMessageSnapshotMonth = null;
+  }
+  // Re-render diagnostics + flow health cards (both depend on the selection)
   if (typeof renderFlowDiagnostics === 'function') renderFlowDiagnostics();
+  if (typeof renderFlowHealthCards === 'function') renderFlowHealthCards();
+  if (typeof renderFlowBrowser === 'function') renderFlowBrowser();
 }
 
 // Get the current snapshot record (the one being viewed)
@@ -6344,9 +6391,10 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
     await loadInsightsIfNeeded();
     await loadSnapshots(false);
 
-    // Get all current-period consumer flow messages for this flow
+    // Session 10.7: filter by selected snapshot_month, not data_period.
+    var targetMonth = resolveCurrentMessageSnapshotMonth();
     var messages = (insightsData.flows || []).filter(function(m){
-      if (m.data_period && m.data_period !== 'current') return false;
+      if (targetMonth && m.snapshot_month !== targetMonth) return false;
       if ((m.audience_type || 'consumer') !== 'consumer') return false;
       if (m.flow_name !== flowName) return false;
       var st = (m.status || '').toLowerCase();
@@ -6780,14 +6828,16 @@ window.extractFlowDiagnostics = async function() {
   // generation should only analyze the live (current) flows. Historical flows
   // are noise here and were causing the LLM payload to exceed Vercel's
   // 504-timeout window.
+  // Session 10.7: filter by selected snapshot_month
+  var targetMonth_b = resolveCurrentMessageSnapshotMonth();
   var rawFlows = (insightsData.flows || []).filter(function(f){
-    if (f.data_period && f.data_period !== 'current') return false;
+    if (targetMonth_b && f.snapshot_month !== targetMonth_b) return false;
     if ((f.audience_type || 'consumer') !== 'consumer') return false;
     var st = (f.status || '').toLowerCase();
     if (st === 'draft') return false;
     return Number(f.delivered || 0) > 0;
   });
-  console.log('[diagnose] Filtered to ' + rawFlows.length + ' current-period consumer flow messages (from ' + (insightsData.flows || []).length + ' total in insightsData)');
+  console.log('[diagnose] Filtered to ' + rawFlows.length + ' consumer flow messages for ' + (targetMonth_b || 'all months') + ' (from ' + (insightsData.flows || []).length + ' total in insightsData)');
   if (rawFlows.length < 5) {
     status.className = 'extract-status error';
     status.textContent = 'Only ' + rawFlows.length + ' current-period consumer flow messages available. Need more data to diagnose. (Make sure April flows are imported.)';
@@ -7832,12 +7882,15 @@ window.toggleMessageSprint = async function(messageId, btnEl) {
 // Flow-level sprint toggle. Bulk action on all messages in the flow.
 window.toggleFlowSprint = async function(flowName) {
   if (!flowName) return;
-  // Find all current-period messages for this flow
+  // Session 10.7: scope to currently-selected snapshot month
+  var targetMonth_s = resolveCurrentMessageSnapshotMonth();
   var flowMessages = (flowMessagesCache || []).filter(function(m){
-    return m.flow_name === flowName && (m.data_period === 'current' || !m.data_period);
+    if (m.flow_name !== flowName) return false;
+    if (targetMonth_s && m.snapshot_month !== targetMonth_s) return false;
+    return true;
   });
   if (!flowMessages.length) {
-    showToast('No current-period messages for ' + flowName, true);
+    showToast('No messages for ' + flowName + ' in ' + (targetMonth_s || 'this month'), true);
     return;
   }
   // If ANY message is in_sprint, the bulk action clears them all. Otherwise, set all.
@@ -7855,7 +7908,7 @@ window.toggleFlowSprint = async function(flowName) {
   flowMessages.forEach(function(m){ m.in_sprint = newVal; });
   if (insightsData && insightsData.flows) {
     insightsData.flows.forEach(function(m){
-      if (m.flow_name === flowName && (m.data_period === 'current' || !m.data_period)) {
+      if (m.flow_name === flowName && (!targetMonth_s || m.snapshot_month === targetMonth_s)) {
         m.in_sprint = newVal;
       }
     });
@@ -7876,16 +7929,29 @@ window.toggleFlowSprint = async function(flowName) {
 // historical flow data from quill_flow_messages where data_period='historical'.
 // Once true monthly snapshots are wired (Klaviyo API integration), this swaps
 // to reading the prior month's snapshot directly.
+//
+// Session 10.7 update: now reads the actual prior-month snapshot from
+// quill_flow_messages where snapshot_month = (currentMonth - 1). Falls back
+// to the data_period='historical' bucket if no prior month is loaded
+// (legacy data path; will go away once all months are imported).
 function computePriorSnapshotFlowMetrics(currentFlows) {
   var out = {};
-  // Build aggregates from historical flow messages (data_period='historical')
-  // grouped by flow_name. This is the best approximation today.
-  var historicalMessages = (insightsData.flows || []).filter(function(m){
-    return m.data_period === 'historical' && (m.audience_type || 'consumer') === 'consumer';
-  });
-  if (!historicalMessages.length) return out;
+  var currentMonth = resolveCurrentMessageSnapshotMonth();
+  var priorMonth = priorMonthCode(currentMonth);
+  var priorMessages;
+  if (priorMonth) {
+    priorMessages = (insightsData.flows || []).filter(function(m){
+      return m.snapshot_month === priorMonth && (m.audience_type || 'consumer') === 'consumer';
+    });
+  } else {
+    // Legacy fallback (pre-snapshot-month data)
+    priorMessages = (insightsData.flows || []).filter(function(m){
+      return m.data_period === 'historical' && (m.audience_type || 'consumer') === 'consumer';
+    });
+  }
+  if (!priorMessages.length) return out;
   var byFlow = {};
-  historicalMessages.forEach(function(m){
+  priorMessages.forEach(function(m){
     var fn = m.flow_name || '';
     if (!fn) return;
     if (!byFlow[fn]) byFlow[fn] = { delivered: 0, opens: 0, clicks: 0, unsubs: 0, revenue: 0, messages: 0 };
@@ -7904,8 +7970,9 @@ function computePriorSnapshotFlowMetrics(currentFlows) {
       avg_click_rate: a.delivered > 0 ? (a.clicks / a.delivered) * 100 : null,
       avg_unsub_rate: a.delivered > 0 ? (a.unsubs / a.delivered) * 100 : null,
       total_revenue: a.revenue,
+      total_delivered: a.delivered,
       revenue_per_msg: a.messages > 0 ? a.revenue / a.messages : null,
-      label: 'historical'
+      label: priorMonth || 'historical'
     };
   });
   return out;
@@ -8215,7 +8282,13 @@ window.renderFlowHealthCards = async function() {
   // Ensure flow metadata is loaded so we can show months active per flow
   await loadFlowMetadata(false);
 
-  var flows = aggregateFlowHealthData(flowMessagesCache);
+  // Session 10.7: aggregate only messages for the currently-selected snapshot month
+  var targetMonth_fhc = resolveCurrentMessageSnapshotMonth();
+  var messagesForMonth = (flowMessagesCache || []).filter(function(m){
+    if (targetMonth_fhc && m.snapshot_month !== targetMonth_fhc) return false;
+    return true;
+  });
+  var flows = aggregateFlowHealthData(messagesForMonth);
   if (!flows.length) {
     container.innerHTML = '<div class="flow-health-empty">No active consumer flows in the data.</div>';
     return;
@@ -8653,30 +8726,16 @@ function formatPeriodLabel(yyyyMm) {
   return monthNames[month - 1] + ' ' + year;
 }
 
-// Derive the period currently being viewed from the snapshot picker, falling
-// back to previous calendar month if none is selected. Mirrors the logic
-// used by diagnoseSingleFlow so the displayed period matches what gets tagged.
+// Derive the period currently being viewed. Session 10.7: now reads from
+// selectedMessageSnapshotMonth (synced by the snapshot picker via
+// applySnapshotSelection), falling back to most-recent available month.
 function getCurrentDisplayPeriod() {
-  var selectedMonth = null;
-  var picker = document.getElementById('diag-snapshot-picker');
-  if (picker && picker.value) {
-    if (picker.value === 'latest') {
-      var currentSnaps = (snapshotsCache || []).filter(function(s){ return s.is_current; });
-      if (currentSnaps.length) selectedMonth = currentSnaps[0].snapshot_month;
-    } else {
-      var pickedId = Number(picker.value);
-      var picked = (snapshotsCache || []).find(function(s){ return s.id === pickedId; });
-      if (picked && picked.snapshot_month && picked.snapshot_month !== 'pre-2026-04') {
-        selectedMonth = picked.snapshot_month;
-      }
-    }
-  }
-  if (!selectedMonth) {
-    var now = new Date();
-    var prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    selectedMonth = prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
-  }
-  return selectedMonth;
+  var resolved = resolveCurrentMessageSnapshotMonth();
+  if (resolved) return resolved;
+  // Last-resort fallback: previous calendar month (legacy behavior)
+  var now = new Date();
+  var prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return prev.getFullYear() + '-' + String(prev.getMonth() + 1).padStart(2, '0');
 }
 
 function renderManageFlowsProgress() {
@@ -8858,12 +8917,13 @@ async function loadFlowBrowserData() {
   // Note: Klaviyo flow exports do NOT include email body content. The body
   // field on quill_flow_messages stays null. Users paste the existing copy
   // into the improve modal manually when generating an improvement.
-  // Session 9.1: filter to current period; historical data is not browsable in UI.
+  // Session 10.7: pull ALL snapshot months. Filtering happens in memory based
+  // on selectedMessageSnapshotMonth so the picker can switch views without
+  // refetching. Limit raised to 5000 to accommodate 16+ months.
   var res = await db.from('quill_flow_messages')
-    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,click_to_open_rate,unsubscribe_rate,complaint_rate,bounce_rate,placed_order_rate,revenue,revenue_per_recipient,audience_type,is_active,in_sprint,last_improved_at,last_improved_from_draft_id')
-    .eq('data_period', 'current')
+    .select('id,flow_name,message_name,subject,preview,status,delivered,unique_opens,unique_clicks,open_rate,click_rate,click_to_open_rate,unsubscribe_rate,complaint_rate,bounce_rate,placed_order_rate,revenue,revenue_per_recipient,audience_type,is_active,in_sprint,last_improved_at,last_improved_from_draft_id,snapshot_month,data_period')
     .order('flow_name', { ascending: true })
-    .limit(2000);
+    .limit(5000);
   if (res.error) {
     console.error('loadFlowBrowserData error', res.error.message || res.error);
     var grid = document.getElementById('flow-browser-grid');
@@ -8887,6 +8947,20 @@ async function loadFlowBrowserData() {
     sel.innerHTML = '<option value="">All flows</option>'
       + sortedNames.map(function(n){ return '<option value="' + escapeHtml(n) + '">' + escapeHtml(n) + '</option>'; }).join('');
     if (existing) sel.value = existing;
+  }
+
+  // Session 10.7: Also mirror messages into insightsData.flows so existing
+  // consumers of that cache (computePriorSnapshotFlowMetrics, etc.) see ALL
+  // months. Previously insightsData.flows only had current-period data.
+  if (typeof insightsData === 'object' && insightsData) {
+    insightsData.flows = res.data || [];
+  }
+
+  // Initialize the message snapshot month if not yet set. Picks the most
+  // recent month present so the UI defaults to "latest" on first load.
+  if (!selectedMessageSnapshotMonth) {
+    var months = getAvailableMessageMonths();
+    if (months.length) selectedMessageSnapshotMonth = months[0];
   }
 }
 
@@ -9734,9 +9808,12 @@ window.renderFlowBrowser = function() {
   var flowFilter = (document.getElementById('flow-browser-filter-flow') || {}).value || '';
   var statusFilter = (document.getElementById('flow-browser-filter-status') || {}).value || 'live';
   var q = search.trim().toLowerCase();
+  // Session 10.7: scope to currently-selected snapshot month
+  var targetMonth_b = resolveCurrentMessageSnapshotMonth();
 
   var rows = flowMessagesCache.filter(function(m){
     if (m.is_active === false && !includeLegacyMessagesBrowser) return false;
+    if (targetMonth_b && m.snapshot_month !== targetMonth_b) return false;
     if (flowFilter && m.flow_name !== flowFilter) return false;
     if (statusFilter === 'live' && (m.status || '').toLowerCase() !== 'live') return false;
     if (q) {
