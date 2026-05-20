@@ -5195,29 +5195,60 @@ async function loadSnapshots(force) {
 
 // Populate the "Viewing snapshot" picker. Default selection is the latest
 // current snapshot (newest non-archived). Falls back to "Most recent" sentinel.
+//
+// Session 10.7: also surfaces ALL months that have message data in
+// quill_flow_messages, even if no diagnostic snapshot exists for them. This
+// lets the strategist navigate the full 16-month history. Months without a
+// diagnostic snapshot are tagged with value 'month:YYYY-MM' so the change
+// handler knows to update the message snapshot_month without trying to
+// look up a diagnostic snapshot id.
 function populateSnapshotPicker() {
   var sel = document.getElementById('diag-snapshot-picker');
   if (!sel) return;
   var current = (snapshotsCache || []).filter(function(s){ return s.is_current; });
   var archived = (snapshotsCache || []).filter(function(s){ return !s.is_current; });
+
+  // Build set of months that already have a diagnostic snapshot
+  var snapshotMonths = {};
+  (snapshotsCache || []).forEach(function(s){
+    if (s.snapshot_month) snapshotMonths[s.snapshot_month] = true;
+  });
+
+  // Find message-data months that don't have a diagnostic snapshot yet
+  var messageMonths = getAvailableMessageMonths();
+  var messageOnlyMonths = messageMonths.filter(function(m){
+    return !snapshotMonths[m];
+  });
+
   var html = '';
-  if (!current.length && !archived.length) {
+  if (!current.length && !archived.length && !messageOnlyMonths.length) {
     html = '<option value="">No snapshots yet</option>';
   } else {
     // "Latest" label should reflect the actual month it points to
     var latestLabel = 'Latest snapshot';
     if (current.length) {
-      // Pick the most recent current snapshot (sorted desc when loaded)
       latestLabel = 'Latest snapshot \u00b7 ' + humanizeSnapshotMonth(current[0].snapshot_month);
+    } else if (messageMonths.length) {
+      latestLabel = 'Latest data \u00b7 ' + humanizeSnapshotMonth(messageMonths[0]);
     }
     html = '<option value="latest">' + escapeHtml(latestLabel) + '</option>';
+
     if (current.length) {
-      html += '<optgroup label="Current snapshots">';
+      html += '<optgroup label="With diagnostic findings">';
       current.forEach(function(s){
         html += '<option value="' + s.id + '">' + escapeHtml(humanizeSnapshotMonth(s.snapshot_month)) + ' (' + s.total_findings + ' findings)</option>';
       });
       html += '</optgroup>';
     }
+
+    if (messageOnlyMonths.length) {
+      html += '<optgroup label="Historical data (no diagnoses yet)">';
+      messageOnlyMonths.forEach(function(m){
+        html += '<option value="month:' + m + '">' + escapeHtml(humanizeSnapshotMonth(m)) + '</option>';
+      });
+      html += '</optgroup>';
+    }
+
     if (archived.length) {
       html += '<optgroup label="Archived">';
       archived.forEach(function(s){
@@ -5280,20 +5311,30 @@ function applySnapshotSelection(val) {
     var current = (snapshotsCache || []).filter(function(s){ return s.is_current; });
     if (current.length) {
       viewingSnapshotId = current[0].id;
+      selectedMessageSnapshotMonth = current[0].snapshot_month || null;
     } else {
       viewingSnapshotId = null;
+      // Fall back to newest available message month
+      var availMonths = getAvailableMessageMonths();
+      selectedMessageSnapshotMonth = availMonths.length ? availMonths[0] : null;
     }
+  } else if (typeof val === 'string' && val.indexOf('month:') === 0) {
+    // Session 10.7: pure message-month selection (no diagnostic snapshot).
+    // viewingSnapshotId stays null so the diagnostics view shows empty for
+    // this month, but message data is filtered to the selected month.
+    viewingSnapshotId = null;
+    selectedMessageSnapshotMonth = val.substring(6); // strip 'month:' prefix
   } else {
     viewingSnapshotId = Number(val) || null;
-  }
-  // Session 10.7: also sync the message snapshot month based on the picker.
-  // The diagnostic snapshot record has a snapshot_month field we mirror.
-  var snap = getCurrentSnapshot();
-  if (snap && snap.snapshot_month) {
-    selectedMessageSnapshotMonth = snap.snapshot_month;
-  } else {
-    // Reset to "newest available" if no snapshot has a month tag
-    selectedMessageSnapshotMonth = null;
+    // Sync the message snapshot month from the picked diagnostic snapshot
+    var snap = getCurrentSnapshot();
+    if (snap && snap.snapshot_month && snap.snapshot_month !== 'pre-2026-04') {
+      selectedMessageSnapshotMonth = snap.snapshot_month;
+    } else {
+      // Archived/legacy snapshot doesn't have a clean month, keep messages on latest
+      var avail2 = getAvailableMessageMonths();
+      selectedMessageSnapshotMonth = avail2.length ? avail2[0] : null;
+    }
   }
   // Re-render diagnostics + flow health cards (both depend on the selection)
   if (typeof renderFlowDiagnostics === 'function') renderFlowDiagnostics();
@@ -5315,6 +5356,10 @@ async function showFlowDiagnosticsOnOpen() {
   renderFlowDiagnostics();
   // Also load the flow message browser for the panel below diagnostics
   await loadFlowBrowserData();
+  // Session 10.7: repopulate picker now that message data is loaded so it
+  // can list historical message-data months that don't have a diagnostic
+  // snapshot yet. First call above ran before data was ready.
+  populateSnapshotPicker();
   // Render flow health cards (Phase A) using both diagnostics + flow messages
   renderFlowHealthCards();
   renderFlowBrowser();
