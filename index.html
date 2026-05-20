@@ -5249,18 +5249,22 @@ function populateSnapshotPicker() {
       html += '</optgroup>';
     }
 
-    if (archived.length) {
-      html += '<optgroup label="Archived">';
-      archived.forEach(function(s){
-        var dateLabel = '';
-        if (s.taken_at) {
-          var d = new Date(s.taken_at);
-          dateLabel = ' \u00b7 ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-        html += '<option value="' + s.id + '">' + escapeHtml(humanizeSnapshotMonth(s.snapshot_month)) + dateLabel + ' (archived)</option>';
-      });
-      html += '</optgroup>';
-    }
+    // Session 10.7: archived/legacy snapshots are intentionally NOT rendered
+    // in the picker. They are pre-monthly-snapshot relics and clutter the UI.
+    // The data is preserved in the table (is_current=false) for audit, but
+    // not surfaced. To restore, uncomment the archived block below.
+    // if (archived.length) {
+    //   html += '<optgroup label="Archived">';
+    //   archived.forEach(function(s){
+    //     var dateLabel = '';
+    //     if (s.taken_at) {
+    //       var d = new Date(s.taken_at);
+    //       dateLabel = ' \u00b7 ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    //     }
+    //     html += '<option value="' + s.id + '">' + escapeHtml(humanizeSnapshotMonth(s.snapshot_month)) + dateLabel + ' (archived)</option>';
+    //   });
+    //   html += '</optgroup>';
+    // }
   }
   sel.innerHTML = html;
   // Default to latest
