@@ -8020,7 +8020,10 @@ function computePriorSnapshotFlowMetrics(currentFlows) {
       avg_unsub_rate: a.delivered > 0 ? (a.unsubs / a.delivered) * 100 : null,
       total_revenue: a.revenue,
       total_delivered: a.delivered,
-      revenue_per_msg: a.messages > 0 ? a.revenue / a.messages : null,
+      // Session 10.7 fix: was revenue/messages (per-message-type), but the
+      // card displays revenue_per_recipient (revenue/delivered). The delta
+      // must compare apples to apples or the math is nonsensical.
+      revenue_per_msg: a.delivered > 0 ? a.revenue / a.delivered : null,
       label: priorMonth || 'historical'
     };
   });
@@ -8061,8 +8064,10 @@ function computeMetricDelta(metricName, currentVal, priorMetrics) {
   } else if (metricName === 'revenue_per_msg') {
     displayDiff = '$' + Math.abs(diff).toFixed(2);
   } else {
-    // Rate metrics: show as percentage point change
-    displayDiff = Math.abs(diff).toFixed(1) + 'pp';
+    // Rate metrics: shown as percentage point change. Labeled '%' in the UI
+    // (per strategist preference) since "pp" is statistician jargon. Math
+    // is still an absolute (additive) change, not a relative one.
+    displayDiff = Math.abs(diff).toFixed(1) + '%';
   }
   var sourceLabel = priorMetrics.label || 'prior';
   return '<div class="' + cls + '">' + arrow + ' ' + displayDiff + ' vs ' + sourceLabel + '</div>';
