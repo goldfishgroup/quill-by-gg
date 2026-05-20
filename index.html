@@ -178,6 +178,17 @@
     /* Session 10.8: Sent campaigns get a distinct green styling that overrides status colors */
     .cal-chip.is-sent { background: #e6efd9; border-left-color: #3d6022; }
     .cal-chip.is-sent:hover { background: #d8e5c5; }
+
+    /* Chunkier sent chip with subject + metrics row */
+    .cal-chip.is-sent.has-metrics { padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+    .cal-chip-subject { font-size: 11px; font-weight: 600; color: var(--gg-charcoal); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cal-chip-metrics { display: flex; gap: 8px; align-items: baseline; flex-wrap: nowrap; }
+    .cal-chip-metric { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; min-width: 0; }
+    .cal-chip-metric-val { font-size: 11px; font-weight: 700; color: #3d6022; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .cal-chip-metric-label { font-size: 8px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-top: 1px; }
+    .cal-chip-pending { font-size: 9px; color: var(--q-muted); font-style: italic; padding-top: 2px; }
+
+    /* Legacy inline badges (used in list view + as fallback) */
     .cal-chip-sent-revenue { display: inline-block; font-size: 9px; font-weight: 700; color: #3d6022; margin-left: 6px; padding: 1px 5px; background: #fff; border-radius: 8px; vertical-align: middle; }
     .cal-chip-sent-pending { display: inline-block; font-size: 9px; font-weight: 600; color: var(--q-muted); margin-left: 6px; font-style: italic; }
 
@@ -2901,16 +2912,29 @@ function renderMonthView() {
       chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft') + sentClass;
       chip.draggable = true;
       chip.dataset.id = e.id;
-      // Build chip text: subject + revenue (if sent + linked) OR pending pill
+      // Session 10.8: sent + linked chips show subject row + metrics row.
+      // sent + unlinked chips show subject + "pending data" hint.
+      // unsent chips show subject only.
       var subjectText = e.subject || 'Untitled';
       if (e.sent_at) {
         var perf = e.klaviyo_campaign_id ? findKlaviyoCampaignById(e.klaviyo_campaign_id) : null;
         if (perf && perf.revenue !== null && perf.revenue !== undefined) {
-          chip.innerHTML = escapeHtml(subjectText)
-            + '<span class="cal-chip-sent-revenue">$' + Math.round(Number(perf.revenue)).toLocaleString() + '</span>';
+          // Build 3-metric row: Revenue, Open Rate, Click Rate
+          var rev = '$' + Math.round(Number(perf.revenue)).toLocaleString();
+          var openRate = (perf.open_rate !== null && perf.open_rate !== undefined && !isNaN(Number(perf.open_rate)))
+            ? Number(perf.open_rate).toFixed(1) + '%' : '\u2014';
+          var clickRate = (perf.click_rate !== null && perf.click_rate !== undefined && !isNaN(Number(perf.click_rate)))
+            ? Number(perf.click_rate).toFixed(1) + '%' : '\u2014';
+          chip.classList.add('has-metrics');
+          chip.innerHTML = '<div class="cal-chip-subject">' + escapeHtml(subjectText) + '</div>'
+            + '<div class="cal-chip-metrics">'
+            +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + rev + '</span><span class="cal-chip-metric-label">rev</span></span>'
+            +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + openRate + '</span><span class="cal-chip-metric-label">open</span></span>'
+            +   '<span class="cal-chip-metric"><span class="cal-chip-metric-val">' + clickRate + '</span><span class="cal-chip-metric-label">click</span></span>'
+            + '</div>';
         } else {
-          chip.innerHTML = escapeHtml(subjectText)
-            + '<span class="cal-chip-sent-pending">pending data</span>';
+          chip.innerHTML = '<div class="cal-chip-subject">' + escapeHtml(subjectText) + '</div>'
+            + '<div class="cal-chip-pending">pending Klaviyo data</div>';
         }
       } else {
         chip.textContent = subjectText;
