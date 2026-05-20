@@ -3336,7 +3336,8 @@ function findKlaviyoCampaignById(campaignId) {
 }
 
 // Populate the Sent section of the edit modal based on the email\u0027s state.
-function populateSentSection(em) {
+// Async so it can await insights load before populating the Klaviyo dropdown.
+async function populateSentSection(em) {
   var checkbox = document.getElementById('f-sent');
   var datePill = document.getElementById('f-sent-date');
   var linkRow = document.getElementById('f-sent-link-row');
@@ -3359,6 +3360,15 @@ function populateSentSection(em) {
 
   if (isSent) {
     linkRow.style.display = 'flex';
+    // Session 10.8 fix: insightsData.campaigns might not be loaded yet if the
+    // user opened the modal before the calendar-tab load hook fired (or if
+    // they refreshed mid-session). Force-load before populating dropdown.
+    linkSelect.innerHTML = '<option value="">Loading campaigns...</option>';
+    try {
+      await loadInsightsIfNeeded();
+    } catch (err) {
+      console.warn('populateSentSection: could not load insights', err);
+    }
     populateKlaviyoLinkSelect(em);
   } else {
     linkRow.style.display = 'none';
@@ -3390,18 +3400,22 @@ function populateKlaviyoLinkSelect(em) {
     if (e.id !== em.id && e.klaviyo_campaign_id) linkedElsewhere[e.klaviyo_campaign_id] = e.subject || 'Untitled';
   });
   // Available campaigns: not linked to any other calendar item.
-  // Sort by send_date desc so most recent shows first.
+  // Sort by send_time desc so most recent shows first.
   var available = camps.filter(function(c){
     return c.campaign_id && !linkedElsewhere[c.campaign_id];
   }).sort(function(a, b){
-    var da = a.send_date || '';
-    var db = b.send_date || '';
-    return db.localeCompare(da);
+    var da = a.send_time || '';
+    var db = b.send_time || '';
+    return String(db).localeCompare(String(da));
   });
   var html = '<option value="">Select a Klaviyo campaign...</option>';
   available.forEach(function(c){
     var label = (c.subject || c.campaign_name || 'Untitled');
-    if (c.send_date) label += ' (' + c.send_date + ')';
+    if (c.send_time) {
+      // Klaviyo send_time is an ISO timestamp; just show YYYY-MM-DD slice
+      var dateStr = String(c.send_time).substring(0, 10);
+      label += ' (' + dateStr + ')';
+    }
     var selected = c.campaign_id === em.klaviyo_campaign_id ? ' selected' : '';
     html += '<option value="' + escapeHtml(c.campaign_id) + '"' + selected + '>' + escapeHtml(label) + '</option>';
   });
