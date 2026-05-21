@@ -179,13 +179,13 @@
     /* Session 10.8: Sent campaigns get a distinct green styling that overrides status colors */
     .cal-chip.is-sent { background: #e6efd9; border-left-color: #3d6022; }
     .cal-chip.is-sent:hover { background: #d8e5c5; }
-    /* Session 10.9: Sent chips use flex so badges always show on the right while
-       only the subject text gets ellipsis. Without this the subject expands to
-       fill, the badge spans render but get clipped by overflow:hidden. */
-    .cal-chip.is-sent { display: flex; align-items: center; gap: 4px; }
-    .cal-chip-sent-subject { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .cal-chip-sent-revenue { display: inline-block; flex: 0 0 auto; font-size: 9px; font-weight: 700; color: #3d6022; padding: 1px 5px; background: #fff; border-radius: 8px; vertical-align: middle; white-space: nowrap; }
-    .cal-chip-sent-pending { display: inline-block; flex: 0 0 auto; font-size: 9px; font-weight: 600; color: var(--q-muted); font-style: italic; white-space: nowrap; }
+    /* Session 10.9: Sent chips stack subject on top, metrics row underneath.
+       Subject ellipsizes if too long. Metrics row stays inline. */
+    .cal-chip.is-sent { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    .cal-chip-sent-subject { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cal-chip-sent-metrics { display: flex; gap: 4px; flex-wrap: nowrap; }
+    .cal-chip-sent-revenue { display: inline-block; font-size: 9px; font-weight: 700; color: #3d6022; padding: 1px 5px; background: #fff; border-radius: 8px; vertical-align: middle; white-space: nowrap; }
+    .cal-chip-sent-pending { display: inline-block; font-size: 9px; font-weight: 600; color: var(--q-muted); font-style: italic; white-space: nowrap; }
 
     /* Sent section inside the edit modal */
     .sent-section { display: flex; flex-direction: column; gap: 12px; }
@@ -2926,8 +2926,10 @@ function renderMonthView() {
             ? '<span class="cal-chip-sent-revenue">' + Number(perf.open_rate).toFixed(1) + '%</span>'
             : '';
           chip.innerHTML = '<span class="cal-chip-sent-subject">' + escapeHtml(subjectText) + '</span>'
+            + '<span class="cal-chip-sent-metrics">'
             + '<span class="cal-chip-sent-revenue">$' + Math.round(Number(perf.revenue)).toLocaleString() + '</span>'
-            + openBadge;
+            + openBadge
+            + '</span>';
         } else {
           chip.innerHTML = '<span class="cal-chip-sent-subject">' + escapeHtml(subjectText) + '</span>'
             + '<span class="cal-chip-sent-pending">pending data</span>';
