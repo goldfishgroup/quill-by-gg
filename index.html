@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2741,6 +2742,16 @@ async function loadEmails() {
   emails = result.data || [];
   setSyncStatus('synced', 'Saved');
   renderCalendar();
+  // Session 10.9 fix: on initial page load the calendar tab is already
+  // active so setTab(calendar) never fires, meaning insightsData.campaigns
+  // stays null and sent chips render as pending data forever. Kick off the
+  // insights load here and re-render once campaigns are populated. This
+  // mirrors the hook in setTab(calendar) on line ~2790.
+  if (typeof loadInsightsIfNeeded === 'function') {
+    loadInsightsIfNeeded().then(function(){
+      renderCalendar();
+    }).catch(function(){});
+  }
 }
 
 async function upsertEmail(email) {
