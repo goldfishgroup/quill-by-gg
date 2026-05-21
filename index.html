@@ -6734,6 +6734,26 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
 
     // Session 10.7: filter by selected snapshot_month, not data_period.
     var targetMonth = resolveCurrentMessageSnapshotMonth();
+
+    // Session 10.9 temporary diagnostic: log what we see before filtering
+    console.log('[diagnose-debug] flowName:', flowName);
+    console.log('[diagnose-debug] targetMonth:', targetMonth);
+    console.log('[diagnose-debug] insightsData.flows total rows:', (insightsData.flows || []).length);
+    var preFilterMatches = (insightsData.flows || []).filter(function(m){
+      return m.flow_name === flowName;
+    });
+    console.log('[diagnose-debug] rows matching flow_name only:', preFilterMatches.length);
+    console.log('[diagnose-debug] sample rows:', preFilterMatches.slice(0, 5).map(function(m){
+      return {
+        flow_name: m.flow_name,
+        message_name: m.message_name,
+        snapshot_month: m.snapshot_month,
+        audience_type: m.audience_type,
+        status: m.status,
+        delivered: m.delivered
+      };
+    }));
+
     var messages = (insightsData.flows || []).filter(function(m){
       if (targetMonth && m.snapshot_month !== targetMonth) return false;
       if ((m.audience_type || 'consumer') !== 'consumer') return false;
@@ -6742,6 +6762,8 @@ window.diagnoseSingleFlow = async function(flowName, btnEl) {
       if (st === 'draft') return false;
       return Number(m.delivered || 0) > 0;
     });
+
+    console.log('[diagnose-debug] post-filter messages:', messages.length);
 
     if (messages.length === 0) {
       showToast('No current-period messages found for ' + flowName, true);
