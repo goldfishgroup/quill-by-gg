@@ -1098,6 +1098,30 @@
     @media (max-width: 640px) {
       .board-columns { grid-template-columns: 1fr; }
     }
+    /* Session 10.10: Sent section on Campaign Board, full width below columns */
+    .board-sent-section { margin-top: 24px; border: 1px solid var(--q-line); border-radius: 10px; background: var(--gg-offwhite); overflow: hidden; }
+    .board-sent-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .board-sent-header:hover { background: rgba(67, 71, 29, 0.04); }
+    .board-sent-header-left { display: flex; align-items: center; gap: 10px; }
+    .board-sent-caret { font-size: 11px; color: var(--q-muted); transition: transform 0.15s; display: inline-block; }
+    .board-sent-caret.expanded { transform: rotate(90deg); }
+    .board-sent-title { font-size: 13px; font-weight: 600; color: var(--gg-charcoal); letter-spacing: 0.02em; }
+    .board-sent-count { font-size: 11px; font-weight: 600; color: #3d6022; background: #e6efd9; padding: 2px 8px; border-radius: 10px; }
+    .board-sent-header-hint { font-size: 11px; color: var(--q-muted); }
+    .board-sent-body { padding: 0 18px 18px; border-top: 1px solid var(--q-line); }
+    .board-sent-group { margin-top: 14px; }
+    .board-sent-group-head { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; user-select: none; }
+    .board-sent-group-head:hover .board-sent-group-name { color: var(--gg-olive); }
+    .board-sent-group-caret { font-size: 10px; color: var(--q-muted); transition: transform 0.15s; display: inline-block; }
+    .board-sent-group-caret.expanded { transform: rotate(90deg); }
+    .board-sent-group-name { font-size: 12px; font-weight: 600; color: var(--q-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .board-sent-group-count { font-size: 11px; color: var(--q-muted); }
+    .board-sent-group-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 6px 0 4px; }
+    .board-card.is-sent { background: #f4f8eb; border-left: 3px solid #3d6022; }
+    .board-card-sent-metrics { display: flex; gap: 6px; margin-top: 8px; flex-wrap: nowrap; }
+    .board-card-sent-revenue { display: inline-block; font-size: 10px; font-weight: 700; color: #3d6022; padding: 2px 7px; background: #fff; border-radius: 8px; white-space: nowrap; }
+    .board-card-sent-pending { display: inline-block; font-size: 10px; font-weight: 600; color: var(--q-muted); font-style: italic; white-space: nowrap; }
+    .board-sent-empty { font-size: 12px; color: var(--q-muted); font-style: italic; padding: 12px 0 4px; }
 
     /* GAPS ANALYSIS */
     .gaps-controls { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin: 16px 0 20px; flex-wrap: wrap; }
@@ -1677,6 +1701,18 @@
           </div>
           <div class="board-col-body" data-status="scheduled" id="board-col-scheduled"></div>
         </div>
+      </div>
+      <!-- Session 10.10: Sent section, full width, collapsed by default -->
+      <div class="board-sent-section">
+        <div class="board-sent-header" id="board-sent-header" onclick="toggleSentSection()">
+          <div class="board-sent-header-left">
+            <span class="board-sent-caret" id="board-sent-caret">&#9656;</span>
+            <span class="board-sent-title">Sent</span>
+            <span class="board-sent-count" id="board-sent-count">0</span>
+          </div>
+          <div class="board-sent-header-hint">Tap to expand</div>
+        </div>
+        <div class="board-sent-body" id="board-sent-body" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -3508,9 +3544,10 @@ window.onSentCheckboxChange = async function() {
   // Update local cache
   em.sent_at = newSentAt;
   if (!checkbox.checked) em.klaviyo_campaign_id = null;
-  // Re-render modal sent section + calendar
+  // Re-render modal sent section + calendar + board
   populateSentSection(em);
   renderCalendar();
+  if (typeof renderCampaignBoard === 'function') try { renderCampaignBoard(); } catch(e){}
   showToast(checkbox.checked ? 'Marked as sent' : 'Unmarked sent');
 };
 
@@ -3527,6 +3564,7 @@ window.linkKlaviyoCampaign = async function(campaignId) {
   em.klaviyo_campaign_id = campaignId;
   populateSentSection(em);
   renderCalendar();
+  if (typeof renderCampaignBoard === 'function') try { renderCampaignBoard(); } catch(e){}
   showToast('Linked to Klaviyo campaign');
 };
 
@@ -3543,6 +3581,7 @@ window.unlinkKlaviyoCampaign = async function() {
   em.klaviyo_campaign_id = null;
   populateSentSection(em);
   renderCalendar();
+  if (typeof renderCampaignBoard === 'function') try { renderCampaignBoard(); } catch(e){}
   showToast('Unlinked');
 };
 
@@ -13706,6 +13745,8 @@ function renderCampaignBoard() {
 
   var filtered = emails.filter(function(e){
     if (filter && e.bucket !== filter) return false;
+    // Session 10.10: sent items render in the sent section below, not in columns
+    if (e.sent_at) return false;
     return true;
   });
 
@@ -13728,12 +13769,172 @@ function renderCampaignBoard() {
   });
 
   wireBoardDropTargets();
+  // Session 10.10: render the sent section below
+  renderSentSection(filter);
+}
+
+// Session 10.10: Sent section state. Top-level section collapsed by default;
+// individual month groups: current month expanded, older months collapsed.
+var sentSectionExpanded = false;
+var sentMonthsExpanded = {}; // map of 'YYYY-MM' -> true if expanded
+
+window.toggleSentSection = function() {
+  sentSectionExpanded = !sentSectionExpanded;
+  var body = document.getElementById('board-sent-body');
+  var caret = document.getElementById('board-sent-caret');
+  var hint = document.querySelector('.board-sent-header-hint');
+  if (!body || !caret) return;
+  if (sentSectionExpanded) {
+    body.style.display = 'block';
+    caret.classList.add('expanded');
+    if (hint) hint.textContent = 'Tap to collapse';
+  } else {
+    body.style.display = 'none';
+    caret.classList.remove('expanded');
+    if (hint) hint.textContent = 'Tap to expand';
+  }
+};
+
+window.toggleSentMonth = function(monthCode) {
+  sentMonthsExpanded[monthCode] = !sentMonthsExpanded[monthCode];
+  var body = document.getElementById('sent-group-body-' + monthCode);
+  var caret = document.getElementById('sent-group-caret-' + monthCode);
+  if (!body || !caret) return;
+  if (sentMonthsExpanded[monthCode]) {
+    body.style.display = 'grid';
+    caret.classList.add('expanded');
+  } else {
+    body.style.display = 'none';
+    caret.classList.remove('expanded');
+  }
+};
+
+function renderSentSection(bucketFilter) {
+  var body = document.getElementById('board-sent-body');
+  var countEl = document.getElementById('board-sent-count');
+  if (!body || !countEl) return;
+
+  // Filter sent emails, respecting the active bucket filter
+  var sent = (emails || []).filter(function(e){
+    if (!e.sent_at) return false;
+    if (bucketFilter && e.bucket !== bucketFilter) return false;
+    return true;
+  });
+
+  countEl.textContent = String(sent.length);
+
+  // Apply persisted top-level open/close state to the DOM
+  var topBody = document.getElementById('board-sent-body');
+  var topCaret = document.getElementById('board-sent-caret');
+  var hint = document.querySelector('.board-sent-header-hint');
+  if (topBody && topCaret) {
+    if (sentSectionExpanded) {
+      topBody.style.display = 'block';
+      topCaret.classList.add('expanded');
+      if (hint) hint.textContent = 'Tap to collapse';
+    } else {
+      topBody.style.display = 'none';
+      topCaret.classList.remove('expanded');
+      if (hint) hint.textContent = 'Tap to expand';
+    }
+  }
+
+  if (!sent.length) {
+    body.innerHTML = '<div class="board-sent-empty">No sent campaigns yet. Mark a campaign as sent in the Campaign Editor to see it here.</div>';
+    return;
+  }
+
+  // Group by send month (YYYY-MM from sent_at)
+  var groups = {};
+  sent.forEach(function(e){
+    var d = new Date(e.sent_at);
+    if (isNaN(d.getTime())) return;
+    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  // Sort group keys descending (most recent month first)
+  var monthKeys = Object.keys(groups).sort(function(a, b){
+    if (a < b) return 1;
+    if (a > b) return -1;
+    return 0;
+  });
+
+  // Current month should default to expanded if not yet set in sentMonthsExpanded
+  var now = new Date();
+  var currentMonthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  monthKeys.forEach(function(k){
+    if (sentMonthsExpanded[k] === undefined) {
+      sentMonthsExpanded[k] = (k === currentMonthKey);
+    }
+  });
+
+  // Sort within each group by sent_at descending
+  monthKeys.forEach(function(k){
+    groups[k].sort(function(a, b){
+      var da = new Date(a.sent_at).getTime();
+      var dbb = new Date(b.sent_at).getTime();
+      return dbb - da;
+    });
+  });
+
+  body.innerHTML = '';
+  monthKeys.forEach(function(k){
+    var group = document.createElement('div');
+    group.className = 'board-sent-group';
+
+    var head = document.createElement('div');
+    head.className = 'board-sent-group-head';
+    head.setAttribute('onclick', 'toggleSentMonth(' + JSON.stringify(k) + ')');
+
+    var caret = document.createElement('span');
+    caret.className = 'board-sent-group-caret' + (sentMonthsExpanded[k] ? ' expanded' : '');
+    caret.id = 'sent-group-caret-' + k;
+    caret.innerHTML = '&#9656;';
+    head.appendChild(caret);
+
+    var name = document.createElement('span');
+    name.className = 'board-sent-group-name';
+    name.textContent = formatMonthLabel(k);
+    head.appendChild(name);
+
+    var count = document.createElement('span');
+    count.className = 'board-sent-group-count';
+    count.textContent = String(groups[k].length) + (groups[k].length === 1 ? ' campaign' : ' campaigns');
+    head.appendChild(count);
+
+    group.appendChild(head);
+
+    var groupBody = document.createElement('div');
+    groupBody.className = 'board-sent-group-body';
+    groupBody.id = 'sent-group-body-' + k;
+    groupBody.style.display = sentMonthsExpanded[k] ? 'grid' : 'none';
+
+    groups[k].forEach(function(em){
+      groupBody.appendChild(buildBoardCard(em));
+    });
+
+    group.appendChild(groupBody);
+    body.appendChild(group);
+  });
+}
+
+// Format 'YYYY-MM' -> 'April 2026'
+function formatMonthLabel(monthCode) {
+  if (!monthCode || !/^\d{4}-\d{2}$/.test(monthCode)) return monthCode || '';
+  var parts = monthCode.split('-');
+  var y = Number(parts[0]);
+  var m = Number(parts[1]);
+  var names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return names[m - 1] + ' ' + y;
 }
 
 function buildBoardCard(em) {
   var card = document.createElement('div');
-  card.className = 'board-card';
-  card.draggable = true;
+  card.className = 'board-card' + (em.sent_at ? ' is-sent' : '');
+  // Session 10.10: sent cards live in the sent section, no drag-between-columns
+  card.draggable = !em.sent_at;
   card.dataset.emailId = String(em.id);
 
   var subj = document.createElement('div');
@@ -13782,6 +13983,31 @@ function buildBoardCard(em) {
     meta.appendChild(ds);
   }
   card.appendChild(meta);
+
+  // Session 10.10: sent cards get revenue + open rate badges, same pattern as calendar chips
+  if (em.sent_at) {
+    var perf = em.klaviyo_campaign_id ? findKlaviyoCampaignById(em.klaviyo_campaign_id) : null;
+    var metrics = document.createElement('div');
+    metrics.className = 'board-card-sent-metrics';
+    if (perf && perf.revenue !== null && perf.revenue !== undefined) {
+      var rev = document.createElement('span');
+      rev.className = 'board-card-sent-revenue';
+      rev.textContent = '$' + Math.round(Number(perf.revenue)).toLocaleString();
+      metrics.appendChild(rev);
+      if (perf.open_rate !== null && perf.open_rate !== undefined && !isNaN(Number(perf.open_rate))) {
+        var op = document.createElement('span');
+        op.className = 'board-card-sent-revenue';
+        op.textContent = Number(perf.open_rate).toFixed(1) + '%';
+        metrics.appendChild(op);
+      }
+    } else {
+      var pending = document.createElement('span');
+      pending.className = 'board-card-sent-pending';
+      pending.textContent = em.klaviyo_campaign_id ? 'pending Klaviyo data' : 'not linked to Klaviyo';
+      metrics.appendChild(pending);
+    }
+    card.appendChild(metrics);
+  }
 
   card.addEventListener('dragstart', function(e){
     boardDragEmailId = em.id;
