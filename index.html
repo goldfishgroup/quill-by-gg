@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,6 +187,38 @@
     .cal-chip-sent-metrics { display: flex; gap: 4px; flex-wrap: nowrap; }
     .cal-chip-sent-revenue { display: inline-block; font-size: 9px; font-weight: 700; color: #3d6022; padding: 1px 5px; background: #fff; border-radius: 8px; vertical-align: middle; white-space: nowrap; }
     .cal-chip-sent-pending { display: inline-block; font-size: 9px; font-weight: 600; color: var(--q-muted); font-style: italic; white-space: nowrap; }
+
+    /* Session 12: social chip distinction. Peach-tinted background + orange left border stripe.
+       The border-left color still shifts by status; social gets a right-side accent to remain readable. */
+    .cal-chip.is-social { background: #fbeee6; }
+    .cal-chip.is-social::before {
+      content: 'SOC';
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--gg-orange);
+      background: #fff;
+      padding: 1px 4px;
+      margin-right: 5px;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+    /* Same treatment for waiting bay cards */
+    .cal-bay-card.is-social { background: #fdf5ee; border-left: 2px solid var(--gg-orange); padding-left: 8px; }
+    .cal-bay-card.is-social .cal-bay-card-title::before {
+      content: 'SOC';
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--gg-orange);
+      background: #fff;
+      padding: 1px 4px;
+      margin-right: 5px;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
 
     /* Sent section inside the edit modal */
     .sent-section { display: flex; flex-direction: column; gap: 12px; }
@@ -1620,7 +1653,14 @@
           <button class="view-btn" id="vbtn-list" onclick="setCalView('list')">List</button>
         </div>
         <button class="primary-btn" onclick="openAddModal()">+ Add email</button>
+        <button class="primary-btn" onclick="openAddSocialModal()" style="background:var(--gg-orange);">+ Add social</button>
       </div>
+    </div>
+    <div class="filter-bar" id="cal-channel-filters">
+      <span class="filter-label">Channel</span>
+      <button class="filter-chip" data-channel="all" onclick="toggleChannel(this,'all')">All</button>
+      <button class="filter-chip" data-channel="email" onclick="toggleChannel(this,'email')">Email</button>
+      <button class="filter-chip" data-channel="social" onclick="toggleChannel(this,'social')">Social</button>
     </div>
     <div class="filter-bar" id="cal-filters">
       <span class="filter-label">Status</span>
@@ -1641,7 +1681,8 @@
           <span class="cal-bay-count" id="calBayCount">0</span>
         </div>
         <div class="cal-bay-body" id="calBayList" ondragover="onBayDragOver(event)" ondragleave="onBayDragLeave(event)" ondrop="onBayDrop(event)"></div>
-        <button class="cal-bay-add" onclick="openAddModalBay()">+ Add idea</button>
+        <button class="cal-bay-add" onclick="openAddModalBay()">+ Add email idea</button>
+        <button class="cal-bay-add" onclick="openAddSocialModalBay()" style="color:var(--gg-orange);">+ Add social idea</button>
       </div>
     </div>
     <div id="list-view-wrap" style="display:none">
@@ -2556,6 +2597,103 @@
   </div>
 </div>
 
+<!-- Session 12: Social post modal (separate from email modal for UX clarity) -->
+<div class="modal-overlay" id="socialModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="socialModalTitle">Add social post</span>
+      <button class="modal-close" onclick="closeSocialModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="field-label">Title / hook</label>
+        <input type="text" id="s-subject" class="field-input" placeholder="e.g. The Longest Long Game: Creatine">
+      </div>
+      <div>
+        <label class="field-label">Brief / concept</label>
+        <textarea id="s-brief" class="field-textarea concept" placeholder="What is this post about? Angle, hook direction, what the carousel or reel explains. The clearer here, the tighter the post."></textarea>
+      </div>
+      <div class="field-row">
+        <div>
+          <label class="field-label">Send date</label>
+          <input type="date" id="s-date" class="field-input">
+        </div>
+        <div>
+          <label class="field-label">Status</label>
+          <select id="s-status" class="field-select">
+            <option value="draft">Draft</option>
+            <option value="approved">In Progress</option>
+            <option value="sent-to-design">Sent to Design</option>
+            <option value="scheduled">Scheduled</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label class="field-label">Pillar</label>
+          <select id="s-pillar" class="field-select" onchange="onSocialPillarChange()">
+            <option value="">Select pillar</option>
+            <option value="Build">Build</option>
+            <option value="Perform">Perform</option>
+            <option value="Recover">Recover</option>
+            <option value="No Hype">No Hype</option>
+            <option value="LIVIN SFH">LIVIN SFH</option>
+            <option value="__other__">Other...</option>
+          </select>
+          <input type="text" id="s-pillar-other" class="field-input" placeholder="Custom pillar" style="display:none;margin-top:6px;">
+        </div>
+        <div>
+          <label class="field-label">Week step</label>
+          <select id="s-week-step" class="field-select" onchange="onSocialWeekStepChange()">
+            <option value="">None</option>
+            <option value="learn">Learn — post 1 of week</option>
+            <option value="apply">Apply — post 2 of week</option>
+            <option value="live">Live — post 3 of week</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label class="field-label">Format <span id="s-format-hint" style="color:var(--q-muted);font-weight:400;font-size:10px;"></span></label>
+          <select id="s-format" class="field-select" onchange="onSocialFormatChange()">
+            <option value="">Select format</option>
+          </select>
+          <input type="text" id="s-format-other" class="field-input" placeholder="Custom format" style="display:none;margin-top:6px;">
+        </div>
+        <div>
+          <label class="field-label">Post type</label>
+          <select id="s-post-type" class="field-select" onchange="onSocialPostTypeChange()">
+            <option value="">Select type</option>
+            <option value="Carousel">Carousel</option>
+            <option value="Reel">Reel</option>
+            <option value="Static">Static image</option>
+            <option value="Story">Story</option>
+            <option value="__other__">Other...</option>
+          </select>
+          <input type="text" id="s-post-type-other" class="field-input" placeholder="Custom post type" style="display:none;margin-top:6px;">
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Feature product (optional)</label>
+        <select id="s-product" class="field-select">
+          <option value="">No product feature</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Notes (optional)</label>
+        <textarea id="s-notes" class="field-textarea" placeholder="Reminders, references, tag notes, related activation." style="min-height:60px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn" id="socialDeleteBtn" onclick="deleteSocialFromModal()" style="color:#a32d2d;display:none">Delete</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="ghost-btn" onclick="closeSocialModal()">Cancel</button>
+        <button class="primary-btn" onclick="saveSocialFromModal()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="export-modal-overlay" id="export-modal-overlay" onclick="if(event.target===this) closeExportModal()">
@@ -2639,6 +2777,14 @@
       <div>
         <label class="field-label">Notes (optional)</label>
         <textarea id="theme-notes-input" class="field-textarea" placeholder="Strategic context for this theme. Why is it on the calendar? What should planning around it consider?" style="min-height:60px;"></textarea>
+      </div>
+      <div>
+        <label class="field-label">Applies to</label>
+        <select id="theme-channel-input" class="field-select">
+          <option value="both">Email + Social</option>
+          <option value="email">Email only</option>
+          <option value="social">Social only</option>
+        </select>
       </div>
     </div>
     <div class="theme-modal-foot">
@@ -2747,6 +2893,15 @@ var currentYear = new Date().getFullYear();
 var currentMonth = new Date().getMonth();
 var calView = 'month';
 var activeFilter = 'all';
+var activeChannel = (function(){
+  // Persist channel filter across page loads so the strategist stays in their
+  // preferred view (all / email / social).
+  try {
+    var stored = localStorage.getItem('quill_active_channel');
+    if (stored === 'email' || stored === 'social' || stored === 'all') return stored;
+  } catch (e) {}
+  return 'all';
+})();
 var editingId = null;
 var dragEmailId = null;
 
@@ -2879,8 +3034,25 @@ window.toggleFilter = function(el, f) {
   renderCalendar();
 };
 
+// Session 12: channel filter (email / social / all)
+window.toggleChannel = function(el, ch) {
+  activeChannel = ch;
+  document.querySelectorAll('#cal-channel-filters .filter-chip').forEach(function(c){
+    c.classList.remove('active');
+  });
+  el.classList.add('active');
+  try { localStorage.setItem('quill_active_channel', ch); } catch (e) {}
+  renderCalendar();
+  renderWaitingBay();
+  renderThemesBand();
+};
+
 // Filter helpers
 function emailMatchesFilter(e) {
+  // Channel filter first
+  var ch = e.channel || 'email';
+  if (activeChannel !== 'all' && ch !== activeChannel) return false;
+  // Then status
   if (activeFilter === 'all') return true;
   return (e.status || 'draft') === activeFilter;
 }
@@ -2950,7 +3122,8 @@ function renderMonthView() {
     dayEmails.forEach(function(e){
       var chip = document.createElement('div');
       var sentClass = e.sent_at ? ' is-sent' : '';
-      chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft') + sentClass;
+      var socialClass = (e.channel === 'social') ? ' is-social' : '';
+      chip.className = 'cal-chip draggable-chip status-' + (e.status || 'draft') + sentClass + socialClass;
       chip.draggable = true;
       chip.dataset.id = e.id;
       // Build chip text: subject + revenue + open rate (if sent + linked) OR pending pill
@@ -3029,11 +3202,17 @@ function renderThemesBand() {
   var monthStart = new Date(currentYear, currentMonth, 1);
   var monthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
 
-  // Filter themes that overlap this month
+  // Filter themes that overlap this month AND match the active channel filter.
+  // Themes with channel='both' show in all views; email/social-scoped ones
+  // only show when their channel matches (or when 'all' is selected).
   var inMonth = (themesCache || []).filter(function(t){
     var ts = new Date(t.date_start + 'T00:00:00');
     var te = new Date(t.date_end + 'T23:59:59');
-    return ts <= monthEnd && te >= monthStart;
+    if (!(ts <= monthEnd && te >= monthStart)) return false;
+    var themeCh = t.channel || 'both';
+    if (activeChannel === 'all') return true;
+    if (themeCh === 'both') return true;
+    return themeCh === activeChannel;
   });
 
   // Sort by date_start
@@ -3086,6 +3265,7 @@ window.openThemeModal = function(themeId) {
   var startEl = document.getElementById('theme-start-input');
   var endEl = document.getElementById('theme-end-input');
   var notesEl = document.getElementById('theme-notes-input');
+  var channelEl = document.getElementById('theme-channel-input');
   var deleteBtn = document.getElementById('theme-modal-delete');
 
   if (themeId) {
@@ -3096,6 +3276,7 @@ window.openThemeModal = function(themeId) {
     startEl.value = t.date_start || '';
     endEl.value = t.date_end || '';
     notesEl.value = t.notes || '';
+    if (channelEl) channelEl.value = t.channel || 'both';
     setSelectedThemeColor(t.color || 'olive');
     deleteBtn.style.display = 'inline-block';
   } else {
@@ -3107,6 +3288,7 @@ window.openThemeModal = function(themeId) {
     startEl.value = isoDate(defaultStart);
     endEl.value = isoDate(defaultEnd);
     notesEl.value = '';
+    if (channelEl) channelEl.value = 'both';
     setSelectedThemeColor('olive');
     deleteBtn.style.display = 'none';
   }
@@ -3148,6 +3330,8 @@ window.saveThemeFromModal = async function() {
   var endStr = document.getElementById('theme-end-input').value;
   var notes = (document.getElementById('theme-notes-input').value || '').trim();
   var color = getSelectedThemeColor();
+  var channelEl = document.getElementById('theme-channel-input');
+  var channel = channelEl ? channelEl.value : 'both';
 
   if (!label) { showToast('Label is required', true); return; }
   if (!startStr || !endStr) { showToast('Start and end dates are required', true); return; }
@@ -3158,7 +3342,8 @@ window.saveThemeFromModal = async function() {
     date_start: startStr,
     date_end: endStr,
     color: color,
-    notes: notes ? notes.slice(0, 500) : null
+    notes: notes ? notes.slice(0, 500) : null,
+    channel: channel
   };
 
   var res;
@@ -3257,8 +3442,9 @@ function renderWaitingBay() {
   unscheduled.forEach(function(e){
     var dotColors = { 'draft':'#b4b2a9','approved':'#4b9e4b','sent-to-design':'#e8a030','scheduled':'#43471d' };
     var status = e.status || 'draft';
+    var socialClass = (e.channel === 'social') ? ' is-social' : '';
     var card = document.createElement('div');
-    card.className = 'cal-bay-card';
+    card.className = 'cal-bay-card' + socialClass;
     card.draggable = true;
     card.dataset.id = e.id;
     card.innerHTML = '<div class="cal-bay-card-title">' + (e.subject || 'Untitled') + '</div>'
@@ -3375,9 +3561,14 @@ window.openAddModalBay = function() {
 };
 
 window.openEditModal = function(id) {
-  ensureCalendarModalDom();
   var em = emails.find(function(x){ return x.id === id; });
   if (!em) return;
+  // Session 12: route to social modal if this is a social post
+  if (em.channel === 'social') {
+    openEditSocialModal(id);
+    return;
+  }
+  ensureCalendarModalDom();
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Edit email';
   document.getElementById('deleteBtn').style.display = 'inline-block';
@@ -3660,6 +3851,303 @@ window.deleteFromModal = async function() {
   emails = emails.filter(function(x){ return x.id !== editingId; });
   closeModal();
   renderCalendar();
+  showToast('Deleted');
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// Session 12: Social modal functions
+// The social modal is a separate overlay from the email one for UX clarity.
+// It writes to the same quill_calendar table with channel='social', and
+// uses the additional social columns (social_pillar, social_format, week_step,
+// post_type, product_id).
+// ────────────────────────────────────────────────────────────────────────────
+
+// Week step to allowed formats mapping (from proposal). "Other" is always
+// available so custom formats can be added inline.
+var SOCIAL_FORMATS_BY_WEEK_STEP = {
+  'learn': ['The Why', 'Label Read', 'Weigh In'],
+  'apply': ['The Protocol', 'Kitchen'],
+  'live':  ['Locker Room', 'Field Notes'],
+  '':      ['The Why', 'Label Read', 'Weigh In', 'The Protocol', 'Kitchen', 'Locker Room', 'Field Notes']
+};
+
+var SOCIAL_PILLAR_FIXED = ['Build', 'Perform', 'Recover', 'No Hype', 'LIVIN SFH'];
+var SOCIAL_POST_TYPE_FIXED = ['Carousel', 'Reel', 'Static', 'Story'];
+
+// Build the format dropdown options based on the selected week step.
+// preservedValue: if editing, keep the current value selected even if it
+// doesn't match the new week step's canonical list — user's custom pick sticks.
+function populateSocialFormatDropdown(weekStep, preservedValue) {
+  var sel = document.getElementById('s-format');
+  if (!sel) return;
+  var options = SOCIAL_FORMATS_BY_WEEK_STEP[weekStep || ''] || SOCIAL_FORMATS_BY_WEEK_STEP[''];
+  var hint = document.getElementById('s-format-hint');
+  if (hint) {
+    hint.textContent = weekStep ? '(filtered by week step)' : '';
+  }
+  sel.innerHTML = '<option value="">Select format</option>';
+  options.forEach(function(f){
+    var opt = document.createElement('option');
+    opt.value = f;
+    opt.textContent = f;
+    sel.appendChild(opt);
+  });
+  var otherOpt = document.createElement('option');
+  otherOpt.value = '__other__';
+  otherOpt.textContent = 'Other...';
+  sel.appendChild(otherOpt);
+  // Restore preserved value if possible
+  if (preservedValue) {
+    if (options.indexOf(preservedValue) !== -1) {
+      sel.value = preservedValue;
+    } else {
+      // Custom value — select Other and populate the text field
+      sel.value = '__other__';
+      var other = document.getElementById('s-format-other');
+      if (other) { other.value = preservedValue; other.style.display = 'block'; }
+    }
+  }
+}
+
+// Populate product dropdown from productsCache
+function populateSocialProductDropdown(preservedValue) {
+  var sel = document.getElementById('s-product');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">No product feature</option>';
+  var prods = (typeof productsCache === 'object' && productsCache) ? productsCache : [];
+  prods.forEach(function(p){
+    var opt = document.createElement('option');
+    opt.value = String(p.id);
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+  if (preservedValue != null && preservedValue !== '') {
+    sel.value = String(preservedValue);
+  }
+}
+
+// "Other..." handlers reveal a text input next to the dropdown
+window.onSocialPillarChange = function() {
+  var sel = document.getElementById('s-pillar');
+  var other = document.getElementById('s-pillar-other');
+  if (!sel || !other) return;
+  if (sel.value === '__other__') {
+    other.style.display = 'block';
+    other.focus();
+  } else {
+    other.style.display = 'none';
+    other.value = '';
+  }
+};
+
+window.onSocialWeekStepChange = function() {
+  var sel = document.getElementById('s-week-step');
+  if (!sel) return;
+  // Repopulate format dropdown filtered by the new week step
+  populateSocialFormatDropdown(sel.value, null);
+};
+
+window.onSocialFormatChange = function() {
+  var sel = document.getElementById('s-format');
+  var other = document.getElementById('s-format-other');
+  if (!sel || !other) return;
+  if (sel.value === '__other__') {
+    other.style.display = 'block';
+    other.focus();
+  } else {
+    other.style.display = 'none';
+    other.value = '';
+  }
+};
+
+window.onSocialPostTypeChange = function() {
+  var sel = document.getElementById('s-post-type');
+  var other = document.getElementById('s-post-type-other');
+  if (!sel || !other) return;
+  if (sel.value === '__other__') {
+    other.style.display = 'block';
+    other.focus();
+  } else {
+    other.style.display = 'none';
+    other.value = '';
+  }
+};
+
+function clearSocialModalFields() {
+  document.getElementById('s-subject').value = '';
+  document.getElementById('s-brief').value = '';
+  document.getElementById('s-date').value = '';
+  document.getElementById('s-status').value = 'draft';
+  document.getElementById('s-pillar').value = '';
+  document.getElementById('s-pillar-other').value = '';
+  document.getElementById('s-pillar-other').style.display = 'none';
+  document.getElementById('s-week-step').value = '';
+  document.getElementById('s-format-other').value = '';
+  document.getElementById('s-format-other').style.display = 'none';
+  document.getElementById('s-post-type').value = '';
+  document.getElementById('s-post-type-other').value = '';
+  document.getElementById('s-post-type-other').style.display = 'none';
+  document.getElementById('s-product').value = '';
+  document.getElementById('s-notes').value = '';
+  populateSocialFormatDropdown('', null);
+}
+
+// Async because we may need to load products cache before showing the dropdown
+async function ensureSocialModalReady() {
+  if (typeof productsCache === 'undefined' || !productsCache) {
+    if (typeof loadProducts === 'function') {
+      try { await loadProducts(true); } catch (e) {}
+    }
+  }
+  populateSocialProductDropdown(null);
+}
+
+window.openAddSocialModal = async function() {
+  editingId = null;
+  document.getElementById('socialModalTitle').textContent = 'Add social post';
+  document.getElementById('socialDeleteBtn').style.display = 'none';
+  clearSocialModalFields();
+  await ensureSocialModalReady();
+  var today = new Date();
+  document.getElementById('s-date').value = today.toISOString().split('T')[0];
+  document.getElementById('socialModalOverlay').classList.add('open');
+  document.getElementById('s-subject').focus();
+};
+
+window.openAddSocialModalForDate = async function(dateStr) {
+  await openAddSocialModal();
+  document.getElementById('s-date').value = dateStr;
+};
+
+window.openAddSocialModalBay = async function() {
+  await openAddSocialModal();
+  // Blank the date so it lands in Waiting Bay instead of on the calendar grid
+  document.getElementById('s-date').value = '';
+  document.getElementById('socialModalTitle').textContent = 'Add social idea to Waiting Bay';
+};
+
+window.openEditSocialModal = async function(id) {
+  var em = emails.find(function(x){ return x.id === id; });
+  if (!em) return;
+  editingId = id;
+  document.getElementById('socialModalTitle').textContent = 'Edit social post';
+  document.getElementById('socialDeleteBtn').style.display = 'inline-block';
+  clearSocialModalFields();
+  await ensureSocialModalReady();
+
+  // Basic fields
+  document.getElementById('s-subject').value = em.subject || '';
+  document.getElementById('s-brief').value = em.notes || '';
+  document.getElementById('s-date').value = em.send_date || '';
+  document.getElementById('s-status').value = em.status || 'draft';
+
+  // Pillar (may be one of the fixed 5 or custom)
+  var pillarSel = document.getElementById('s-pillar');
+  var pillarOther = document.getElementById('s-pillar-other');
+  if (em.social_pillar) {
+    if (SOCIAL_PILLAR_FIXED.indexOf(em.social_pillar) !== -1) {
+      pillarSel.value = em.social_pillar;
+    } else {
+      pillarSel.value = '__other__';
+      pillarOther.value = em.social_pillar;
+      pillarOther.style.display = 'block';
+    }
+  }
+
+  // Week step — set BEFORE format so format dropdown filters correctly
+  document.getElementById('s-week-step').value = em.week_step || '';
+
+  // Format (repopulate based on week step, preserving the current value)
+  populateSocialFormatDropdown(em.week_step || '', em.social_format || null);
+
+  // Post type (may be fixed or custom)
+  var ptSel = document.getElementById('s-post-type');
+  var ptOther = document.getElementById('s-post-type-other');
+  if (em.post_type) {
+    if (SOCIAL_POST_TYPE_FIXED.indexOf(em.post_type) !== -1) {
+      ptSel.value = em.post_type;
+    } else {
+      ptSel.value = '__other__';
+      ptOther.value = em.post_type;
+      ptOther.style.display = 'block';
+    }
+  }
+
+  // Product
+  populateSocialProductDropdown(em.product_id);
+
+  document.getElementById('socialModalOverlay').classList.add('open');
+};
+
+window.closeSocialModal = function() {
+  document.getElementById('socialModalOverlay').classList.remove('open');
+  editingId = null;
+};
+
+// Resolve a dropdown value: if "__other__" was selected, use the text input
+function resolveOtherValue(selectId, otherInputId) {
+  var sel = document.getElementById(selectId);
+  var other = document.getElementById(otherInputId);
+  if (!sel) return null;
+  if (sel.value === '__other__') {
+    var v = other && other.value ? other.value.trim() : '';
+    return v || null;
+  }
+  return sel.value || null;
+}
+
+window.saveSocialFromModal = async function() {
+  var subject = document.getElementById('s-subject').value.trim();
+  if (!subject) {
+    showToast('Please enter a title or hook', true);
+    document.getElementById('s-subject').focus();
+    return;
+  }
+  var productVal = document.getElementById('s-product').value;
+  var payload = {
+    channel: 'social',
+    subject: subject,
+    preview: '',  // not used for social; keep column populated but blank
+    send_date: document.getElementById('s-date').value || null,
+    status: document.getElementById('s-status').value,
+    social_pillar: resolveOtherValue('s-pillar', 's-pillar-other'),
+    week_step: document.getElementById('s-week-step').value || null,
+    social_format: resolveOtherValue('s-format', 's-format-other'),
+    post_type: resolveOtherValue('s-post-type', 's-post-type-other'),
+    product_id: productVal ? Number(productVal) : null,
+    notes: document.getElementById('s-brief').value.trim(),
+    // Preserve email-oriented fields as empty strings/nulls for social rows
+    bucket: '',
+    email_type: null,
+    segment: null
+  };
+  if (editingId) payload.id = editingId;
+
+  var saved = await upsertEmail(payload);
+  if (!saved) return;
+
+  // Update local cache
+  var existingIdx = emails.findIndex(function(x){ return x.id === saved.id; });
+  if (existingIdx >= 0) {
+    emails[existingIdx] = saved;
+  } else {
+    emails.push(saved);
+  }
+  closeSocialModal();
+  renderCalendar();
+  renderWaitingBay();
+  showToast('Saved');
+};
+
+window.deleteSocialFromModal = async function() {
+  if (!editingId) return;
+  if (!confirm('Delete this social post? This cannot be undone.')) return;
+  var ok = await deleteEmailFromDB(editingId);
+  if (!ok) return;
+  emails = emails.filter(function(x){ return x.id !== editingId; });
+  closeSocialModal();
+  renderCalendar();
+  renderWaitingBay();
   showToast('Deleted');
 };
 
@@ -16451,6 +16939,12 @@ loadEmails();
 refreshUploadCounts();
 initTipWidgets();
 loadThemes(false).then(function(){ renderThemesBand(); });
+
+// Session 12: highlight the correct channel filter chip based on persisted state
+(function initChannelChip(){
+  var chip = document.querySelector('#cal-channel-filters .filter-chip[data-channel="' + activeChannel + '"]');
+  if (chip) chip.classList.add('active');
+})();
 
 });
 </script>
