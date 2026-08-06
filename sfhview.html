@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,6 +98,37 @@
     .cal-chip.status-scheduled { border-left-color: var(--gg-olive); background: #f4f0de; }
     .cal-chip-approved-dot { display: inline-block; width: 6px; height: 6px; background: #4b9e4b; border-radius: 50%; flex-shrink: 0; }
     .cal-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+    /* Session 12: social chip distinction */
+    .cal-chip.is-social { background: #fbeee6; }
+    .cal-chip.is-social::before {
+      content: 'SOCIAL';
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--gg-orange);
+      background: #fff;
+      padding: 1px 4px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Session 12: channel filter bar */
+    .channel-filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+    .channel-filter-label { font-size: 11px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-right: 4px; }
+    .channel-filter-chip { font-size: 11px; padding: 5px 12px; border-radius: 12px; border: 0.5px solid var(--q-line); background: #fff; color: var(--q-muted); cursor: pointer; font-family: var(--font-body); font-weight: 500; transition: all 0.12s; }
+    .channel-filter-chip:hover { background: var(--gg-offwhite); }
+    .channel-filter-chip.active[data-channel="all"] { background: var(--gg-charcoal); color: #fff; border-color: var(--gg-charcoal); }
+    .channel-filter-chip.active[data-channel="email"] { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    .channel-filter-chip.active[data-channel="social"] { background: var(--gg-orange); color: #fff; border-color: var(--gg-orange); }
+
+    /* Session 12: linkified URLs in details modal — subtle underline */
+    .details-field-value a { color: var(--gg-olive); text-decoration: underline; text-underline-offset: 2px; word-break: break-word; }
+    .details-field-value a:hover { color: var(--gg-orange); }
+
+    /* Session 12: social-specific pill in details modal */
+    .details-pill.social-badge { background: #fbeee6; color: var(--gg-orange); border: 0.5px solid #f7d5bd; }
 
     /* Email details modal */
     .details-overlay { position: fixed; inset: 0; background: rgba(50, 49, 47, 0.4); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 40px 20px; overflow-y: auto; }
@@ -209,6 +241,13 @@
     <button class="cal-nav-btn" id="toggleNotesBtn" title="Hide or show the notes panel">Hide notes</button>
   </div>
 
+  <div class="channel-filter-bar" id="channelFilterBar">
+    <span class="channel-filter-label">Channel</span>
+    <button class="channel-filter-chip" data-channel="all" onclick="setChannelFilter('all')">All</button>
+    <button class="channel-filter-chip" data-channel="email" onclick="setChannelFilter('email')">Email</button>
+    <button class="channel-filter-chip" data-channel="social" onclick="setChannelFilter('social')">Social Media</button>
+  </div>
+
   <div class="cal-themes-band" id="themesBand"></div>
 
   <div class="main-grid" id="mainGrid">
@@ -278,6 +317,15 @@ var currentYear = new Date().getFullYear();
 var currentMonth = new Date().getMonth();
 var notesSaveTimer = null;
 
+// Session 12: channel filter (email / social / all), persisted across visits.
+var activeChannel = (function(){
+  try {
+    var stored = localStorage.getItem('sfhview_active_channel');
+    if (stored === 'email' || stored === 'social' || stored === 'all') return stored;
+  } catch (e) {}
+  return 'all';
+})();
+
 var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -345,7 +393,7 @@ function showApp() {
 
 async function loadAll() {
   try {
-    var emailsRes = await db.from('quill_calendar').select('id,subject,preview,send_date,status,bucket,notes,products_to_feature,discount_promo,client_approved,client_approved_at').order('send_date', { ascending: true });
+    var emailsRes = await db.from('quill_calendar').select('id,subject,preview,send_date,status,bucket,notes,products_to_feature,discount_promo,client_approved,client_approved_at,channel,social_pillar,social_format,week_step,post_type,product_id').order('send_date', { ascending: true });
     if (emailsRes.error) throw emailsRes.error;
     emails = (emailsRes.data || []).filter(function(e){ return e.send_date; });
 
@@ -375,7 +423,12 @@ function renderThemes() {
   var inMonth = (themes || []).filter(function(t){
     var ts = new Date(t.date_start + 'T00:00:00');
     var te = new Date(t.date_end + 'T23:59:59');
-    return ts <= monthEnd && te >= monthStart;
+    if (!(ts <= monthEnd && te >= monthStart)) return false;
+    // Session 12: respect channel filter
+    var themeCh = t.channel || 'both';
+    if (activeChannel === 'all') return true;
+    if (themeCh === 'both') return true;
+    return themeCh === activeChannel;
   });
   inMonth.sort(function(a,b){ return new Date(a.date_start) - new Date(b.date_start); });
 
@@ -450,10 +503,17 @@ function renderCalendar() {
     dateLabel.textContent = String(dayNum);
     cell.appendChild(dateLabel);
 
-    var dayEmails = emails.filter(function(e){ return e.send_date === ds; });
+    var dayEmails = emails.filter(function(e){
+      if (e.send_date !== ds) return false;
+      // Session 12: channel filter
+      var ch = e.channel || 'email';
+      if (activeChannel !== 'all' && ch !== activeChannel) return false;
+      return true;
+    });
     dayEmails.forEach(function(e){
       var chip = document.createElement('div');
-      chip.className = 'cal-chip status-' + (e.status || 'draft');
+      var socialClass = ((e.channel || 'email') === 'social') ? ' is-social' : '';
+      chip.className = 'cal-chip status-' + (e.status || 'draft') + socialClass;
       chip.title = 'Click to view details';
       var inner = '';
       if (e.client_approved) {
@@ -483,37 +543,50 @@ function openDetailsModal(emailId) {
   document.getElementById('detailsSubject').textContent = em.subject || 'Untitled';
 
   var bodyParts = [];
+  var isSocial = (em.channel === 'social');
+
+  // Session 12: pill row now includes a "Social Media" badge for social posts
   bodyParts.push('<div class="details-pill-row">');
+  if (isSocial) {
+    bodyParts.push('<span class="details-pill social-badge">Social Media</span>');
+  }
   if (em.bucket) bodyParts.push('<span class="details-pill bucket">' + esc(em.bucket) + '</span>');
+  if (isSocial && em.social_pillar) bodyParts.push('<span class="details-pill bucket">' + esc(em.social_pillar) + '</span>');
+  if (isSocial && em.week_step) {
+    var stepLabel = em.week_step === 'learn' ? 'Learn' : em.week_step === 'apply' ? 'Apply' : em.week_step === 'live' ? 'Live' : em.week_step;
+    bodyParts.push('<span class="details-pill bucket">' + esc(stepLabel) + '</span>');
+  }
+  if (isSocial && em.social_format) bodyParts.push('<span class="details-pill bucket">' + esc(em.social_format) + '</span>');
+  if (isSocial && em.post_type) bodyParts.push('<span class="details-pill bucket">' + esc(em.post_type) + '</span>');
   bodyParts.push('<span class="details-pill status-' + status + '">' + statusLabel + '</span>');
   bodyParts.push('</div>');
 
   if (em.preview) {
     bodyParts.push('<div>');
-    bodyParts.push('<div class="details-field-label">Preview text</div>');
-    bodyParts.push('<div class="details-field-value">' + esc(em.preview) + '</div>');
+    bodyParts.push('<div class="details-field-label">' + (isSocial ? 'Caption preview' : 'Preview text') + '</div>');
+    bodyParts.push('<div class="details-field-value">' + escAndLinkify(em.preview) + '</div>');
     bodyParts.push('</div>');
   }
   if (em.notes) {
     bodyParts.push('<div>');
-    bodyParts.push('<div class="details-field-label">Concept and angle</div>');
-    bodyParts.push('<div class="details-field-value">' + esc(em.notes) + '</div>');
+    bodyParts.push('<div class="details-field-label">' + (isSocial ? 'Brief and concept' : 'Concept and angle') + '</div>');
+    bodyParts.push('<div class="details-field-value">' + escAndLinkify(em.notes) + '</div>');
     bodyParts.push('</div>');
   }
   if (em.products_to_feature) {
     bodyParts.push('<div>');
     bodyParts.push('<div class="details-field-label">Products featured</div>');
-    bodyParts.push('<div class="details-field-value">' + esc(em.products_to_feature) + '</div>');
+    bodyParts.push('<div class="details-field-value">' + escAndLinkify(em.products_to_feature) + '</div>');
     bodyParts.push('</div>');
   }
   if (em.discount_promo) {
     bodyParts.push('<div>');
     bodyParts.push('<div class="details-field-label">Discount or promo</div>');
-    bodyParts.push('<div class="details-field-value">' + esc(em.discount_promo) + '</div>');
+    bodyParts.push('<div class="details-field-value">' + escAndLinkify(em.discount_promo) + '</div>');
     bodyParts.push('</div>');
   }
   if (!em.preview && !em.notes && !em.products_to_feature && !em.discount_promo) {
-    bodyParts.push('<div class="details-field-value" style="color:var(--q-muted); font-style:italic;">No details added yet for this email.</div>');
+    bodyParts.push('<div class="details-field-value" style="color:var(--q-muted); font-style:italic;">' + (isSocial ? 'No details added yet for this social post.' : 'No details added yet for this email.') + '</div>');
   }
 
   document.getElementById('detailsBody').innerHTML = bodyParts.join('\n');
@@ -853,6 +926,38 @@ function esc(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// Session 12: escape HTML, then wrap any http(s) URLs in clickable anchor tags.
+// Used in the details modal so links pasted into notes/briefs are clickable.
+function escAndLinkify(s) {
+  var escaped = esc(s);
+  // Match escaped URLs — they'll appear as http(s)://... in the escaped string
+  // since URL chars don't need HTML escaping (except & which becomes &amp;).
+  var urlPattern = /(https?:\/\/[^\s<]+[^\s<.,;:!?'"\)\]])/g;
+  return escaped.replace(urlPattern, function(url){
+    // Fix back the &amp; escape inside URLs so the href works correctly
+    var href = url.replace(/&amp;/g, '&');
+    return '<a href="' + href + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
+  });
+}
+
+// Session 12: channel filter — email/social/all with visual color coding
+window.setChannelFilter = function(ch) {
+  activeChannel = ch;
+  try { localStorage.setItem('sfhview_active_channel', ch); } catch (e) {}
+  document.querySelectorAll('#channelFilterBar .channel-filter-chip').forEach(function(c){
+    if (c.dataset.channel === ch) c.classList.add('active');
+    else c.classList.remove('active');
+  });
+  renderCalendar();
+  renderThemes();
+};
+
+// Initialize the channel chip active state on load
+(function initChannelChip(){
+  var chip = document.querySelector('#channelFilterBar .channel-filter-chip[data-channel="' + activeChannel + '"]');
+  if (chip) chip.classList.add('active');
+})();
 
 });
 </script>
