@@ -115,6 +115,11 @@
     .filter-bar { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
     .filter-chip { padding: 5px 12px; border: 0.5px solid var(--q-line); border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--q-muted); background: #fff; transition: all 0.1s; font-family: var(--font-body); }
     .filter-chip.active { background: var(--gg-olive); color: #fff; border-color: var(--gg-olive); }
+    /* Session 12: channel filter chips get channel-specific active colors so
+       at a glance you know which view you're in — olive for Email, orange for Social. */
+    #cal-channel-filters .filter-chip.active[data-channel="all"] { background: var(--gg-charcoal); border-color: var(--gg-charcoal); }
+    #cal-channel-filters .filter-chip.active[data-channel="email"] { background: var(--gg-olive); border-color: var(--gg-olive); }
+    #cal-channel-filters .filter-chip.active[data-channel="social"] { background: var(--gg-orange); border-color: var(--gg-orange); }
     .filter-label { font-size: 11px; color: var(--q-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; }
 
     /* CALENDAR GRID */
@@ -192,7 +197,7 @@
        The border-left color still shifts by status; social gets a right-side accent to remain readable. */
     .cal-chip.is-social { background: #fbeee6; }
     .cal-chip.is-social::before {
-      content: 'SOC';
+      content: 'SOCIAL';
       display: inline-block;
       font-size: 8px;
       font-weight: 800;
@@ -207,7 +212,7 @@
     /* Same treatment for waiting bay cards */
     .cal-bay-card.is-social { background: #fdf5ee; border-left: 2px solid var(--gg-orange); padding-left: 8px; }
     .cal-bay-card.is-social .cal-bay-card-title::before {
-      content: 'SOC';
+      content: 'SOCIAL';
       display: inline-block;
       font-size: 8px;
       font-weight: 800;
@@ -1653,14 +1658,14 @@
           <button class="view-btn" id="vbtn-list" onclick="setCalView('list')">List</button>
         </div>
         <button class="primary-btn" onclick="openAddModal()">+ Add email</button>
-        <button class="primary-btn" onclick="openAddSocialModal()" style="background:var(--gg-orange);">+ Add social</button>
+        <button class="primary-btn" onclick="openAddSocialModal()" style="background:var(--gg-orange);">+ Add social media</button>
       </div>
     </div>
     <div class="filter-bar" id="cal-channel-filters">
       <span class="filter-label">Channel</span>
       <button class="filter-chip" data-channel="all" onclick="toggleChannel(this,'all')">All</button>
       <button class="filter-chip" data-channel="email" onclick="toggleChannel(this,'email')">Email</button>
-      <button class="filter-chip" data-channel="social" onclick="toggleChannel(this,'social')">Social</button>
+      <button class="filter-chip" data-channel="social" onclick="toggleChannel(this,'social')">Social Media</button>
     </div>
     <div class="filter-bar" id="cal-filters">
       <span class="filter-label">Status</span>
@@ -1682,7 +1687,7 @@
         </div>
         <div class="cal-bay-body" id="calBayList" ondragover="onBayDragOver(event)" ondragleave="onBayDragLeave(event)" ondrop="onBayDrop(event)"></div>
         <button class="cal-bay-add" onclick="openAddModalBay()">+ Add email idea</button>
-        <button class="cal-bay-add" onclick="openAddSocialModalBay()" style="color:var(--gg-orange);">+ Add social idea</button>
+        <button class="cal-bay-add" onclick="openAddSocialModalBay()" style="color:var(--gg-orange);">+ Add social media idea</button>
       </div>
     </div>
     <div id="list-view-wrap" style="display:none">
@@ -2601,7 +2606,7 @@
 <div class="modal-overlay" id="socialModalOverlay">
   <div class="modal">
     <div class="modal-head">
-      <span class="modal-title" id="socialModalTitle">Add social post</span>
+      <span class="modal-title" id="socialModalTitle">Add social media post</span>
       <button class="modal-close" onclick="closeSocialModal()">&times;</button>
     </div>
     <div class="modal-body">
@@ -4004,7 +4009,7 @@ async function ensureSocialModalReady() {
 
 window.openAddSocialModal = async function() {
   editingId = null;
-  document.getElementById('socialModalTitle').textContent = 'Add social post';
+  document.getElementById('socialModalTitle').textContent = 'Add social media post';
   document.getElementById('socialDeleteBtn').style.display = 'none';
   clearSocialModalFields();
   await ensureSocialModalReady();
@@ -4023,14 +4028,14 @@ window.openAddSocialModalBay = async function() {
   await openAddSocialModal();
   // Blank the date so it lands in Waiting Bay instead of on the calendar grid
   document.getElementById('s-date').value = '';
-  document.getElementById('socialModalTitle').textContent = 'Add social idea to Waiting Bay';
+  document.getElementById('socialModalTitle').textContent = 'Add social media idea to Waiting Bay';
 };
 
 window.openEditSocialModal = async function(id) {
   var em = emails.find(function(x){ return x.id === id; });
   if (!em) return;
   editingId = id;
-  document.getElementById('socialModalTitle').textContent = 'Edit social post';
+  document.getElementById('socialModalTitle').textContent = 'Edit social media post';
   document.getElementById('socialDeleteBtn').style.display = 'inline-block';
   clearSocialModalFields();
   await ensureSocialModalReady();
